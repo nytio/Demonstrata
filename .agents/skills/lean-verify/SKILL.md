@@ -28,13 +28,19 @@ description: Verify Lean files and projects in this repository using the strict 
 7. If the task also touches the PDF blueprint, run
    `scripts/check_blueprint_decls.sh` after Lean verification.
 8. When reviewing the library layout, prefer timestamped demonstration files
-   under `Mimate/Demonstrations/`.
+   under `Biblioteca/Demonstrations/`.
+9. When the user is asking for a genuinely new theorem, verify the freshly
+   created timestamped demonstration file instead of treating the task as
+   declaration lookup only.
 
 ## Rules
 
 - Never accept `sorry` as a valid end state.
 - Prefer file-level verification first, then full project verification.
 - Report the exact failing file and the first actionable diagnostic.
+- Verification is not limited to imported declarations already present in
+  `Mathlib` or `Biblioteca`; it must also support newly authored proofs created
+  by the LLM in this repo.
 - Treat NDJSON export and semantic indexes as optional accelerators, not as a
   replacement for Lean verification.
 - Prefer NDJSON export before a full semantic-search stack when the need is
@@ -48,4 +54,5 @@ description: Verify Lean files and projects in this repository using the strict 
 
 - Verification result for one file or the full project.
 - A short summary of the first blocking diagnostics.
+- Confirmation that a newly authored demonstration compiles when that is the task.
 - Clear next step if the build fails.

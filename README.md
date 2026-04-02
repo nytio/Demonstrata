@@ -8,6 +8,9 @@ automation around the verifier.
 - Codex drafts proofs and proof strategies.
 - Lean and mathlib validate whether the proof is actually accepted.
 - Python is used only for automation around build and diagnostics.
+- `Mathlib` and `Biblioteca` are sources of reusable ingredients, not the end
+  of the workflow: Codex is also expected to create new timestamped
+  demonstrations when the requested result is not already present.
 
 ## Layout
 
@@ -96,6 +99,8 @@ This project treats Lean proofs as a growing library, not as one-off examples.
   aggregate imports and blueprint index without overwriting older entries.
 - Each blueprint section carries paper metadata comments used by the AMS-style
   PDF builder.
+- The intended authoring loop is: scaffold a fresh entry, write the theorem and
+  proof under LLM guidance, verify with Lean, then print the current paper.
 
 ## Advanced exploration
 
@@ -104,6 +109,10 @@ For deeper navigation of `Mathlib`, this repo treats two extras as optional:
 - NDJSON export with `lean4export` for structured offline inspection.
 - Semantic indexes such as LeanExplore for search by meaning and MCP-backed
   retrieval.
+
+These tools are optional discovery accelerators. They should help locate
+building blocks, but they do not replace the core task of synthesizing new Lean
+demonstrations inside `Biblioteca/Demonstrations/`.
 
 The evaluation and references are documented in
 `docs/mathlib-exploration.md`.

@@ -25,6 +25,9 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - The final arbiter is successful compilation without warnings that would hide incomplete proofs.
 - Prefer repo-local scripts over ad hoc command variants when they exist.
 - Do not rewrite repo structure broadly unless the task explicitly requires it.
+- Do not treat `Mathlib` or `Biblioteca` as search-only corpora. Retrieval is
+  only a support step; when the user asks for a new result, Codex is expected
+  to author a new demonstration entry and drive it to an accepted Lean proof.
 
 ## Python rules
 
@@ -41,6 +44,9 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
   - `scripts/get_mathlib_cache.sh`
 - Treat `Biblioteca/` as the Lean namespace root; do not remove it just because it
   looks like an extra folder.
+- When the theorem to formalize is genuinely new to this repo, create a fresh
+  timestamped module with `scripts/new_demo.sh "<title>"` instead of proving it
+  in scratch files or stopping after a `Mathlib` search.
 - When exploring proof failures, keep the failing theorem small and isolate imports.
 - Prefer helper lemmas and explicit statements over long tactic blocks when the proof becomes unstable.
 
@@ -53,6 +59,8 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 
 - `lean-verify`: strict verification loop for builds and file-level diagnostics.
 - `lean-prove`: workflow for drafting a theorem and iterating until Lean accepts it.
+- Both skills should be used to synthesize new demonstrations when needed, not
+  merely to retrieve existing declarations from `Mathlib` or `Biblioteca`.
 - For deeper `Mathlib` exploration, consult `docs/mathlib-exploration.md` before
   adding new tooling.
 - Treat `lean4export` as the first optional escalation for structured offline

@@ -18,22 +18,32 @@ description: Draft or refine a Lean theorem in this repository and iterate until
 ## Workflow
 
 1. State the theorem precisely before writing tactics.
-2. Import the smallest Mathlib modules that support the proof.
-3. Prefer helper lemmas if the proof script becomes unstable or opaque.
-4. Verify the edited file with `scripts/check_lean_json.sh <file.lean>`.
-5. If the missing ingredient is declaration discovery inside `Mathlib`, consult
+2. Decide whether the task belongs in an existing module or should become a new
+   timestamped demonstration entry under `Biblioteca/Demonstrations/`.
+3. If the result is new to this repo, start with
+   `scripts/new_demo.sh "<title>"` so the Lean file and blueprint section stay
+   aligned from the beginning.
+4. Import the smallest Mathlib modules that support the proof.
+5. Prefer helper lemmas if the proof script becomes unstable or opaque.
+6. Verify the edited file with `scripts/check_lean_json.sh <file.lean>`.
+7. If the missing ingredient is declaration discovery inside `Mathlib`, consult
    `docs/mathlib-exploration.md` before expanding imports blindly.
-6. Finish with `scripts/build_strict.sh`.
-7. If the user wants a PDF or a narrative counterpart, update the local
+8. Finish with `scripts/build_strict.sh`.
+9. If the user wants a PDF or a narrative counterpart, update the local
    blueprint and run `scripts/check_blueprint_decls.sh`.
-8. Prefer timestamped modules under `Mimate/Demonstrations/` over dumping new
-   proofs into a catch-all file.
+10. Prefer timestamped modules under `Biblioteca/Demonstrations/` over dumping
+    new proofs into a catch-all file.
 
 ## Rules
 
 - Never end with `sorry`.
 - Prefer stable proof terms and small tactic blocks over brittle monoliths.
+- Search in `Mathlib` or `Biblioteca` only to find ingredients, not as a
+  substitute for authoring the requested result.
 - If a proof depends on a missing lemma, search Mathlib before re-proving infrastructure.
+- When the exact theorem does not already exist in the repo, create a new
+  demonstration and prove it under LLM guidance rather than stopping at a list
+  of possibly relevant lemmas.
 - Explain the blocking diagnostic if Lean rejects the theorem.
 - Use NDJSON export or a semantic index only when normal `Mathlib` navigation
   stops being efficient.
@@ -49,5 +59,6 @@ description: Draft or refine a Lean theorem in this repository and iterate until
 ## Expected Outputs
 
 - A theorem or lemma accepted by Lean.
+- A new timestamped demonstration entry when the task introduces a new result.
 - Minimal supporting imports and helper lemmas.
 - Verification evidence from file-level or full-project checks.

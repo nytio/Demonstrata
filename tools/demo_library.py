@@ -71,7 +71,8 @@ def lean_template(title: str) -> str:
         "namespace Biblioteca.Demonstrations\n\n"
         "/-\n"
         f"Demonstration stub for: {title}\n"
-        "Replace this comment with definitions and theorems.\n"
+        "Replace this comment with a new Lean theorem or lemma authored in this repo,\n"
+        "not just a pointer to existing declarations.\n"
         "-/\n\n"
         "end Biblioteca.Demonstrations\n"
     )
@@ -87,8 +88,9 @@ def tex_template(title: str) -> str:
         "% author: Biblioteca de Demostraciones\n\n"
         f"\\subsection{{{title}}}\n\n"
         "\\notready\n"
-        "This demonstration entry was scaffolded automatically. Add a theorem, "
-        "its `\\lean{...}` reference, and a mathematical proof sketch here.\n"
+        "This demonstration entry was scaffolded automatically. Add a newly "
+        "formalized theorem, its `\\lean{...}` reference, and a mathematical "
+        "proof sketch here.\n"
     )
 
 

@@ -11,6 +11,11 @@ La incorporacion recomendada es escalonada: documentar ambas rutas, adoptar
 primero NDJSON como flujo opcional y dejar el indice semantico como capa
 avanzada, no como requisito del bootstrap base.
 
+Estas herramientas de exploracion no cambian el objetivo central del repo:
+servir como soporte para que el LLM escriba demostraciones nuevas en
+`Biblioteca/Demonstrations/`. Buscar o indexar declaraciones no sustituye la
+sintesis de una prueba nueva cuando el usuario pide formalizar un resultado.
+
 ## 1. Exportacion NDJSON con `lean4export`
 
 ### Lo que dicen las fuentes
