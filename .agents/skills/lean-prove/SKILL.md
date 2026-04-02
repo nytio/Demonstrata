@@ -21,7 +21,9 @@ description: Draft or refine a Lean theorem in this repository and iterate until
 2. Import the smallest Mathlib modules that support the proof.
 3. Prefer helper lemmas if the proof script becomes unstable or opaque.
 4. Verify the edited file with `scripts/check_lean_json.sh <file.lean>`.
-5. Finish with `scripts/build_strict.sh`.
+5. If the missing ingredient is declaration discovery inside `Mathlib`, consult
+   `docs/mathlib-exploration.md` before expanding imports blindly.
+6. Finish with `scripts/build_strict.sh`.
 
 ## Rules
 
@@ -29,6 +31,10 @@ description: Draft or refine a Lean theorem in this repository and iterate until
 - Prefer stable proof terms and small tactic blocks over brittle monoliths.
 - If a proof depends on a missing lemma, search Mathlib before re-proving infrastructure.
 - Explain the blocking diagnostic if Lean rejects the theorem.
+- Use NDJSON export or a semantic index only when normal `Mathlib` navigation
+  stops being efficient.
+- Prefer NDJSON export when you need bulk declaration context; prefer LeanExplore
+  only when the challenge is semantic retrieval of unknown names.
 
 ## Expected Outputs
 

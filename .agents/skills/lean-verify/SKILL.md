@@ -22,13 +22,19 @@ description: Verify Lean files and projects in this repository using the strict 
 3. If diagnostics are noisy, summarize them with:
    `.venv/bin/python scripts/summarize_lean_json.py <jsonl-file>`
 4. After a local fix, run `scripts/build_strict.sh`.
-5. Treat warnings that hide incomplete proofs as failures.
+5. If symbol discovery is the blocker rather than verification itself, consult
+   `docs/mathlib-exploration.md` for NDJSON export and semantic-index options.
+6. Treat warnings that hide incomplete proofs as failures.
 
 ## Rules
 
 - Never accept `sorry` as a valid end state.
 - Prefer file-level verification first, then full project verification.
 - Report the exact failing file and the first actionable diagnostic.
+- Treat NDJSON export and semantic indexes as optional accelerators, not as a
+  replacement for Lean verification.
+- Prefer NDJSON export before a full semantic-search stack when the need is
+  structured inspection rather than concept search.
 
 ## Expected Outputs
 

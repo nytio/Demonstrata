@@ -51,6 +51,10 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 
 - `lean-verify`: strict verification loop for builds and file-level diagnostics.
 - `lean-prove`: workflow for drafting a theorem and iterating until Lean accepts it.
+- For deeper `Mathlib` exploration, consult `docs/mathlib-exploration.md` before
+  adding new tooling.
+- Treat `lean4export` as the first optional escalation for structured offline
+  exploration and LeanExplore as a later semantic-search escalation.
 
 ## Useful commands
 
@@ -60,6 +64,7 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - Strict project build: `scripts/build_strict.sh`
 - File-level JSON diagnostics: `scripts/check_lean_json.sh Mimate/Basic.lean`
 - Summarize JSON diagnostics: `.venv/bin/python scripts/summarize_lean_json.py diagnostics.jsonl`
+- Advanced exploration notes: `docs/mathlib-exploration.md`
 
 ## Restrictions
 

@@ -34,3 +34,14 @@ automation around the verifier.
 - Summarize Lean JSON diagnostics:
   `.venv/bin/python scripts/summarize_lean_json.py diagnostics.jsonl`
 - Run tests: `.venv/bin/pytest -q`
+
+## Advanced exploration
+
+For deeper navigation of `Mathlib`, this repo treats two extras as optional:
+
+- NDJSON export with `lean4export` for structured offline inspection.
+- Semantic indexes such as LeanExplore for search by meaning and MCP-backed
+  retrieval.
+
+The evaluation and references are documented in
+`docs/mathlib-exploration.md`.
