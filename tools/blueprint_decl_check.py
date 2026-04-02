@@ -140,6 +140,7 @@ def run_check(config: ProjectConfig, check_file: str) -> CheckResult:
         suffix=".lean",
         encoding="utf-8",
         delete=False,
+        dir=config.repo_root,
     ) as handle:
         handle.write(check_file)
         temp_path = Path(handle.name)

@@ -1,0 +1,42 @@
+% title: Sum of Squares of Binomial Coefficients
+% short-title: Binomial Squares
+% abstract: We record a formal proof in Lean 4 of the classical identity asserting that the sum of the squares of the binomial coefficients in the $n$th row of Pascal's triangle is the central binomial coefficient $\binom{2n}{n}$.
+% subjclass: 05A10
+% keywords: binomial coefficient, Vandermonde identity, Pascal triangle, Lean 4
+% author: Biblioteca de Demostraciones
+
+\subsection{Sum of Squares of Binomial Coefficients}
+
+The central identity in this note is the Lean theorem
+\lean{Biblioteca.Demonstrations.sum_of_squares_of_binomial_coefficients}. It
+states that for every natural number $n$,
+\[
+  \sum_{i=0}^{n} \binom{n}{i}^{2} = \binom{2n}{n}.
+\]
+
+\begin{theorem}
+For every $n \in \mathbb{N}$,
+\[
+  \sum_{i=0}^{n} \binom{n}{i}^{2} = \binom{2n}{n}.
+\]
+\end{theorem}
+
+\begin{proof}
+This is a standard specialization of Vandermonde's identity. In the symmetric
+case $m=n$, the convolution formula
+\[
+  \binom{m+n}{k}
+  =
+  \sum_{i+j=k} \binom{m}{i}\binom{n}{j}
+\]
+becomes
+\[
+  \binom{2n}{n}
+  =
+  \sum_{i=0}^{n} \binom{n}{i}\binom{n}{n-i}.
+\]
+Using the symmetry $\binom{n}{n-i}=\binom{n}{i}$, one obtains the desired sum
+of squares. The Lean proof delegates this argument to the library theorem
+\texttt{Nat.sum\_range\_choose\_sq}, which is itself proved in the Vandermonde
+development of \texttt{Mathlib}.
+\end{proof}

@@ -2,4 +2,5 @@
 import Biblioteca.Demonstrations.Demo_20260402_155130_modular_arithmetic
 import Biblioteca.Demonstrations.Demo_20260402_155130_sum_first_odds
 import Biblioteca.Demonstrations.Demo_20260402_155831_cubic_increment_sum
+import Biblioteca.Demonstrations.Demo_20260402_162518_sum_of_squares_of_binomial_coefficients
 -- AUTO-IMPORTS-END
