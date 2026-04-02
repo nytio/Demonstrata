@@ -14,7 +14,7 @@ def test_build_names_creates_timestamped_paths() -> None:
 
     assert names.lean_module == "Demo_20260402_155130_odd_numbers_sum"
     assert names.lean_path == Path(
-        "Mimate/Demonstrations/Demo_20260402_155130_odd_numbers_sum.lean"
+        "Biblioteca/Demonstrations/Demo_20260402_155130_odd_numbers_sum.lean"
     )
     assert names.tex_path == Path(
         "blueprint/src/sections/demo_20260402_155130_odd_numbers_sum.tex"

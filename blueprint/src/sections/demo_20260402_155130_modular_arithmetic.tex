@@ -1,6 +1,13 @@
+% title: A modular inverse in ZMod 7
+% short-title: Modular Inverse in ZMod 7
+% abstract: We formalize the elementary modular-arithmetic fact that 5 is the multiplicative inverse of 3 in ZMod 7.
+% subjclass: 03B35
+% keywords: Lean 4, modular arithmetic, finite rings
+% author: Biblioteca de Demostraciones
+
 \begin{theorem}
   \label{thm:zmod_inverse}
-  \lean{Mimate.Demonstrations.zmod_three_mul_five}
+  \lean{Biblioteca.Demonstrations.zmod_three_mul_five}
   \leanok
   In $\mathrm{ZMod}\ 7$, the element $5$ is a multiplicative inverse of $3$.
   Equivalently,
@@ -12,6 +19,6 @@
 \begin{proof}
   In arithmetic modulo $7$, the product $3 \cdot 5$ is $15$, and
   $15 \equiv 1 \pmod 7$ because $15 = 14 + 1$. The Lean declaration
-  \texttt{Mimate.Demonstrations.zmod\_three\_mul\_five} formalizes exactly
+  \texttt{Biblioteca.Demonstrations.zmod\_three\_mul\_five} formalizes exactly
   this modular identity in the project.
 \end{proof}

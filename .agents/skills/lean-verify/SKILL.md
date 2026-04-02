@@ -41,6 +41,8 @@ description: Verify Lean files and projects in this repository using the strict 
   structured inspection rather than concept search.
 - Treat blueprint declaration checks as a consistency layer for documentation,
   not as a replacement for Lean compilation.
+- Unless the task is explicitly a collection, verify and print only the current
+  blueprint section by default.
 
 ## Expected Outputs
 

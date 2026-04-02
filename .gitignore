@@ -6,3 +6,4 @@ __pycache__/
 *.pyc
 blueprint/build/
 blueprint/library/
+blueprint/.current_demo

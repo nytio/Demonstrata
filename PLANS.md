@@ -151,7 +151,7 @@ el bootstrap con `mathlib` reduce el riesgo de una configuracion Lean incompleta
     `~/.elan/bin/lake build`.
   - Artefacto esperado: proyecto Lean funcional en este directorio.
   - Evidencia capturada: `elan 4.2.1`; `Lean 4.29.0`; `Lake 5.0.0-src+98dc76e`;
-    scaffold `Mimate` generado con la plantilla `math`; cache de `mathlib`
+    scaffold `Biblioteca` generado con la plantilla `math`; cache de `mathlib`
     reconstruida en la raiz con `scripts/get_mathlib_cache.sh`.
 - [x] STEP-03: Configurar Codex a nivel repo (`AGENTS.md`, `.codex/config.toml`,
   reglas) y scripts de automatizacion/verificacion.
@@ -179,7 +179,7 @@ el bootstrap con `mathlib` reduce el riesgo de una configuracion Lean incompleta
   - Validacion: `lake build --wfail`, `.venv/bin/pytest -q` (si aplica),
     `git diff -U3`.
   - Artefacto esperado: `PLANS.md`/`PROGRESS.md` sincronizados y estado final.
-  - Evidencia capturada: `scripts/build_strict.sh` en verde; `scripts/check_lean_json.sh Mimate/Basic.lean`
+  - Evidencia capturada: `scripts/build_strict.sh` en verde; `scripts/check_lean_json.sh Biblioteca/Basic.lean`
     con exit 0; `.venv/bin/pytest -q` -> `2 passed`; `.venv/bin/python -m compileall -q scripts tools tests`
     en verde; revision manual apoyada en `git status --short` e inspeccion de
     archivos clave (el repo no tenia `HEAD`, asi que `git diff HEAD` aun no aplicaba).

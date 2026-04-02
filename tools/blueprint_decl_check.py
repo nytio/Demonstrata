@@ -10,6 +10,8 @@ from typing import Iterable
 import json
 import tomllib
 
+from tools.blueprint_paper import resolve_selected_sections
+
 
 LEAN_MACRO_PATTERN = re.compile(r"\\lean\{([^}]*)\}")
 
@@ -47,6 +49,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--blueprint-dir",
         default="blueprint/src",
         help="Directory containing blueprint TeX files.",
+    )
+    parser.add_argument("--all", action="store_true", help="Check all blueprint sections.")
+    parser.add_argument(
+        "--demo",
+        action="append",
+        default=[],
+        help="Section stem or .tex filename to check. Repeat for a collection.",
     )
     return parser
 
@@ -96,6 +105,17 @@ def collect_references(blueprint_dir: Path) -> list[LeanReference]:
     references: list[LeanReference] = []
     for file_path in iter_tex_files(blueprint_dir):
         references.extend(extract_references(file_path))
+    return references
+
+
+def collect_selected_references(repo_root: Path, *, requested_demos: list[str], include_all: bool) -> list[LeanReference]:
+    references: list[LeanReference] = []
+    for section in resolve_selected_sections(
+        repo_root,
+        requested_demos=requested_demos,
+        include_all=include_all,
+    ):
+        references.extend(extract_references(section.path))
     return references
 
 
@@ -195,7 +215,11 @@ def main(argv: list[str] | None = None) -> int:
     if not blueprint_dir.is_dir():
         raise FileNotFoundError(f"Blueprint directory not found: {blueprint_dir}")
 
-    references = collect_references(blueprint_dir)
+    references = collect_selected_references(
+        repo_root,
+        requested_demos=args.demo,
+        include_all=args.all,
+    )
     if not references:
         print(f"No \\lean{{...}} references found under {blueprint_dir.relative_to(repo_root)}.")
         return 0

@@ -3,10 +3,10 @@ import Mathlib.Tactic
 
 open scoped BigOperators
 
-namespace Mimate.Demonstrations
+namespace Biblioteca.Demonstrations
 
-theorem cubic_increment_sum (n : Nat) :
-    Finset.sum (Finset.range n) (fun i => 3 * i ^ 2 + 3 * i + 1) = n ^ 3 := by
+theorem sum_first_odds (n : Nat) :
+    Finset.sum (Finset.range n) (fun i => 2 * i + 1) = n ^ 2 := by
   induction n with
   | zero =>
       simp
@@ -14,4 +14,4 @@ theorem cubic_increment_sum (n : Nat) :
       simp [Finset.sum_range_succ, ih]
       ring
 
-end Mimate.Demonstrations
+end Biblioteca.Demonstrations

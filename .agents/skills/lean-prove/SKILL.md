@@ -43,6 +43,8 @@ description: Draft or refine a Lean theorem in this repository and iterate until
   should also appear in the project PDF.
 - Use `scripts/new_demo.sh` when starting a fresh demonstration entry so the
   Lean module and blueprint section stay aligned.
+- By default, build only the current theorem paper; use `--demo` or `--all`
+  only when a collection is actually intended.
 
 ## Expected Outputs
 

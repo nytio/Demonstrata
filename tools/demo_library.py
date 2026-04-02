@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+from tools.blueprint_paper import write_current_demo
+
 
 IMPORTS_START = "-- AUTO-IMPORTS-START"
 IMPORTS_END = "-- AUTO-IMPORTS-END"
@@ -45,8 +47,8 @@ def build_names(title: str, stamp: str | None = None) -> DemoNames:
         stamp=normalized_stamp,
         slug=slug,
         lean_module=lean_module,
-        lean_import=f"import Mimate.Demonstrations.{lean_module}",
-        lean_path=Path("Mimate") / "Demonstrations" / f"{lean_module}.lean",
+        lean_import=f"import Biblioteca.Demonstrations.{lean_module}",
+        lean_path=Path("Biblioteca") / "Demonstrations" / f"{lean_module}.lean",
         tex_stem=tex_stem,
         tex_path=Path("blueprint") / "src" / "sections" / f"{tex_stem}.tex",
     )
@@ -66,17 +68,23 @@ def insert_before_marker(path: Path, marker: str, line: str) -> None:
 
 def lean_template(title: str) -> str:
     return (
-        "namespace Mimate.Demonstrations\n\n"
+        "namespace Biblioteca.Demonstrations\n\n"
         "/-\n"
         f"Demonstration stub for: {title}\n"
         "Replace this comment with definitions and theorems.\n"
         "-/\n\n"
-        "end Mimate.Demonstrations\n"
+        "end Biblioteca.Demonstrations\n"
     )
 
 
 def tex_template(title: str) -> str:
     return (
+        f"% title: {title.title()}\n"
+        "% short-title: Lean Demonstration\n"
+        "% abstract: Replace with an AMS-style abstract for this demonstration.\n"
+        "% subjclass: 03B35\n"
+        "% keywords: Lean 4, formalized mathematics, theorem proving\n"
+        "% author: Biblioteca de Demostraciones\n\n"
         f"\\subsection{{{title}}}\n\n"
         "\\notready\n"
         "This demonstration entry was scaffolded automatically. Add a theorem, "
@@ -108,7 +116,7 @@ def scaffold_demo(repo_root: Path, title: str, stamp: str | None = None) -> Demo
     ensure_file(repo_root / names.lean_path, lean_template(title))
     ensure_file(repo_root / names.tex_path, tex_template(title))
     insert_before_marker(
-        repo_root / "Mimate" / "Demonstrations.lean",
+        repo_root / "Biblioteca" / "Demonstrations.lean",
         IMPORTS_END,
         names.lean_import,
     )
@@ -117,6 +125,7 @@ def scaffold_demo(repo_root: Path, title: str, stamp: str | None = None) -> Demo
         SECTIONS_END,
         rf"\input{{sections/{names.tex_stem}}}",
     )
+    write_current_demo(repo_root, names.tex_stem)
     return names
 
 

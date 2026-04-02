@@ -163,7 +163,7 @@ para la sincronizacion del mismo evento)
 **Ultima sincronizacion confirmada con `PLANS.md`:** [2026-04-02T20:51:28.191+0000]
 **Divergencias detectadas vs `PLANS.md`:** [Ninguna]
 **Accion de sincronizacion ejecutada:** [Cierre de step]
-**Evidencia asociada:** [`scripts/build_strict.sh`, `scripts/check_lean_json.sh Mimate/Basic.lean`, `.venv/bin/pytest -q`, `.venv/bin/python -m compileall -q scripts tools tests`, `DECISIONS.md`]
+**Evidencia asociada:** [`scripts/build_strict.sh`, `scripts/check_lean_json.sh Biblioteca/Basic.lean`, `.venv/bin/pytest -q`, `.venv/bin/python -m compileall -q scripts tools tests`, `DECISIONS.md`]
 
 **Cambios realizados:**
 - Se valido el build estricto completo del proyecto.
@@ -174,7 +174,7 @@ para la sincronizacion del mismo evento)
 **Validacion ejecutada:**
 - Tests: [`scripts/build_strict.sh`] -> [Build completed successfully]
 - Tests: [`.venv/bin/pytest -q`] -> [2 passed]
-- Validacion manual (si aplica): [`scripts/check_lean_json.sh Mimate/Basic.lean`] -> [exit 0, sin diagnosticos]
+- Validacion manual (si aplica): [`scripts/check_lean_json.sh Biblioteca/Basic.lean`] -> [exit 0, sin diagnosticos]
 
 **Bloqueos/Riesgos:**
 - [Ninguno]

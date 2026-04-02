@@ -4,11 +4,6 @@
 \usepackage{amsthm}
 \usepackage{hyperref}
 \usepackage{xcolor}
-\usepackage{enumitem}
-\usepackage{geometry}
-
-\geometry{margin=1in}
-\setlist{nosep}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -18,7 +13,7 @@
 \newtheorem{definition}[theorem]{Definition}
 
 \newcommand{\lean}[1]{%
-  \par\smallskip\noindent\textbf{Lean declaration(s): }\texttt{\detokenize{#1}}\par\smallskip
+  \par\smallskip\noindent\textbf{Lean declaration(s): }\nolinkurl{#1}\par\smallskip
 }
 \newcommand{\leanok}{%
   \par\smallskip\noindent\textcolor{green!40!black}{\textbf{Formalized in Lean.}}\par\smallskip

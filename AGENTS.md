@@ -39,7 +39,7 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
   - `scripts/build_strict.sh`
   - `scripts/check_lean_json.sh <file.lean>`
   - `scripts/get_mathlib_cache.sh`
-- Treat `Mimate/` as the Lean namespace root; do not remove it just because it
+- Treat `Biblioteca/` as the Lean namespace root; do not remove it just because it
   looks like an extra folder.
 - When exploring proof failures, keep the failing theorem small and isolate imports.
 - Prefer helper lemmas and explicit statements over long tactic blocks when the proof becomes unstable.
@@ -65,12 +65,21 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - Refresh mathlib cache: `scripts/get_mathlib_cache.sh`
 - Strict project build: `scripts/build_strict.sh`
 - File-level JSON diagnostics:
-  `scripts/check_lean_json.sh Mimate/Demonstrations/Demo_20260402_155130_sum_first_odds.lean`
+  `scripts/check_lean_json.sh Biblioteca/Demonstrations/Demo_20260402_155130_sum_first_odds.lean`
 - Summarize JSON diagnostics: `.venv/bin/python scripts/summarize_lean_json.py diagnostics.jsonl`
 - Check blueprint declaration references: `scripts/check_blueprint_decls.sh`
 - Build blueprint PDF: `scripts/build_blueprint_pdf.sh`
 - Scaffold a timestamped demonstration: `scripts/new_demo.sh "odd numbers sum"`
+- Build a collection PDF: `scripts/build_blueprint_pdf.sh --demo <section-a> --demo <section-b>`
+- Build the whole library PDF: `scripts/build_blueprint_pdf.sh --all`
 - Advanced exploration notes: `docs/mathlib-exploration.md`
+
+## Blueprint PDF rules
+
+- Default blueprint builds should target only the current demonstration.
+- Use repeated `--demo` flags or `--all` only when the task genuinely needs a collection.
+- Keep section metadata comments (`% title:`, `% abstract:`, `% subjclass:`, `% keywords:`) in sync with the theorem being printed.
+- The print layout should remain compatible with AMS paper conventions via `amsart`.
 
 ## Restrictions
 
