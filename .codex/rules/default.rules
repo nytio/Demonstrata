@@ -1,0 +1,42 @@
+prefix_rule(
+    pattern = ["lake", ["build", "lean", "exe"]],
+    decision = "allow",
+    justification = "Lean verification commands are safe defaults for this repo.",
+    match = [
+        "lake build --wfail",
+        "lake lean Mimate/Basic.lean -- --json",
+        "lake exe cache get",
+    ],
+)
+
+prefix_rule(
+    pattern = ["/home/mario/.elan/bin/lake", ["build", "lean", "exe"]],
+    decision = "allow",
+    justification = "Allow direct elan-managed Lake commands for Lean workflows.",
+    match = [
+        "/home/mario/.elan/bin/lake build --wfail",
+        "/home/mario/.elan/bin/lake exe cache get",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", ["commit", "push", "reset", "clean"]],
+    decision = "prompt",
+    justification = "Git history mutations require an explicit user decision.",
+    match = [
+        "git commit -m chore",
+        "git push origin main",
+        "git reset --hard HEAD~1",
+        "git clean -fd",
+    ],
+)
+
+prefix_rule(
+    pattern = ["rm"],
+    decision = "prompt",
+    justification = "File deletion should be reviewed before running outside the sandbox.",
+    match = [
+        "rm file.txt",
+        "rm -rf build",
+    ],
+)

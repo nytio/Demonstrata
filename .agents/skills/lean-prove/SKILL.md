@@ -1,0 +1,37 @@
+---
+name: lean-prove
+description: Draft or refine a Lean theorem in this repository and iterate until Lean accepts it. Use when the task is to formalize a statement, add helper lemmas, or turn an informal argument into Lean code without leaving incomplete proofs.
+---
+
+# Lean Prove
+
+## When to Use
+
+- Use this skill when writing or refining Lean theorems in this repository.
+- Use this skill when you need a disciplined loop from statement to accepted proof.
+
+## When Not to Use
+
+- Do not use it for pure verification with no code changes; use `lean-verify`.
+- Do not use it for Python or Codex configuration work.
+
+## Workflow
+
+1. State the theorem precisely before writing tactics.
+2. Import the smallest Mathlib modules that support the proof.
+3. Prefer helper lemmas if the proof script becomes unstable or opaque.
+4. Verify the edited file with `scripts/check_lean_json.sh <file.lean>`.
+5. Finish with `scripts/build_strict.sh`.
+
+## Rules
+
+- Never end with `sorry`.
+- Prefer stable proof terms and small tactic blocks over brittle monoliths.
+- If a proof depends on a missing lemma, search Mathlib before re-proving infrastructure.
+- Explain the blocking diagnostic if Lean rejects the theorem.
+
+## Expected Outputs
+
+- A theorem or lemma accepted by Lean.
+- Minimal supporting imports and helper lemmas.
+- Verification evidence from file-level or full-project checks.
