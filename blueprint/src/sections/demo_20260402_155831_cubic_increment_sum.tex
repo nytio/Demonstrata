@@ -1,0 +1,26 @@
+\begin{theorem}
+  \label{thm:cubic_increment_sum}
+  \lean{Mimate.Demonstrations.cubic_increment_sum}
+  \leanok
+  For every natural number $n$,
+  \[
+    \sum_{i=0}^{n-1} \left(3i^2 + 3i + 1\right) = n^3.
+  \]
+\end{theorem}
+
+\begin{proof}
+  This is a telescoping-style polynomial identity proved by induction on $n$.
+  The base case $n=0$ is immediate. For the inductive step, assume
+  \[
+    \sum_{i=0}^{n-1} \left(3i^2 + 3i + 1\right) = n^3.
+  \]
+  Adding the next summand gives
+  \[
+    n^3 + \left(3n^2 + 3n + 1\right) = (n+1)^3.
+  \]
+  The Lean proof follows exactly this structure: it rewrites the finite sum at
+  \texttt{\detokenize{n+1}} using
+  \texttt{\detokenize{Finset.sum_range_succ}}, applies the induction
+  hypothesis with \texttt{\detokenize{simp}}, and closes the remaining
+  polynomial identity with \texttt{\detokenize{ring}}.
+\end{proof}
