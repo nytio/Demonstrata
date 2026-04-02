@@ -24,6 +24,10 @@ description: Draft or refine a Lean theorem in this repository and iterate until
 5. If the missing ingredient is declaration discovery inside `Mathlib`, consult
    `docs/mathlib-exploration.md` before expanding imports blindly.
 6. Finish with `scripts/build_strict.sh`.
+7. If the user wants a PDF or a narrative counterpart, update the local
+   blueprint and run `scripts/check_blueprint_decls.sh`.
+8. Prefer timestamped modules under `Mimate/Demonstrations/` over dumping new
+   proofs into a catch-all file.
 
 ## Rules
 
@@ -35,6 +39,10 @@ description: Draft or refine a Lean theorem in this repository and iterate until
   stops being efficient.
 - Prefer NDJSON export when you need bulk declaration context; prefer LeanExplore
   only when the challenge is semantic retrieval of unknown names.
+- Use `\lean{...}` references in `blueprint/src` when the formalized result
+  should also appear in the project PDF.
+- Use `scripts/new_demo.sh` when starting a fresh demonstration entry so the
+  Lean module and blueprint section stay aligned.
 
 ## Expected Outputs
 

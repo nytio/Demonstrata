@@ -25,6 +25,10 @@ description: Verify Lean files and projects in this repository using the strict 
 5. If symbol discovery is the blocker rather than verification itself, consult
    `docs/mathlib-exploration.md` for NDJSON export and semantic-index options.
 6. Treat warnings that hide incomplete proofs as failures.
+7. If the task also touches the PDF blueprint, run
+   `scripts/check_blueprint_decls.sh` after Lean verification.
+8. When reviewing the library layout, prefer timestamped demonstration files
+   under `Mimate/Demonstrations/`.
 
 ## Rules
 
@@ -35,6 +39,8 @@ description: Verify Lean files and projects in this repository using the strict 
   replacement for Lean verification.
 - Prefer NDJSON export before a full semantic-search stack when the need is
   structured inspection rather than concept search.
+- Treat blueprint declaration checks as a consistency layer for documentation,
+  not as a replacement for Lean compilation.
 
 ## Expected Outputs
 

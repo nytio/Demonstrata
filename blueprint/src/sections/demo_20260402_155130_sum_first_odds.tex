@@ -1,0 +1,24 @@
+\begin{theorem}
+  \label{thm:sum_first_odds}
+  \lean{Mimate.Demonstrations.sum_first_odds}
+  \leanok
+  For every natural number $n$, the sum of the first $n$ odd numbers is $n^2$:
+  \[
+    \sum_{i=0}^{n-1} (2i + 1) = n^2.
+  \]
+\end{theorem}
+
+\begin{proof}
+  The proof proceeds by induction on $n$.
+  For $n = 0$, both sides are $0$.
+  For the inductive step, assume
+  \[
+    \sum_{i=0}^{n-1} (2i + 1) = n^2.
+  \]
+  Adding the next odd term gives
+  \[
+    \sum_{i=0}^{n} (2i + 1) = n^2 + (2n + 1) = (n+1)^2.
+  \]
+  The Lean proof mirrors exactly this structure: `simp` rewrites the finite
+  sum using the induction hypothesis and `ring` closes the polynomial identity.
+\end{proof}

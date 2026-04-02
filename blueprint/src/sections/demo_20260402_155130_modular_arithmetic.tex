@@ -1,0 +1,17 @@
+\begin{theorem}
+  \label{thm:zmod_inverse}
+  \lean{Mimate.Demonstrations.zmod_three_mul_five}
+  \leanok
+  In $\mathrm{ZMod}\ 7$, the element $5$ is a multiplicative inverse of $3$.
+  Equivalently,
+  \[
+    3 \cdot 5 = 1.
+  \]
+\end{theorem}
+
+\begin{proof}
+  In arithmetic modulo $7$, the product $3 \cdot 5$ is $15$, and
+  $15 \equiv 1 \pmod 7$ because $15 = 14 + 1$. The Lean declaration
+  \texttt{Mimate.Demonstrations.zmod\_three\_mul\_five} formalizes exactly
+  this modular identity in the project.
+\end{proof}
