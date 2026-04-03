@@ -1,1 +1,6 @@
+# Test runner for the repo's Python automation.
 pytest>=8,<9
+
+# Mathematical exploration support for olympiad-style work before Lean
+# formalization: primality checks, factorization, divisors, symbolic algebra.
+sympy>=1.14,<2
