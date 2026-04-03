@@ -23,7 +23,6 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
   - `mimate-proof-strategy`
   - `lean-prove`
   - `lean-verify`
-  - `orquestador-proyecto` when the task satisfies its applicability gate
 - Use the lower-level skills for their own domains; keep this skill focused on sequencing, olympiad proof quality, and recovery logic.
 
 ## Workflow
@@ -43,23 +42,19 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
    - For minimum/maximum problems, separate existence from optimality and formalize both parts explicitly.
    - For impossibility claims, prefer structural obstructions before any finite search.
 
-4. Escalate to `orquestador-proyecto` when appropriate.
-   - Use `orquestador-proyecto` if the task is multi-step enough to need a persistent checklist, recovery points, or traceability across strategy, Lean, fixes, and PDF production.
-   - If the task does not meet that skill's gate, keep the workflow lightweight.
-
-5. Hand off proof authoring to `lean-prove`.
+4. Hand off proof authoring to `lean-prove`.
    - Once the mathematical route is selected, use `lean-prove`.
    - If the theorem is new to the repo, create a fresh timestamped demonstration entry.
    - Split the informal solution into helper lemmas when the olympiad argument naturally has separate claims.
    - If a hidden support theorem is required, promote it to an explicit Lean theorem instead of burying it in prose.
 
-6. Hand off validation to `lean-verify`.
+5. Hand off validation to `lean-verify`.
    - Verify file-level first, then full project build.
    - If diagnostics show the strategy itself is wrong or incomplete, return to `mimate-proof-strategy`.
    - If diagnostics are local implementation issues, iterate with `lean-prove`.
    - Repeat until Lean accepts the development cleanly.
 
-7. Generate the final PDF.
+6. Generate the final PDF.
    - After Lean verification succeeds, update the blueprint section for the selected demonstration.
    - Keep `\lean{...}` references aligned with the theorems actually discussed in the paper.
    - Run the repo PDF flow only after the Lean file is accepted.
