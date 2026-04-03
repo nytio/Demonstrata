@@ -85,7 +85,7 @@ def tex_template(title: str) -> str:
         "% abstract: Replace with an AMS-style abstract for this demonstration.\n"
         "% subjclass: 03B35\n"
         "% keywords: Lean 4, formalized mathematics, theorem proving\n"
-        "% author: Biblioteca de Demostraciones\n\n"
+        "% author: Mario Hernández M.\n\n"
         f"\\subsection{{{title}}}\n\n"
         "\\notready\n"
         "This demonstration entry was scaffolded automatically. Add a newly "

@@ -9,7 +9,7 @@ import re
 
 
 STATE_FILE = Path("blueprint/.current_demo")
-DEFAULT_AUTHOR = "Biblioteca de Demostraciones"
+DEFAULT_AUTHOR = "Mario Hernández M."
 DEFAULT_SUBJCLASS = "03B35"
 DEFAULT_KEYWORDS = "Lean 4, formalized mathematics, theorem proving"
 
