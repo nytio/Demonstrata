@@ -34,6 +34,9 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - Use `.venv/bin/python`, `.venv/bin/pip`, and `.venv/bin/pytest`.
 - Do not `source .venv/bin/activate`.
 - Prefer stdlib for support scripts unless an external dependency is justified.
+- Use Python primarily for automation around builds, diagnostics, blueprint
+  generation, and support tooling; keep proof logic in Lean unless the task
+  explicitly requires otherwise.
 
 ## Lean rules
 
@@ -55,6 +58,19 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - Use `rg` for content search.
 - Use `fdfind` for file discovery.
 
+## Repository map
+
+- `Biblioteca/` is the Lean library root for the `Biblioteca.*` namespace.
+- `Biblioteca/Demonstrations/` stores timestamped Lean demonstration modules.
+- `blueprint/` contains the local LaTeX blueprint sources and generated PDF artifacts.
+- `blueprint/src/sections/` stores the LaTeX section paired with each demonstration.
+- `blueprint/library/pdf/` stores archived, publishable PDFs.
+- `scripts/` contains reproducible entrypoints for Lean verification and PDF generation.
+- `tools/` contains Python support code for demo naming, blueprint handling, and diagnostics.
+- `tests/` contains tests for the local automation code.
+- `.agents/skills/` contains repo-local Codex workflows for strategy, proving, and verification.
+- `.codex/` contains project-scoped Codex configuration and rules.
+
 ## Repo-local skills
 
 - `lean-verify`: strict verification loop for builds and file-level diagnostics.
@@ -67,6 +83,8 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
   adding new tooling.
 - Treat `lean4export` as the first optional escalation for structured offline
   exploration and LeanExplore as a later semantic-search escalation.
+- For olympiad-style requests, prefer `olympiad-formalize` as the entry point so
+  the workflow starts with strategy selection before Lean authoring.
 
 ## Useful commands
 
@@ -86,10 +104,33 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - Build the whole library PDF: `scripts/build_blueprint_pdf.sh --all`
 - Advanced exploration notes: `docs/mathlib-exploration.md`
 
+## Demonstration scaffolding rules
+
+- Treat the repo as a growing library of demonstrations, not as a scratch space.
+- New Lean source files belong under `Biblioteca/Demonstrations/` with timestamped
+  names and an optional origin prefix such as `Demo` or `IMO`.
+- Matching blueprint sections belong under `blueprint/src/sections/` with the
+  same timestamped stem; `Demo` sections use the historical lowercase `demo_`
+  prefix while other prefixes are preserved as written.
+- `scripts/new_demo.sh "<title>"` creates both the `.lean` and `.tex` files and
+  registers them in the aggregate imports and blueprint index without
+  overwriting older entries.
+- `scripts/new_demo.sh --prefix <SIGLA> "<title>"` should be used when the
+  theorem origin needs to be reflected in filenames and section stems.
+- The intended authoring loop is: scaffold a fresh entry, write the theorem and
+  proof, verify it with Lean, then generate the current paper PDF.
+
 ## Blueprint PDF rules
 
 - Default blueprint builds should target only the current demonstration.
+- Default blueprint declaration checks should also target only the current demonstration.
+- `scripts/new_demo.sh` marks the newly scaffolded demonstration as current.
+- If no current marker exists, the latest modified blueprint section is used.
+- Recommended blueprint workflow: verify Lean with `scripts/build_strict.sh`,
+  then check declarations with `scripts/check_blueprint_decls.sh`, then build
+  the PDF with `scripts/build_blueprint_pdf.sh`.
 - Use repeated `--demo` flags or `--all` only when the task genuinely needs a collection.
+- Build outputs are preserved under timestamped directories in `blueprint/build/`.
 - Archived PDFs in `blueprint/library/pdf/` should reuse the originating Lean
   stem for single-demo builds so reruns replace the prior PDF instead of adding
   a second build timestamp.
