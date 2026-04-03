@@ -22,7 +22,9 @@ description: Draft or refine a Lean theorem in this repository and iterate until
    timestamped demonstration entry under `Biblioteca/Demonstrations/`.
 3. If the result is new to this repo, start with
    `scripts/new_demo.sh "<title>"` so the Lean file and blueprint section stay
-   aligned from the beginning.
+   aligned from the beginning. If the result comes from a named source such as
+   an olympiad, use `scripts/new_demo.sh --prefix IMO "<title>"` or another
+   relevant sigla.
 4. Import the smallest Mathlib modules that support the proof.
 5. Prefer helper lemmas if the proof script becomes unstable or opaque.
 6. Verify the edited file with `scripts/check_lean_json.sh <file.lean>`.
@@ -57,6 +59,8 @@ description: Draft or refine a Lean theorem in this repository and iterate until
   fully-qualified declaration names in prose unless needed.
 - Use `scripts/new_demo.sh` when starting a fresh demonstration entry so the
   Lean module and blueprint section stay aligned.
+- Single-demo PDF builds should overwrite the prior archived PDF by reusing the
+  originating Lean stem under `blueprint/library/pdf/`.
 - By default, build only the current theorem paper; use `--demo` or `--all`
   only when a collection is actually intended.
 

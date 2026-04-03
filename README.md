@@ -44,8 +44,10 @@ automation around the verifier.
 - Run tests: `.venv/bin/pytest -q`
 - Check blueprint Lean references: `scripts/check_blueprint_decls.sh`
 - Build blueprint PDF: `scripts/build_blueprint_pdf.sh`
+- Clean disposable local artifacts: `./clean.sh`
 - Scaffold a timestamped demonstration:
   `scripts/new_demo.sh "odd numbers sum"`
+  `scripts/new_demo.sh --prefix IMO "least norwegian number"`
 
 ## Blueprint PDF
 
@@ -79,8 +81,10 @@ Examples:
   `scripts/build_blueprint_pdf.sh --all`
 
 Each build is preserved under a timestamped directory in `blueprint/build/`.
-The archived PDF name also includes a timestamp and the selected theorem or
-collection identity under `blueprint/library/pdf/`.
+For a single demonstration, the archived PDF under `blueprint/library/pdf/`
+reuses the exact `.lean` stem from `Biblioteca/Demonstrations/`, so rebuilding
+the same demo replaces the previous PDF instead of creating a second timestamped
+variant. Collection builds use a stable, timestamp-free collection stem.
 
 The generated paper uses the AMS `amsart` class with standard mathematical
 front matter: title, author, abstract, MSC subject classification, and
@@ -99,11 +103,15 @@ package also supports `pdf`, `web`, and `checkdecls`, but it requires
 
 This project treats Lean proofs as a growing library, not as one-off examples.
 
-- Lean source files live under `Biblioteca/Demonstrations/` with timestamped names.
+- Lean source files live under `Biblioteca/Demonstrations/` with timestamped
+  names and an optional origin prefix such as `Demo`, `IMO`, or another sigla.
 - Blueprint sections live under `blueprint/src/sections/` with matching
-  timestamped names.
+  timestamped stems; `Demo` sections keep the historical lowercase `demo_`
+  prefix, while other prefixes are preserved as written.
 - `scripts/new_demo.sh "<title>"` creates both files and registers them in the
   aggregate imports and blueprint index without overwriting older entries.
+- `scripts/new_demo.sh --prefix <SIGLA> "<title>"` lets you keep the source
+  prefix aligned with the theorem origin in both the `.lean` and `.tex` files.
 - Each blueprint section carries paper metadata comments used by the AMS-style
   PDF builder.
 - The intended authoring loop is: scaffold a fresh entry, write the theorem and

@@ -6,6 +6,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+from tools.demonstration_names import (
+    build_lean_stem,
+    build_section_stem,
+    normalize_prefix,
+)
 from tools.blueprint_paper import write_current_demo
 
 
@@ -17,6 +22,7 @@ SECTIONS_END = "% AUTO-SECTIONS-END"
 
 @dataclass(frozen=True)
 class DemoNames:
+    prefix: str
     stamp: str
     slug: str
     lean_module: str
@@ -38,12 +44,19 @@ def timestamp_now() -> str:
     return datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")
 
 
-def build_names(title: str, stamp: str | None = None) -> DemoNames:
+def build_names(
+    title: str,
+    stamp: str | None = None,
+    *,
+    prefix: str = "Demo",
+) -> DemoNames:
+    normalized_prefix = normalize_prefix(prefix)
     normalized_stamp = stamp or timestamp_now()
     slug = slugify(title)
-    lean_module = f"Demo_{normalized_stamp}_{slug}"
-    tex_stem = f"demo_{normalized_stamp}_{slug}"
+    lean_module = build_lean_stem(normalized_prefix, normalized_stamp, slug)
+    tex_stem = build_section_stem(normalized_prefix, normalized_stamp, slug)
     return DemoNames(
+        prefix=normalized_prefix,
         stamp=normalized_stamp,
         slug=slug,
         lean_module=lean_module,
@@ -112,11 +125,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--timestamp",
         help="Optional timestamp override in YYYYMMDD_HHMMSS format.",
     )
+    parser.add_argument(
+        "--prefix",
+        default="Demo",
+        help=(
+            "Optional source prefix for the filenames. "
+            "Examples: Demo, IMO, USAMO."
+        ),
+    )
     return parser
 
 
-def scaffold_demo(repo_root: Path, title: str, stamp: str | None = None) -> DemoNames:
-    names = build_names(title, stamp=stamp)
+def scaffold_demo(
+    repo_root: Path,
+    title: str,
+    stamp: str | None = None,
+    *,
+    prefix: str = "Demo",
+) -> DemoNames:
+    names = build_names(title, stamp=stamp, prefix=prefix)
     ensure_file(repo_root / names.lean_path, lean_template(title))
     ensure_file(repo_root / names.tex_path, tex_template(title))
     insert_before_marker(
@@ -137,7 +164,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     repo_root = Path(__file__).resolve().parents[1]
-    names = scaffold_demo(repo_root, args.title, stamp=args.timestamp)
+    names = scaffold_demo(repo_root, args.title, stamp=args.timestamp, prefix=args.prefix)
     print(f"Lean file: {names.lean_path}")
     print(f"Blueprint file: {names.tex_path}")
     return 0

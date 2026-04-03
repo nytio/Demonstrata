@@ -21,6 +21,19 @@ def test_build_names_creates_timestamped_paths() -> None:
     )
 
 
+def test_build_names_accepts_custom_prefix() -> None:
+    names = build_names("Least Norwegian Number", stamp="20260402_182818", prefix="IMO")
+
+    assert names.prefix == "IMO"
+    assert names.lean_module == "IMO_20260402_182818_least_norwegian_number"
+    assert names.lean_path == Path(
+        "Biblioteca/Demonstrations/IMO_20260402_182818_least_norwegian_number.lean"
+    )
+    assert names.tex_path == Path(
+        "blueprint/src/sections/IMO_20260402_182818_least_norwegian_number.tex"
+    )
+
+
 def test_insert_before_marker_adds_line_once(tmp_path: Path) -> None:
     target = tmp_path / "index.txt"
     target.write_text("a\nMARKER\nb\n", encoding="utf-8")

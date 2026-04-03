@@ -15,6 +15,7 @@ from tools.blueprint_paper import (
     render_lean_appendix,
     render_lean_glossary,
     render_lean_refs,
+    remove_legacy_archive_pdfs,
     resolve_selected_sections,
     SectionRecord,
 )
@@ -85,7 +86,26 @@ def test_archive_stem_mentions_collection_size() -> None:
         SectionRecord("demo_b", Path("b.tex"), PaperMetadata("B", "B", "b", "03B35", "k")),
     ]
 
-    assert archive_stem("20260402_160000", sections) == "20260402_160000_collection_2_demos"
+    stem = archive_stem(Path("."), sections)
+
+    assert stem.startswith("collection_2_demos_")
+    assert len(stem) == len("collection_2_demos_") + 10
+
+
+def test_archive_stem_uses_matching_lean_filename_for_single_section(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    section_path = repo_root / "blueprint" / "src" / "sections" / "demo_20260402_000000_example.tex"
+    write_section(section_path, title="Example")
+    lean_path = repo_root / "Biblioteca" / "Demonstrations" / "Demo_20260402_000000_example.lean"
+    lean_path.parent.mkdir(parents=True, exist_ok=True)
+    lean_path.write_text("namespace Biblioteca.Demonstrations\nend Biblioteca.Demonstrations\n", encoding="utf-8")
+    section = SectionRecord(
+        stem="demo_20260402_000000_example",
+        path=section_path,
+        metadata=PaperMetadata("Example", "Example", "Abstract", "03B35", "Lean 4"),
+    )
+
+    assert archive_stem(repo_root, [section]) == "Demo_20260402_000000_example"
 
 
 def test_resolve_selected_sections_defaults_to_current_demo(tmp_path: Path) -> None:
@@ -230,6 +250,51 @@ def test_build_source_entries_uses_matching_lean_file(tmp_path: Path) -> None:
             title="Biblioteca/Demonstrations/Demo_20260402_000000_example.lean",
         )
     ]
+
+
+def test_build_source_entries_supports_non_demo_prefixes(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    section_path = repo_root / "blueprint" / "src" / "sections" / "IMO_20260402_182818_example.tex"
+    write_section(section_path, title="Example")
+    lean_path = repo_root / "Biblioteca" / "Demonstrations" / "IMO_20260402_182818_example.lean"
+    lean_path.parent.mkdir(parents=True, exist_ok=True)
+    lean_path.write_text("namespace Biblioteca.Demonstrations\nend Biblioteca.Demonstrations\n", encoding="utf-8")
+    section = SectionRecord(
+        stem="IMO_20260402_182818_example",
+        path=section_path,
+        metadata=PaperMetadata("Example", "Example", "Abstract", "03B35", "Lean 4"),
+    )
+
+    entries = build_source_entries(repo_root, [section])
+
+    assert entries == [
+        LeanSourceEntry(
+            path=lean_path,
+            title="Biblioteca/Demonstrations/IMO_20260402_182818_example.lean",
+        )
+    ]
+
+
+def test_remove_legacy_archive_pdfs_deletes_old_single_demo_aliases(tmp_path: Path) -> None:
+    library_dir = tmp_path / "pdf"
+    library_dir.mkdir()
+    archive_pdf = library_dir / "Demo_20260402_000000_example.pdf"
+    legacy_pdf = library_dir / "demo_20260402_000000_example.pdf"
+    timestamped_legacy_pdf = library_dir / "20260403_080000_demo_20260402_000000_example.pdf"
+    archive_pdf.write_bytes(b"new")
+    legacy_pdf.write_bytes(b"old")
+    timestamped_legacy_pdf.write_bytes(b"old-timestamped")
+    section = SectionRecord(
+        stem="demo_20260402_000000_example",
+        path=Path("demo_20260402_000000_example.tex"),
+        metadata=PaperMetadata("Example", "Example", "Abstract", "03B35", "Lean 4"),
+    )
+
+    remove_legacy_archive_pdfs(library_dir, archive_pdf, [section])
+
+    assert archive_pdf.is_file()
+    assert not legacy_pdf.exists()
+    assert not timestamped_legacy_pdf.exists()
 
 
 def test_render_lean_appendix_includes_full_source_lines(tmp_path: Path) -> None:

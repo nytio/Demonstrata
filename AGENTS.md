@@ -79,7 +79,9 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - Summarize JSON diagnostics: `.venv/bin/python scripts/summarize_lean_json.py diagnostics.jsonl`
 - Check blueprint declaration references: `scripts/check_blueprint_decls.sh`
 - Build blueprint PDF: `scripts/build_blueprint_pdf.sh`
+- Clean disposable local artifacts: `./clean.sh`
 - Scaffold a timestamped demonstration: `scripts/new_demo.sh "odd numbers sum"`
+- Scaffold with an origin prefix: `scripts/new_demo.sh --prefix IMO "least norwegian number"`
 - Build a collection PDF: `scripts/build_blueprint_pdf.sh --demo <section-a> --demo <section-b>`
 - Build the whole library PDF: `scripts/build_blueprint_pdf.sh --all`
 - Advanced exploration notes: `docs/mathlib-exploration.md`
@@ -88,6 +90,9 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 
 - Default blueprint builds should target only the current demonstration.
 - Use repeated `--demo` flags or `--all` only when the task genuinely needs a collection.
+- Archived PDFs in `blueprint/library/pdf/` should reuse the originating Lean
+  stem for single-demo builds so reruns replace the prior PDF instead of adding
+  a second build timestamp.
 - Keep section metadata comments (`% title:`, `% abstract:`, `% subjclass:`, `% keywords:`) in sync with the theorem being printed.
 - The print layout should remain compatible with AMS paper conventions via `amsart`.
 - Keep Lean references in blueprint sections as `\lean{...}` markers. The PDF

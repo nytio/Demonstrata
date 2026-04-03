@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 import re
+
+from tools.demonstration_names import infer_lean_stem_from_section_stem, title_slug_from_stem
 
 
 STATE_FILE = Path("blueprint/.current_demo")
@@ -57,7 +60,7 @@ def latex_path(path: Path) -> str:
 
 
 def default_metadata_for_stem(stem: str) -> PaperMetadata:
-    title_words = stem.removeprefix("demo_").split("_")
+    title_words = title_slug_from_stem(stem).split("_")
     title = " ".join(word.capitalize() for word in title_words if word)
     return PaperMetadata(
         title=title or "Lean Demonstration",
@@ -214,10 +217,34 @@ def build_selected_metadata(
     )
 
 
-def archive_stem(timestamp: str, sections: list[SectionRecord]) -> str:
+def archive_stem(repo_root: Path, sections: list[SectionRecord]) -> str:
     if len(sections) == 1:
-        return f"{timestamp}_{sections[0].stem}"
-    return f"{timestamp}_collection_{len(sections)}_demos"
+        lean_path = infer_section_lean_path(repo_root, sections[0])
+        if lean_path is not None:
+            return lean_path.stem
+        return sections[0].stem
+
+    archive_key = "\n".join(section.stem for section in sections)
+    digest = hashlib.sha1(archive_key.encode("utf-8")).hexdigest()[:10]
+    return f"collection_{len(sections)}_demos_{digest}"
+
+
+def remove_legacy_archive_pdfs(
+    library_dir: Path,
+    archive_pdf: Path,
+    sections: list[SectionRecord],
+) -> None:
+    if len(sections) != 1:
+        return
+
+    section_stem = sections[0].stem
+    legacy_paths = {library_dir / f"{section_stem}.pdf"}
+    legacy_paths.update(library_dir.glob(f"*_{section_stem}.pdf"))
+    for legacy_path in sorted(legacy_paths):
+        if legacy_path == archive_pdf:
+            continue
+        if legacy_path.is_file():
+            legacy_path.unlink()
 
 
 def render_selected_content(build_dir: Path, sections: list[SectionRecord]) -> Path:
@@ -272,9 +299,7 @@ def collect_section_declarations(sections: list[SectionRecord]) -> list[str]:
 
 
 def infer_section_lean_path(repo_root: Path, section: SectionRecord) -> Path | None:
-    if not section.stem.startswith("demo_"):
-        return None
-    lean_name = section.stem.replace("demo_", "Demo_", 1)
+    lean_name = infer_lean_stem_from_section_stem(section.stem)
     path = repo_root / "Biblioteca" / "Demonstrations" / f"{lean_name}.lean"
     return path if path.is_file() else None
 
@@ -539,8 +564,8 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     timestamp = timestamp_now()
-    stem = archive_stem(timestamp, sections)
-    build_dir = repo_root / "blueprint" / "build" / stem
+    stem = archive_stem(repo_root, sections)
+    build_dir = repo_root / "blueprint" / "build" / f"{timestamp}_{stem}"
     build_dir.mkdir(parents=True, exist_ok=True)
 
     glossary_entries = build_glossary_entries(repo_root, sections)
@@ -556,6 +581,7 @@ def main(argv: list[str] | None = None) -> int:
     library_dir = repo_root / "blueprint" / "library" / "pdf"
     library_dir.mkdir(parents=True, exist_ok=True)
     archive_pdf = library_dir / f"{stem}.pdf"
+    remove_legacy_archive_pdfs(library_dir, archive_pdf, sections)
     archive_pdf.write_bytes(pdf_path.read_bytes())
 
     print(f"Build directory: {build_dir}")
