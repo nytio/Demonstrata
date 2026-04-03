@@ -22,7 +22,7 @@ palabra siempre la tiene el verificador formal.
 
 - Formaliza resultados en un entorno donde cada prueba se valida
   computacionalmente, no solo por intuición.
-- Convierte un problema olímpico en tres artefactos coordinados: archivo Lean,
+- Convierte un problema matemático en tres artefactos coordinados: archivo Lean,
   sección LaTeX y PDF final.
 - Mantiene un flujo reproducible con scripts concretos para compilar, depurar y
   publicar resultados.
@@ -62,7 +62,7 @@ Ese modelo tiene mucho potencial para las matemáticas:
   Lean están alineados.
 
 En este repositorio, Lean no reemplaza la intuición matemática: la disciplina y
-la vuelve verificable. La estrategia puede ser humana o asistida por Codex,
+la vuelve verificable. La estrategia puede ser humana o asistida por LLM,
 pero el cierre es formal y reproducible.
 
 ## Programas que conviene instalar
@@ -155,10 +155,12 @@ Halla todos los enteros positivos $n$ con la siguiente propiedad:
 para todo divisor positivo $d$ de $n$, se cumple que $d+1 \mid n$ o bien $d+1$ es primo.
 ```
 
+Ver solución en: [blueprint/library/pdf/IMO_20260402_213030_divisors_plus_one_divisor_or_prime.pdf](blueprint/library/pdf/IMO_20260402_213030_divisors_plus_one_divisor_or_prime.pdf)
+
 ## Cómo funciona el skill `olympiad-formalize`
 
 `olympiad-formalize` es el skill coordinador para problemas de estilo
-olímpico. No se limita a "buscar algo en Mathlib": organiza una secuencia
+olimpiada de matemáticas. No se limita a "buscar algo en Mathlib": organiza una secuencia
 completa para pasar de un enunciado informal a una demostración formal y a un
 PDF final.
 
