@@ -5,5 +5,18 @@
 __pycache__/
 *.pyc
 blueprint/build/
-blueprint/library/
 blueprint/.current_demo
+
+# Publicar las fuentes y los PDFs archivados del proyecto.
+!*.lean
+!*.tex
+!*.pdf
+!blueprint/library/
+!blueprint/library/pdf/
+!blueprint/library/pdf/*.pdf
+
+# Artefactos de planificación y documentación interna no publicables.
+PLANS.md
+PROGRESS.md
+DECISIONS.md
+docs/
