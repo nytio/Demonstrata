@@ -1,6 +1,9 @@
 # Test runner for the repo's Python automation.
 pytest>=8,<9
 
+# Blueprint PDF syntax highlighting for Lean appendices via minted/pygmentize.
+Pygments>=2.18,<3
+
 # Mathematical exploration support for olympiad-style work before Lean
 # formalization: primality checks, factorization, divisors, symbolic algebra.
 sympy>=1.14,<2

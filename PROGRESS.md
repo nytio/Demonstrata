@@ -188,6 +188,80 @@ para la sincronizacion del mismo evento)
 
 ---
 
+## [2026-04-03] [Cambio de estado]: [Plan aprobado e inicio de implementacion para minted en blueprint]
+
+**Timestamp:** [2026-04-03T23:00:44.330+0000] (usar el mismo valor que en `PLANS.md`
+para la sincronizacion del mismo evento)
+**Modo de seguimiento:** [Estandar]
+**Estado:** [En curso]
+**Owner:** [Codex]
+**Plan ID:** [PLAN-20260403-02]
+**Referencia al plan:** `PLANS.md` ([PLAN-20260403-02 / inicio de ejecucion])
+**Estado sincronizado en `PLANS.md`:** [Si]
+**Ultima sincronizacion confirmada con `PLANS.md`:** [2026-04-03T23:00:44.330+0000]
+**Divergencias detectadas vs `PLANS.md`:** [Ninguna]
+**Accion de sincronizacion ejecutada:** [Cambio de estado]
+**Evidencia asociada:** [Aprobacion del usuario en chat + actualizacion de `PLANS.md`]
+
+**Cambios realizados:**
+- Se registro la aprobacion del plan para migrar el anexo Lean del blueprint a `minted`.
+- Se habilito la ejecucion de cambios en el builder Python, macros LaTeX y pruebas.
+- Se mantuvo el modo de seguimiento `Estandar` para sincronizar por hito tecnico.
+
+**Validacion ejecutada:**
+- Tests: `[N/A]` -> [Aun no aplica en este hito]
+- Validacion manual (si aplica): [Gate de aprobacion y sincronizacion de artefactos completados]
+
+**Bloqueos/Riesgos:**
+- [Ninguno]
+- Owner del bloqueo: [N/A]
+- ETA de desbloqueo: [N/A]
+
+**Siguiente accion:**
+- Ejecutar `STEP-01`: ajustar el builder para `minted`, `-shell-escape` y `pygmentize` del venv.
+- Owner de la siguiente accion: [Codex]
+- ETA siguiente hito: [2026-04-03]
+
+---
+
+## [2026-04-03] [Cierre de step]: [PLAN-20260403-02 completado]
+
+**Timestamp:** [2026-04-03T23:11:29.546+0000] (usar el mismo valor que en `PLANS.md`
+para la sincronizacion del mismo evento)
+**Modo de seguimiento:** [Estandar]
+**Estado:** [Completado]
+**Owner:** [Codex]
+**Plan ID:** [PLAN-20260403-02]
+**Referencia al plan:** `PLANS.md` ([PLAN-20260403-02 / cierre])
+**Estado sincronizado en `PLANS.md`:** [Si]
+**Ultima sincronizacion confirmada con `PLANS.md`:** [2026-04-03T23:11:29.546+0000]
+**Divergencias detectadas vs `PLANS.md`:** [Ninguna]
+**Accion de sincronizacion ejecutada:** [Cierre de step]
+**Evidencia asociada:** [`.venv/bin/pytest -q`, `timeout 20s scripts/check_blueprint_decls.sh`, `scripts/build_blueprint_pdf.sh`, `git diff -U3`]
+
+**Cambios realizados:**
+- El builder del blueprint ahora compila con `minted` usando `-shell-escape`.
+- La compilacion prioriza `.venv/bin/pygmentize`, lo que habilita `lean4`.
+- El anexo Lean se renderiza con `\inputminted` en color, fuente mono Unicode y estilo apto para impresion.
+- Se agregaron pruebas para la deteccion del lexer y el render del anexo.
+
+**Validacion ejecutada:**
+- Tests: [`.venv/bin/pytest -q`] -> [24 passed]
+- Tests: [`timeout 20s scripts/check_blueprint_decls.sh`] -> [`Checked 2 Lean declaration reference(s) from blueprint/src.`]
+- Validacion manual (si aplica): [`scripts/build_blueprint_pdf.sh`] -> [PDF generado y archivado correctamente]
+
+**Bloqueos/Riesgos:**
+- [Bajo] Persisten warnings cosmeticos de LaTeX (`Underfull \vbox` y un `Overfull \hbox` menor en el anexo), sin fallo de compilacion ni regresion funcional.
+- Owner del bloqueo: [N/A]
+- ETA de desbloqueo: [N/A]
+
+**Siguiente accion:**
+- No aplica; plan completado.
+- Owner de la siguiente accion: [N/A]
+- ETA siguiente hito: [N/A]
+
+---
+
 ## [2026-04-03] [Cambio de estado]: [Plan aprobado e inicio de implementacion para publicacion GitHub]
 
 **Timestamp:** [2026-04-03T17:12:09.254+0000] (usar el mismo valor que en `PLANS.md`

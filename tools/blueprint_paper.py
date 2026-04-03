@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 import re
+import shutil
 
 from tools.demonstration_names import infer_lean_stem_from_section_stem, title_slug_from_stem
 
@@ -22,6 +24,7 @@ LEAN_MACRO_PATTERN = re.compile(r"\\lean\{([^}]*)\}")
 DECLARATION_HEAD_PATTERN = re.compile(
     r"^\s*(theorem|lemma|def|abbrev|instance|class|structure|inductive)\s+([A-Za-z0-9_']+)\b"
 )
+PYGMENTS_LEXER_PATTERN = re.compile(r"^\*\s+([^:]+):\s*$")
 
 
 @dataclass(frozen=True)
@@ -55,8 +58,18 @@ class LeanSourceEntry:
     title: str
 
 
+@dataclass(frozen=True)
+class MintedConfig:
+    lexer_name: str
+    pygmentize_path: Path
+
+
 def latex_path(path: Path) -> str:
     return path.as_posix()
+
+
+def relative_tex_path(from_dir: Path, target: Path) -> str:
+    return latex_path(Path(os.path.relpath(target, from_dir)))
 
 
 def default_metadata_for_stem(stem: str) -> PaperMetadata:
@@ -438,17 +451,55 @@ def render_lean_glossary(build_dir: Path, entries: list[LeanGlossaryEntry]) -> P
     return path
 
 
-def render_lean_source_line(raw_line: str) -> str:
-    expanded = raw_line.expandtabs(2)
-    if not expanded:
-        return r"\leanblankline"
-    stripped = expanded.lstrip(" ")
-    indent = len(expanded) - len(stripped)
-    prefix = rf"\leanindent{{{indent}}}" if indent else ""
-    return r"\leanline{" + prefix + latex_escape(stripped) + r"}"
+def latex_detokenize(text: str) -> str:
+    return r"\detokenize{" + text + r"}"
 
 
-def render_lean_appendix(build_dir: Path, entries: list[LeanSourceEntry]) -> Path:
+def available_pygments_aliases(pygmentize_path: Path) -> set[str]:
+    completed = subprocess.run(
+        [str(pygmentize_path), "-L", "lexers"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    aliases: set[str] = set()
+    for raw_line in completed.stdout.splitlines():
+        match = PYGMENTS_LEXER_PATTERN.match(raw_line.strip())
+        if match is None:
+            continue
+        aliases.update(alias.strip() for alias in match.group(1).split(","))
+    return aliases
+
+
+def resolve_minted_config(repo_root: Path) -> MintedConfig:
+    venv_pygmentize = repo_root / ".venv" / "bin" / "pygmentize"
+    if venv_pygmentize.is_file():
+        pygmentize_path = venv_pygmentize
+    else:
+        resolved = shutil.which("pygmentize")
+        if resolved is None:
+            raise RuntimeError(
+                "Pygments is required to build blueprint PDFs with minted, "
+                "but no 'pygmentize' executable was found."
+            )
+        pygmentize_path = Path(resolved)
+
+    aliases = available_pygments_aliases(pygmentize_path)
+    if "lean4" in aliases:
+        return MintedConfig(lexer_name="lean4", pygmentize_path=pygmentize_path)
+    if "lean" in aliases:
+        return MintedConfig(lexer_name="lean", pygmentize_path=pygmentize_path)
+    raise RuntimeError(
+        "The available Pygments installation does not provide a Lean lexer."
+    )
+
+
+def render_lean_appendix(
+    build_dir: Path,
+    entries: list[LeanSourceEntry],
+    *,
+    lexer_name: str,
+) -> Path:
     lines: list[str] = []
     if entries:
         lines.extend(
@@ -458,14 +509,22 @@ def render_lean_appendix(build_dir: Path, entries: list[LeanSourceEntry]) -> Pat
             ]
         )
         for entry in entries:
+            bookmark_title = entry.path.name.replace("_", " ")
             lines.extend(
                 [
-                    r"\subsection*{\texttt{" + latex_escape(entry.title) + r"}}",
-                    r"\addcontentsline{toc}{subsection}{" + latex_escape(entry.title) + r"}",
+                    r"\subsection*{\texorpdfstring{\nolinkurl{"
+                    + entry.title
+                    + r"}}{"
+                    + bookmark_title
+                    + r"}}",
+                    r"\addcontentsline{toc}{subsection}{" + latex_escape(bookmark_title) + r"}",
+                    r"\leaninputfile{"
+                    + lexer_name
+                    + r"}{"
+                    + latex_detokenize(relative_tex_path(build_dir, entry.path))
+                    + r"}",
                 ]
             )
-            for raw_line in entry.path.read_text(encoding="utf-8").splitlines():
-                lines.append(render_lean_source_line(raw_line))
     path = build_dir / "lean_appendix.tex"
     path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
     return path
@@ -531,16 +590,19 @@ def timestamp_now() -> str:
     return datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")
 
 
-def run_latexmk(build_dir: Path) -> None:
+def run_latexmk(build_dir: Path, *, minted_config: MintedConfig) -> None:
     command = [
         "latexmk",
         "-xelatex",
+        "-shell-escape",
         "-interaction=nonstopmode",
         "-halt-on-error",
         "-file-line-error",
         "paper.tex",
     ]
-    subprocess.run(command, cwd=build_dir, check=True)
+    env = os.environ.copy()
+    env["PATH"] = str(minted_config.pygmentize_path.parent) + os.pathsep + env.get("PATH", "")
+    subprocess.run(command, cwd=build_dir, env=env, check=True)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -568,14 +630,15 @@ def main(argv: list[str] | None = None) -> int:
     build_dir = repo_root / "blueprint" / "build" / f"{timestamp}_{stem}"
     build_dir.mkdir(parents=True, exist_ok=True)
 
+    minted_config = resolve_minted_config(repo_root)
     glossary_entries = build_glossary_entries(repo_root, sections)
     source_entries = build_source_entries(repo_root, sections)
     render_selected_content(build_dir, sections)
     render_lean_refs(build_dir, glossary_entries)
     render_lean_glossary(build_dir, glossary_entries)
-    render_lean_appendix(build_dir, source_entries)
+    render_lean_appendix(build_dir, source_entries, lexer_name=minted_config.lexer_name)
     render_paper_tex(build_dir, metadata, include_toc=len(sections) > 1)
-    run_latexmk(build_dir)
+    run_latexmk(build_dir, minted_config=minted_config)
 
     pdf_path = build_dir / "paper.pdf"
     library_dir = repo_root / "blueprint" / "library" / "pdf"

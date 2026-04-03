@@ -10,8 +10,9 @@
 \fi
 \usepackage{amsmath}
 \usepackage{amsthm}
-\usepackage{hyperref}
 \usepackage{xcolor}
+\usepackage{minted}
+\usepackage{hyperref}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -26,8 +27,12 @@
   % binders `⦃ ⦄` and generated names containing `✝`. Prefer a mono font with
   % broader coverage for the appendix, while keeping a safe fallback.
   \IfFontExistsTF{FreeMono}
-    {\newfontfamily\leanmonofont{FreeMono}[Scale=MatchLowercase]}
     {%
+      \setmonofont{FreeMono}[Scale=MatchLowercase]%
+      \newfontfamily\leanmonofont{FreeMono}[Scale=MatchLowercase]%
+    }
+    {%
+      \setmonofont{Noto Sans Mono}[Scale=MatchLowercase]%
       \newfontfamily\leanmonofont{Noto Sans Mono}[Scale=MatchLowercase]%
       % Fallbacks for Lean-specific symbols that are not covered by some mono
       % fonts. Keep the mathematical meaning even when the exact glyph is not
@@ -59,6 +64,18 @@
   }
 \NewDocumentCommand{\lean}{m}{\lean_render:n { #1 }}
 \ExplSyntaxOff
+\definecolor{leanmintedbg}{HTML}{F7F7F3}
+\setminted{encoding=UTF8}
+\newcommand{\leaninputfile}[2]{%
+  \inputminted[
+    breaklines,
+    fontsize=\small,
+    tabsize=2,
+    style=friendly,
+    bgcolor=leanmintedbg,
+    frame=lines
+  ]{#1}{#2}%
+}
 \newcommand{\leanstatement}[1]{%
   \par\smallskip\noindent\begingroup\leanmonofont\small #1\par\endgroup\smallskip
 }

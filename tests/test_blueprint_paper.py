@@ -4,11 +4,13 @@ from pathlib import Path
 
 from tools.blueprint_paper import (
     archive_stem,
+    available_pygments_aliases,
     build_selected_metadata,
     build_glossary_entries,
     build_source_entries,
     latest_section_stem,
     LeanGlossaryEntry,
+    MintedConfig,
     LeanSourceEntry,
     PaperMetadata,
     parse_section_metadata,
@@ -16,6 +18,7 @@ from tools.blueprint_paper import (
     render_lean_glossary,
     render_lean_refs,
     remove_legacy_archive_pdfs,
+    resolve_minted_config,
     resolve_selected_sections,
     SectionRecord,
 )
@@ -297,7 +300,49 @@ def test_remove_legacy_archive_pdfs_deletes_old_single_demo_aliases(tmp_path: Pa
     assert not timestamped_legacy_pdf.exists()
 
 
-def test_render_lean_appendix_includes_full_source_lines(tmp_path: Path) -> None:
+def test_available_pygments_aliases_parses_alias_names(monkeypatch) -> None:
+    def fake_run(*args, **kwargs):
+        return __import__("subprocess").CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout="\n".join(
+                [
+                    "Lexers:",
+                    "* lean, lean3:",
+                    "* lean4:",
+                    "",
+                ]
+            ),
+            stderr="",
+        )
+
+    monkeypatch.setattr("tools.blueprint_paper.subprocess.run", fake_run)
+
+    aliases = available_pygments_aliases(Path("/tmp/pygmentize"))
+
+    assert aliases >= {"lean", "lean3", "lean4"}
+
+
+def test_resolve_minted_config_prefers_repo_venv_and_lean4(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path
+    pygmentize_path = repo_root / ".venv" / "bin" / "pygmentize"
+    pygmentize_path.parent.mkdir(parents=True, exist_ok=True)
+    pygmentize_path.write_text("", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "tools.blueprint_paper.available_pygments_aliases",
+        lambda path: {"lean", "lean3", "lean4"},
+    )
+
+    config = resolve_minted_config(repo_root)
+
+    assert config == MintedConfig(
+        lexer_name="lean4",
+        pygmentize_path=pygmentize_path,
+    )
+
+
+def test_render_lean_appendix_uses_inputminted_with_relative_path(tmp_path: Path) -> None:
     build_dir = tmp_path / "build"
     build_dir.mkdir()
     lean_path = tmp_path / "Demo_example.lean"
@@ -320,11 +365,15 @@ def test_render_lean_appendix_includes_full_source_lines(tmp_path: Path) -> None
                 title="Biblioteca/Demonstrations/Demo_example.lean",
             )
         ],
+        lexer_name="lean4",
     )
 
     appendix_text = appendix_path.read_text(encoding="utf-8")
 
     assert r"\section*{Anexo}" in appendix_text
-    assert r"\texttt{Biblioteca/Demonstrations/Demo\_example.lean}" in appendix_text
-    assert r"\leanline{theorem example : True := by}" in appendix_text
-    assert r"\leanline{\leanindent{2}trivial}" in appendix_text
+    assert (
+        r"\subsection*{\texorpdfstring{\nolinkurl{Biblioteca/Demonstrations/Demo_example.lean}}"
+        r"{Demo example.lean}}"
+    ) in appendix_text
+    assert r"\addcontentsline{toc}{subsection}{Demo example.lean}" in appendix_text
+    assert r"\leaninputfile{lean4}{\detokenize{../Demo_example.lean}}" in appendix_text

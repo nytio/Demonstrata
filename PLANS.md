@@ -429,3 +429,220 @@ finales en PDF listos para consulta.
 **Ultima Actualizacion:** [2026-04-03T17:17:10.738+0000]
 
 ---
+
+## [PLAN-20260403-02] [Migrar el anexo Lean del blueprint a minted con color y Unicode]
+
+**Plan ID:** [PLAN-20260403-02] (debe coincidir con el encabezado de la seccion)
+**Objetivo General:** Mejorar la presentacion tipografica del codigo Lean 4 en
+los PDF del blueprint usando `minted`, preservando la calidad editorial del
+documento impreso y la compatibilidad Unicode del anexo.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-03]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-03T23:00:44.330+0000]
+**Evidencia de aprobacion (chat/referencia):** [Conversacion actual: mensaje del usuario "Apruebo plan"]
+**Evidencia de /plan:** [no interactivo/sin slash commands: planificacion registrada en esta sesion mediante `update_plan` el 2026-04-03; adicionalmente se intento `codex exec --skip-git-repo-check --json "Analiza el repositorio actual y produce un plan breve en 3 fases para mejorar la presentación del código Lean 4 en los PDFs del blueprint usando minted..."` a las 2026-04-03T22:55Z, pero fallo por restriccion de red del sandbox al contactar `chatgpt.com` y `developers.openai.com`; se solicito rerun escalado para dejar evidencia formal equivalente a la recomendada por la skill]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: integrar `minted` en la generacion del PDF del blueprint para el
+  codigo Lean del anexo; mantener `XeLaTeX`; habilitar `-shell-escape`; hacer
+  que la compilacion use `pygmentize` con soporte real de `lean4`; definir una
+  presentacion en color orientada a impresion; agregar o ajustar pruebas
+  unitarias de `tools/blueprint_paper.py`; validar build real del PDF.
+- Excluye: remaquetar el cuerpo narrativo de las secciones `.tex`; cambiar el
+  namespace Lean o la estructura del repo; instalar paquetes globales salvo que
+  una carencia comprobada lo exija; migrar todo el blueprint a otra clase
+  documental o a otro motor TeX sin evidencia fuerte.
+
+**Supuestos:**
+- La regla del repo de conservar un layout compatible con AMS via `amsart`
+  sigue vigente y pesa mas que recomendaciones genericas basadas en `article`.
+- El producto impreso mejora mas con resaltado sintactico + mejor caja de
+  codigo que con un cambio global de `\documentclass`.
+- El entorno virtual del repo es la fuente de Python controlada por el proyecto.
+- `minted` ya esta instalado en TeX Live local, por lo que no se requiere una
+  instalacion adicional inicial para empezar.
+
+**Dependencias:**
+- Toolchain local detectada:
+  - `XeTeX 0.999995 (TeX Live 2023/Debian)`
+  - `latexmk 4.83`
+  - `minted.sty` local: `2023/12/18 v2.9`
+  - `pygmentize` del sistema: `2.17.2` (sin lexer `lean4`)
+  - `.venv/bin/pygmentize`: `2.20.0` (con lexer `lean4`)
+- Archivos/modulos previsiblemente afectados:
+  - `tools/blueprint_paper.py`
+  - `blueprint/src/macros/common.tex`
+  - `tests/test_blueprint_paper.py`
+  - `requirements.txt` solo si apareciera una dependencia faltante reproducible
+- Referencias consultadas:
+  - CTAN `minted` (version actual publicada 3.8.0 al 2026-03-03)
+  - Pygments docs: `Lean4Lexer` agregado en `2.18.0`
+  - CTAN `tcolorbox` como alternativa/acompanamiento para cajas coloreadas
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Medio]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** Hay cambios coordinados entre Python,
+LaTeX, build tooling y pruebas. Ademas existe un trade-off editorial no trivial
+entre mantener `amsart`, usar color en impresion y controlar el lexer Lean 4.
+**Modo de seguimiento en `PROGRESS.md`:** [Estandar]
+**Justificacion del modo de seguimiento:** El trabajo tiene hitos claros
+(pipeline, macros/estilo, validacion), pero no requiere una bitacora estricta
+paso a paso.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde: `.venv/bin/pytest -q`, `scripts/build_blueprint_pdf.sh`.
+- [ ] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual reproducible documentada.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no reporta severidad explicita.
+- [x] Documentacion actualizada en: `PLANS.md`, `PROGRESS.md` (si aplica) y archivos tecnicos solo si el cambio lo amerita.
+- [x] Criterios de aceptacion funcional cumplidos:
+  - [CA-1] El PDF del blueprint sigue compilando con `XeLaTeX`.
+  - [CA-2] El anexo muestra codigo Lean con `minted`, color y soporte Unicode.
+  - [CA-3] La compilacion usa un lexer `lean4` real cuando esta disponible en el entorno del repo.
+  - [CA-4] El documento sigue siendo apto para impresion y mantiene el look AMS del proyecto.
+- [ ] Rollback definido y validado (si aplica).
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o commit).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: `minted` use el `pygmentize` del sistema y falle con `lean4`.
+  - Mitigacion: encaminar explicitamente el build para que prefiera
+    `.venv/bin/pygmentize` y agregar deteccion/fallback controlado del lexer.
+- Riesgo: `-shell-escape` introduzca un cambio sensible en el pipeline de build.
+  - Mitigacion: limitarlo al builder del blueprint, documentarlo y evitar
+    habilitarlo en flujos innecesarios.
+- Riesgo: cambiar `amsart` por `article` degrade el producto editorial.
+  - Mitigacion: tratar `article` solo como alternativa comparada, no como
+    default, salvo que una prueba real muestre una mejora objetiva.
+- Riesgo: estilos muy saturados se impriman mal o resten legibilidad.
+  - Mitigacion: escoger un tema claro y sobrio (`friendly`, `xcode` o similar)
+    y mantener contraste alto.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto` (`Rubrica de severidad para hallazgos`).
+- Si una herramienta no reporta severidad, clasificar cada hallazgo con esa rubrica
+  y registrar la clasificacion/evidencia en este plan.
+- Si existe duda entre dos severidades, usar la mas alta de forma preventiva.
+
+**Alternativas Evaluadas y Rubrica:**
+- Escala cuantitativa recomendada: `1..5` por criterio (`5` es mejor).
+- Pesos:
+  - Alcance (20%)
+  - Simplicidad (20%)
+  - Riesgo tecnico (25%)
+  - Testabilidad (20%)
+  - Mantenibilidad (15%)
+- Alternativa A: mantener `amsart` y `XeLaTeX`; migrar solo el anexo Lean a
+  `minted`; hacer que el builder prefiera `.venv/bin/pygmentize`; usar un tema
+  claro en color y, si aporta, una caja ligera para mejorar la lectura impresa.
+  - Score por criterio: [A=5 S=4 R=4 T=5 M=5]
+  - Puntaje total ponderado: [91/100]
+- Alternativa B: cambiar el documento a `article` siguiendo la receta generica
+  `fontspec + FreeMono + minted`, sin preservar el formato AMS actual.
+  - Score por criterio: [A=3 S=4 R=2 T=4 M=3]
+  - Puntaje total ponderado: [61/100]
+- Alternativa C: no usar `minted`; mantener el render actual y mejorar solo con
+  macros LaTeX (`xcolor`, `tcolorbox`, `listings` u otro wrapper local).
+  - Score por criterio: [A=2 S=3 R=4 T=3 M=3]
+  - Puntaje total ponderado: [59/100]
+
+**Plan Seleccionado (resumen):**
+Elegir la alternativa A. Es la unica que cumple simultaneamente con el pedido
+de usar `minted`, el objetivo de mejor presentacion impresa y la restriccion del
+repo de permanecer en un formato AMS. La evidencia local muestra que
+`amsart + fontspec + minted` funciona; el problema real no es la clase del
+documento, sino la seleccion de `pygmentize`. El color es viable nativamente en
+`minted`; `tcolorbox` queda como refinamiento editorial opcional, no como
+sustituto del resaltado.
+
+## Pasos del Plan
+
+- [x] STEP-01: Ajustar el pipeline del builder para compilar con `minted` de
+  forma reproducible.
+  - Evidencia/resultado esperado: `latexmk` se ejecuta con `-shell-escape` y
+    el proceso ve `.venv/bin/pygmentize` antes que el binario del sistema.
+  - Validacion: deteccion del lexer disponible y luego `scripts/build_blueprint_pdf.sh`.
+  - Artefacto esperado: cambios en `tools/blueprint_paper.py`.
+  - Evidencia capturada: `tools/blueprint_paper.py` ahora resuelve `MintedConfig`,
+    antepone `.venv/bin` al `PATH` de `latexmk`, habilita `-shell-escape` y
+    detecta el lexer `lean4` desde `pygmentize`.
+- [x] STEP-02: Sustituir el render lineal del anexo por inclusiones `minted`
+  con estilo de impresion.
+  - Evidencia/resultado esperado: `lean_appendix.tex` deja de emitir
+    `\leanline{...}` y pasa a usar `\inputminted` o macro equivalente con
+    `breaklines`, fuente monoespaciada Unicode, estilo en color y ajustes de
+    legibilidad.
+  - Validacion: `.venv/bin/pytest -q tests/test_blueprint_paper.py -k appendix`
+    y build real del PDF.
+  - Artefacto esperado: cambios en `blueprint/src/macros/common.tex`,
+    `tools/blueprint_paper.py`, `tests/test_blueprint_paper.py`.
+  - Evidencia capturada: `blueprint/src/macros/common.tex` incorpora `minted`,
+    `FreeMono` como mono global y el macro `\leaninputfile`; el anexo generado
+    usa `\inputminted{lean4}{...}` con ruta relativa y estilo `friendly`.
+- [x] STEP-03: Validar el resultado editorial, revisar diff y cerrar trazabilidad.
+  - Evidencia/resultado esperado: build del PDF en verde, diffs revisados y
+    configuracion final documentada en `PLANS.md`/`PROGRESS.md`.
+  - Validacion: `.venv/bin/pytest -q`, `scripts/build_blueprint_pdf.sh`,
+    `git diff -U3`.
+  - Artefacto esperado: PDF actualizado en `blueprint/library/pdf/` y plan con
+    estado sincronizado.
+  - Evidencia capturada: `.venv/bin/pytest -q` -> `24 passed`;
+    `timeout 20s scripts/check_blueprint_decls.sh` -> `Checked 2 Lean declaration reference(s) from blueprint/src.`;
+    `scripts/build_blueprint_pdf.sh` produjo el PDF archivado en
+    `blueprint/library/pdf/IMO_20260403_085959_finite_sets_with_divisibility_b_plus_two_c.pdf`;
+    revision manual de `git diff -U3` sin hallazgos bloqueantes.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: compilar el demo actual del blueprint y confirmar que el anexo
+  usa sintaxis coloreada con caracteres Unicode de Lean 4.
+- Escenario 2: inspeccionar visualmente que el estilo elegido siga siendo
+  legible en impresion y no rompa lineas de forma agresiva.
+- Evidencia capturada en: salida de `scripts/build_blueprint_pdf.sh` y PDF
+  archivado bajo `blueprint/library/pdf/`.
+
+**Plan de Rollback:**
+- Trigger: el build con `minted` deja de ser reproducible, el PDF pierde
+  legibilidad, o `-shell-escape` introduce una regresion operativa inaceptable.
+- Acciones:
+  - Revertir el builder a la ruta actual sin `minted`.
+  - Restaurar el render del anexo basado en `\leanline`.
+  - Eliminar configuracion auxiliar de `minted` o estilos si quedaron inutiles.
+- Verificacion posterior: `scripts/build_blueprint_pdf.sh` vuelve a producir el
+  PDF previo sin errores.
+
+**Comandos Relevantes:**
+- `.venv/bin/pygmentize -V` - verificar version y soporte de `lean4`.
+- `pygmentize -V` - confirmar la version del sistema que no debe ganar el PATH.
+- `scripts/build_blueprint_pdf.sh` - validacion real del flujo de PDF.
+- `.venv/bin/pytest -q` - regresion de la automatizacion Python.
+- `git diff -U3` - revision manual del cambio.
+- Fallback si faltan herramientas/skills: inspeccion manual de `lean_appendix.tex`
+  y build local con `latexmk` en el directorio de salida.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A por ahora; crear decision solo si se cambia la clase documental o se formaliza `tcolorbox` como patron editorial]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [Estandar]
+- Ultimo sync confirmado: [2026-04-03T23:11:29.546+0000]
+- Divergencias detectadas: [Ninguna]
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-03T23:11:29.546+0000]
+
+---
