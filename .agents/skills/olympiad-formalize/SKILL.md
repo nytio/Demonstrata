@@ -20,7 +20,7 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
 ## Coordination Rule
 
 - This skill is a coordinator. It should explicitly invoke these existing skills instead of re-explaining their internal instructions:
-  - `brainstorming`
+  - `mimate-proof-strategy`
   - `lean-prove`
   - `lean-verify`
   - `orquestador-proyecto` when the task satisfies its applicability gate
@@ -33,8 +33,8 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
    - Identify the mathematical domain: number theory, combinatorics, algebra, inequalities, geometry, or mixed.
    - Decide whether the final Lean development likely needs one theorem or several helper lemmas.
 
-2. Start with `brainstorming`.
-   - Use `brainstorming` first to search for 2-3 viable proof strategies.
+2. Start with `mimate-proof-strategy`.
+   - Use `mimate-proof-strategy` first to search for 2-3 viable proof strategies.
    - Recommend one strategy before formalization.
    - Prefer olympiad-style structural proofs over exhaustive search.
 
@@ -55,7 +55,7 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
 
 6. Hand off validation to `lean-verify`.
    - Verify file-level first, then full project build.
-   - If diagnostics show the strategy itself is wrong or incomplete, return to `brainstorming`.
+   - If diagnostics show the strategy itself is wrong or incomplete, return to `mimate-proof-strategy`.
    - If diagnostics are local implementation issues, iterate with `lean-prove`.
    - Repeat until Lean accepts the development cleanly.
 
@@ -79,7 +79,7 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
 
 ## Failure Recovery
 
-- If the current proof path drifts toward brute force too early, stop and return to `brainstorming` for an alternative structural route.
+- If the current proof path drifts toward brute force too early, stop and return to `mimate-proof-strategy` for an alternative structural route.
 - If a proof becomes too brittle in Lean, keep the same mathematics but split the argument into smaller lemmas through `lean-prove`.
 - If `Mathlib` discovery becomes the blocker, follow the existing escalation path from `lean-prove` and `lean-verify`; do not turn this skill into a declaration-search script.
 
