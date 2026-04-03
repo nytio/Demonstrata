@@ -1,0 +1,68 @@
+% title: Least Norwegian Number
+% short-title: Least Norwegian Number
+% abstract: We formalize in Lean 4 the olympiad-style divisor problem asking for the least positive integer that admits three distinct positive divisors summing to $2022$. The argument is structural: the largest chosen divisor must be the number itself below the critical threshold, and the remaining factorization cases force $1344$.
+% subjclass: 11A05
+% keywords: divisors, olympiad problem, minimality, Lean 4
+% author: Mario Hernández M.
+
+\subsection{Least Norwegian Number}
+
+We define a positive integer to be \emph{Norwegian} if it has three distinct
+positive divisors whose sum is $2022$. The formal statement proved in Lean is
+\lean{Biblioteca.Demonstrations.no_small_norwegian}, together with
+\lean{Biblioteca.Demonstrations.least_norwegian_number}. The first result rules
+out every candidate below \(1344\), and the second packages the final minimality
+statement.
+
+\begin{theorem}
+There is no Norwegian number \(n\) with \(n<1344\).
+\end{theorem}
+
+\begin{theorem}
+The least Norwegian number is \(1344\).
+\end{theorem}
+
+\begin{proof}
+The number \(1344\) is Norwegian because \(6\), \(672\), and \(1344\) are
+distinct positive divisors of \(1344\), and
+\[
+  6+672+1344 = 2022.
+\]
+
+For the minimality claim, let \(a<b<c\) be positive divisors of a Norwegian
+number \(n\) with
+\[
+  a+b+c = 2022.
+\]
+Since \(a\le c-2\) and \(b\le c-1\), we obtain \(2022 \le 3c-3\), hence
+\(c\ge 675\). If \(c<n\), then \(c\) is a proper divisor of \(n\), so
+\(n\ge 2c \ge 1350\), which is impossible when \(n<1344\). Therefore for every
+Norwegian number below \(1344\), the largest selected divisor is actually
+\(c=n\).
+
+Now write the second divisor as \(b \mid n\), say \(n = db\) with \(d>1\).
+Because
+\[
+  2022 = a+b+n = a + (d+1)b
+\]
+and \(a<b\), one obtains \(d \le 3\). Thus only the cases \(d=2\) and \(d=3\)
+remain. Writing also \(n = am\), the equation \(a+b+n=2022\) becomes
+\[
+  a(2+3m)=4044 \qquad \text{if } d=2,
+\]
+and
+\[
+  a(3+4m)=6066 \qquad \text{if } d=3.
+\]
+In the first case, the factor \(2+3m\) is congruent to \(2 \bmod 3\), at least
+\(11\), and divides \(4044 = 3 \cdot 4 \cdot 337\). The Lean proof uses the
+prime factor \(337\) to force \(2+3m = 674\), hence \(m=224\) and \(n=1344\),
+contradicting \(n<1344\). In the second case, the same argument with
+\(6066 = 18 \cdot 337\) forces \(3+4m=1011\), so \(m=252\) and \(n=1512\),
+again impossible.
+
+Thus no Norwegian number lies below \(1344\). Combined with the explicit
+witness \(1344\), this proves that \(1344\) is the least Norwegian number. The
+corresponding Lean functions are listed in the glossary at the end of the
+paper.
+\end{proof}

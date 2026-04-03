@@ -90,7 +90,9 @@ def tex_template(title: str) -> str:
         "\\notready\n"
         "This demonstration entry was scaffolded automatically. Add a newly "
         "formalized theorem, its `\\lean{...}` reference, and a mathematical "
-        "proof sketch here.\n"
+        "proof sketch here. The `\\lean{...}` markers render short function "
+        "names in the paper body, populate the Lean glossary automatically, "
+        "and pair this section with the full Lean file in the final annex.\n"
     )
 
 

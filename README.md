@@ -11,6 +11,8 @@ automation around the verifier.
 - `Mathlib` and `Biblioteca` are sources of reusable ingredients, not the end
   of the workflow: Codex is also expected to create new timestamped
   demonstrations when the requested result is not already present.
+- For olympiad-style problems, prefer the repo-local `olympiad-formalize` skill
+  as the entry point so the workflow starts with strategy search before Lean.
 
 ## Layout
 
@@ -82,7 +84,12 @@ collection identity under `blueprint/library/pdf/`.
 
 The generated paper uses the AMS `amsart` class with standard mathematical
 front matter: title, author, abstract, MSC subject classification, and
-keywords.
+keywords. Inside the body, `\lean{...}` renders only short declaration names,
+and the final paper appends a Lean glossary built automatically from the
+corresponding `.lean` declaration headers. Every generated PDF also appends an
+`Anexo` section with the complete Lean source file for the selected
+demonstration; collection builds include one annexed Lean file per selected
+section.
 
 If you want the full external `leanblueprint` toolchain later, the upstream
 package also supports `pdf`, `web`, and `checkdecls`, but it requires

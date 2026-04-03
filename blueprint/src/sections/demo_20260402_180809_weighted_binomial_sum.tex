@@ -1,0 +1,38 @@
+% title: Weighted Binomial Sum
+% short-title: Weighted Binomial Sum
+% abstract: We formalize in Lean 4 a classical weighted binomial identity: the sum of the binomial coefficients in the $(n+1)$st row of Pascal's triangle, weighted by the index, equals $(n+1)2^n$.
+% subjclass: 05A10
+% keywords: binomial coefficient, weighted sum, Pascal triangle, Lean 4
+% author: Mario Hernández M.
+
+\subsection{Weighted Binomial Sum}
+
+The formal result in this section is
+\lean{Biblioteca.Demonstrations.weighted_binomial_sum}. It states that for
+every natural number $n$,
+\[
+  \sum_{i=0}^{n+1} i \binom{n+1}{i} = (n+1) 2^n.
+\]
+
+\begin{theorem}
+For every $n \in \mathbb{N}$,
+\[
+  \sum_{i=0}^{n+1} i \binom{n+1}{i} = (n+1) 2^n.
+\]
+\end{theorem}
+
+\begin{proof}
+This is the classical first moment identity for the binomial coefficients. A
+standard combinatorial argument counts the number of ways to choose a nonempty
+subset of an $(n+1)$-element set together with one distinguished element of
+that subset. If one first chooses the subset size $i$, then there are
+$i\binom{n+1}{i}$ possibilities. Summing over all sizes gives the left-hand
+side.
+
+On the other hand, one may first choose the distinguished element, which gives
+$n+1$ choices, and then choose any subset of the remaining $n$ elements to join
+it. This contributes $(n+1)2^n$ possibilities, proving the identity.
+
+The Lean formalization uses the library theorem
+\texttt{Nat.sum\_range\_mul\_choose} and rewrites it into the shifted form above.
+\end{proof}

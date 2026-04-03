@@ -59,6 +59,8 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 
 - `lean-verify`: strict verification loop for builds and file-level diagnostics.
 - `lean-prove`: workflow for drafting a theorem and iterating until Lean accepts it.
+- `olympiad-formalize`: coordinator for olympiad-style problems that sequences
+  strategy search, Lean authoring, verification, and final PDF generation.
 - Both skills should be used to synthesize new demonstrations when needed, not
   merely to retrieve existing declarations from `Mathlib` or `Biblioteca`.
 - For deeper `Mathlib` exploration, consult `docs/mathlib-exploration.md` before
@@ -88,6 +90,13 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - Use repeated `--demo` flags or `--all` only when the task genuinely needs a collection.
 - Keep section metadata comments (`% title:`, `% abstract:`, `% subjclass:`, `% keywords:`) in sync with the theorem being printed.
 - The print layout should remain compatible with AMS paper conventions via `amsart`.
+- Keep Lean references in blueprint sections as `\lean{...}` markers. The PDF
+  builder renders them as short function names in the body and appends an
+  automatic Lean glossary from the matching `.lean` declaration headers.
+- Every blueprint PDF must also append an `Anexo` section with the full Lean
+  source for the corresponding selected demonstration file(s).
+- Prefer the glossary mechanism over hardcoded fully-qualified Lean names in
+  prose when the declaration already appears via `\lean{...}`.
 
 ## Restrictions
 

@@ -15,6 +15,10 @@ DEFAULT_KEYWORDS = "Lean 4, formalized mathematics, theorem proving"
 
 META_PATTERN = re.compile(r"^%\s*([A-Za-z0-9_-]+)\s*:\s*(.*)$")
 INPUT_PATTERN = re.compile(r"\\input\{sections/([^}]+)\}")
+LEAN_MACRO_PATTERN = re.compile(r"\\lean\{([^}]*)\}")
+DECLARATION_HEAD_PATTERN = re.compile(
+    r"^\s*(theorem|lemma|def|abbrev|instance|class|structure|inductive)\s+([A-Za-z0-9_']+)\b"
+)
 
 
 @dataclass(frozen=True)
@@ -32,6 +36,20 @@ class SectionRecord:
     stem: str
     path: Path
     metadata: PaperMetadata
+
+
+@dataclass(frozen=True)
+class LeanGlossaryEntry:
+    declaration: str
+    short_name: str
+    label: str
+    signature: str
+
+
+@dataclass(frozen=True)
+class LeanSourceEntry:
+    path: Path
+    title: str
 
 
 def latex_path(path: Path) -> str:
@@ -209,6 +227,225 @@ def render_selected_content(build_dir: Path, sections: list[SectionRecord]) -> P
     return path
 
 
+def declaration_short_name(declaration: str) -> str:
+    return declaration.rsplit(".", maxsplit=1)[-1]
+
+
+def declaration_label(declaration: str) -> str:
+    slug = re.sub(r"[^A-Za-z0-9]+", "-", declaration).strip("-").lower()
+    return f"lean-glossary:{slug or 'entry'}"
+
+
+def latex_escape(text: str) -> str:
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "{": r"\{",
+        "}": r"\}",
+        "_": r"\_",
+        "&": r"\&",
+        "%": r"\%",
+        "$": r"\$",
+        "#": r"\#",
+        "^": r"\^{}",
+        "~": r"\textasciitilde{}",
+    }
+    return "".join(replacements.get(char, char) for char in text)
+
+
+def extract_declarations_from_text(content: str) -> list[str]:
+    declarations: list[str] = []
+    for raw_names in LEAN_MACRO_PATTERN.findall(content):
+        for raw_name in raw_names.split(","):
+            declaration = raw_name.strip()
+            if declaration:
+                declarations.append(declaration)
+    return declarations
+
+
+def collect_section_declarations(sections: list[SectionRecord]) -> list[str]:
+    ordered: dict[str, None] = {}
+    for section in sections:
+        content = section.path.read_text(encoding="utf-8")
+        for declaration in extract_declarations_from_text(content):
+            ordered.setdefault(declaration, None)
+    return list(ordered)
+
+
+def infer_section_lean_path(repo_root: Path, section: SectionRecord) -> Path | None:
+    if not section.stem.startswith("demo_"):
+        return None
+    lean_name = section.stem.replace("demo_", "Demo_", 1)
+    path = repo_root / "Biblioteca" / "Demonstrations" / f"{lean_name}.lean"
+    return path if path.is_file() else None
+
+
+def cleanup_signature(signature: str) -> str:
+    compact = re.sub(r"\s+", " ", signature).strip()
+    compact = re.sub(r"\s*:=\s*by\s*$", "", compact)
+    compact = re.sub(r"\s*:=\s*$", "", compact)
+    compact = re.sub(r"\s*where\s*$", "", compact)
+    return compact.strip()
+
+
+def extract_declaration_signature(file_path: Path, declaration: str) -> str | None:
+    short_name = declaration_short_name(declaration)
+    lines = file_path.read_text(encoding="utf-8").splitlines()
+    for start, line in enumerate(lines):
+        match = DECLARATION_HEAD_PATTERN.match(line)
+        if match is None or match.group(2) != short_name:
+            continue
+        collected: list[str] = []
+        for raw_line in lines[start:]:
+            stripped = raw_line.strip()
+            if not stripped and collected:
+                break
+            if not stripped:
+                continue
+            collected.append(stripped)
+            if ":=" in stripped or stripped.endswith("where"):
+                break
+        if not collected:
+            return None
+        return cleanup_signature(" ".join(collected))
+    return None
+
+
+def resolve_declaration_signature(
+    repo_root: Path,
+    declaration: str,
+    section_candidates: dict[str, list[Path]],
+) -> str:
+    checked: set[Path] = set()
+    for path in section_candidates.get(declaration, []):
+        checked.add(path)
+        signature = extract_declaration_signature(path, declaration)
+        if signature is not None:
+            return signature
+
+    if declaration.startswith("Biblioteca."):
+        for path in sorted((repo_root / "Biblioteca").rglob("*.lean")):
+            if path in checked:
+                continue
+            signature = extract_declaration_signature(path, declaration)
+            if signature is not None:
+                return signature
+
+    return declaration
+
+
+def build_glossary_entries(repo_root: Path, sections: list[SectionRecord]) -> list[LeanGlossaryEntry]:
+    declarations = collect_section_declarations(sections)
+    section_candidates: dict[str, list[Path]] = {declaration: [] for declaration in declarations}
+
+    for section in sections:
+        lean_path = infer_section_lean_path(repo_root, section)
+        if lean_path is None:
+            continue
+        for declaration in extract_declarations_from_text(section.path.read_text(encoding="utf-8")):
+            section_candidates.setdefault(declaration, []).append(lean_path)
+
+    return [
+        LeanGlossaryEntry(
+            declaration=declaration,
+            short_name=declaration_short_name(declaration),
+            label=declaration_label(declaration),
+            signature=resolve_declaration_signature(repo_root, declaration, section_candidates),
+        )
+        for declaration in declarations
+    ]
+
+
+def build_source_entries(repo_root: Path, sections: list[SectionRecord]) -> list[LeanSourceEntry]:
+    entries: list[LeanSourceEntry] = []
+    seen: set[Path] = set()
+    for section in sections:
+        lean_path = infer_section_lean_path(repo_root, section)
+        if lean_path is None or lean_path in seen:
+            continue
+        seen.add(lean_path)
+        entries.append(
+            LeanSourceEntry(
+                path=lean_path,
+                title=lean_path.relative_to(repo_root).as_posix(),
+            )
+        )
+    return entries
+
+
+def render_lean_refs(build_dir: Path, entries: list[LeanGlossaryEntry]) -> Path:
+    lines: list[str] = []
+    for entry in entries:
+        lines.append(
+            r"\expandafter\def\csname leanref@" + entry.declaration + r"\endcsname{"
+            + r"\hyperlink{" + entry.label + r"}{\texttt{" + latex_escape(entry.short_name) + r"}}"
+            + r"}"
+        )
+    path = build_dir / "lean_refs.tex"
+    path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
+    return path
+
+
+def render_lean_glossary(build_dir: Path, entries: list[LeanGlossaryEntry]) -> Path:
+    lines: list[str] = []
+    if entries:
+        lines.extend(
+            [
+                r"\section*{Lean Glossary}",
+                r"\addcontentsline{toc}{section}{Lean Glossary}",
+                r"\begingroup",
+                r"\small",
+            ]
+        )
+        for entry in entries:
+            lines.extend(
+                [
+                    r"\noindent\hypertarget{"
+                    + entry.label
+                    + r"}{\texttt{"
+                    + latex_escape(entry.short_name)
+                    + r"}}\par",
+                    r"\leanstatement{" + latex_escape(entry.signature) + r"}",
+                ]
+            )
+        lines.append(r"\endgroup")
+    path = build_dir / "lean_glossary.tex"
+    path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
+    return path
+
+
+def render_lean_source_line(raw_line: str) -> str:
+    expanded = raw_line.expandtabs(2)
+    if not expanded:
+        return r"\leanblankline"
+    stripped = expanded.lstrip(" ")
+    indent = len(expanded) - len(stripped)
+    prefix = rf"\leanindent{{{indent}}}" if indent else ""
+    return r"\leanline{" + prefix + latex_escape(stripped) + r"}"
+
+
+def render_lean_appendix(build_dir: Path, entries: list[LeanSourceEntry]) -> Path:
+    lines: list[str] = []
+    if entries:
+        lines.extend(
+            [
+                r"\section*{Anexo}",
+                r"\addcontentsline{toc}{section}{Anexo}",
+            ]
+        )
+        for entry in entries:
+            lines.extend(
+                [
+                    r"\subsection*{\texttt{" + latex_escape(entry.title) + r"}}",
+                    r"\addcontentsline{toc}{subsection}{" + latex_escape(entry.title) + r"}",
+                ]
+            )
+            for raw_line in entry.path.read_text(encoding="utf-8").splitlines():
+                lines.append(render_lean_source_line(raw_line))
+    path = build_dir / "lean_appendix.tex"
+    path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
+    return path
+
+
 def render_paper_tex(
     build_dir: Path,
     metadata: PaperMetadata,
@@ -220,6 +457,7 @@ def render_paper_tex(
             r"\documentclass[11pt]{amsart}",
             rf"\input{{{latex_path(Path('../../src/macros/common.tex'))}}}",
             rf"\input{{{latex_path(Path('../../src/macros/print.tex'))}}}",
+            r"\input{lean_refs.tex}",
             rf"\title[{metadata.short_title}]{{{metadata.title}}}",
             rf"\author{{{metadata.author}}}",
             rf"\subjclass[2020]{{{metadata.subjclass}}}",
@@ -230,6 +468,8 @@ def render_paper_tex(
             r"\maketitle",
             r"\tableofcontents" if include_toc else "",
             r"\input{selected_content.tex}",
+            r"\input{lean_glossary.tex}",
+            r"\input{lean_appendix.tex}",
             r"\end{document}",
             "",
         ]
@@ -303,7 +543,12 @@ def main(argv: list[str] | None = None) -> int:
     build_dir = repo_root / "blueprint" / "build" / stem
     build_dir.mkdir(parents=True, exist_ok=True)
 
+    glossary_entries = build_glossary_entries(repo_root, sections)
+    source_entries = build_source_entries(repo_root, sections)
     render_selected_content(build_dir, sections)
+    render_lean_refs(build_dir, glossary_entries)
+    render_lean_glossary(build_dir, glossary_entries)
+    render_lean_appendix(build_dir, source_entries)
     render_paper_tex(build_dir, metadata, include_toc=len(sections) > 1)
     run_latexmk(build_dir)
 

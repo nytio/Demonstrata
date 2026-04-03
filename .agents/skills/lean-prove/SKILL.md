@@ -51,6 +51,10 @@ description: Draft or refine a Lean theorem in this repository and iterate until
   only when the challenge is semantic retrieval of unknown names.
 - Use `\lean{...}` references in `blueprint/src` when the formalized result
   should also appear in the project PDF.
+- Treat `\lean{...}` as the source of truth for PDF cross-reference metadata:
+  it should render short names in the body, feed the final Lean glossary, and
+  pair with the automatically appended Lean-source annex, so avoid duplicating
+  fully-qualified declaration names in prose unless needed.
 - Use `scripts/new_demo.sh` when starting a fresh demonstration entry so the
   Lean module and blueprint section stay aligned.
 - By default, build only the current theorem paper; use `--demo` or `--all`

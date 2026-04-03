@@ -5,9 +5,16 @@ from pathlib import Path
 from tools.blueprint_paper import (
     archive_stem,
     build_selected_metadata,
+    build_glossary_entries,
+    build_source_entries,
     latest_section_stem,
+    LeanGlossaryEntry,
+    LeanSourceEntry,
     PaperMetadata,
     parse_section_metadata,
+    render_lean_appendix,
+    render_lean_glossary,
+    render_lean_refs,
     resolve_selected_sections,
     SectionRecord,
 )
@@ -121,3 +128,138 @@ def test_latest_section_stem_prefers_content_index_order(tmp_path: Path) -> None
     )
 
     assert latest_section_stem(repo_root, records) == "demo_beta"
+
+
+def test_build_glossary_entries_extracts_signatures_from_matching_lean_file(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    section_path = repo_root / "blueprint" / "src" / "sections" / "demo_20260402_000000_example.tex"
+    write_section(section_path, title="Example")
+    section_path.write_text(
+        "\n".join(
+            [
+                "% title: Example",
+                "",
+                r"\lean{Biblioteca.Demonstrations.example_one, Biblioteca.Demonstrations.example_two}",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    lean_path = (
+        repo_root
+        / "Biblioteca"
+        / "Demonstrations"
+        / "Demo_20260402_000000_example.lean"
+    )
+    lean_path.parent.mkdir(parents=True, exist_ok=True)
+    lean_path.write_text(
+        "\n".join(
+            [
+                "namespace Biblioteca.Demonstrations",
+                "",
+                "theorem example_one : True := by",
+                "  trivial",
+                "",
+                "lemma example_two",
+                "    (n : Nat) :",
+                "    n = n := by",
+                "  rfl",
+                "",
+                "end Biblioteca.Demonstrations",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    section = SectionRecord(
+        stem="demo_20260402_000000_example",
+        path=section_path,
+        metadata=PaperMetadata("Example", "Example", "Abstract", "03B35", "Lean 4"),
+    )
+
+    entries = build_glossary_entries(repo_root, [section])
+
+    assert [entry.short_name for entry in entries] == ["example_one", "example_two"]
+    assert entries[0].signature == "theorem example_one : True"
+    assert entries[1].signature == "lemma example_two (n : Nat) : n = n"
+
+
+def test_render_lean_support_files_include_short_names_and_glossary(tmp_path: Path) -> None:
+    build_dir = tmp_path / "build"
+    build_dir.mkdir()
+    glossary_entries = [
+        LeanGlossaryEntry(
+            declaration="Biblioteca.Demonstrations.example_one",
+            short_name="example_one",
+            label="lean-glossary:example-one",
+            signature="theorem example_one : True",
+        )
+    ]
+
+    refs_path = render_lean_refs(build_dir, glossary_entries)
+    glossary_path = render_lean_glossary(build_dir, glossary_entries)
+
+    refs_text = refs_path.read_text(encoding="utf-8")
+    glossary_text = glossary_path.read_text(encoding="utf-8")
+
+    assert "leanref@Biblioteca.Demonstrations.example_one" in refs_text
+    assert r"\texttt{example\_one}" in refs_text
+    assert r"\section*{Lean Glossary}" in glossary_text
+    assert r"\texttt{example\_one}" in glossary_text
+    assert r"\leanstatement{theorem example\_one : True}" in glossary_text
+
+
+def test_build_source_entries_uses_matching_lean_file(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    section_path = repo_root / "blueprint" / "src" / "sections" / "demo_20260402_000000_example.tex"
+    write_section(section_path, title="Example")
+    lean_path = repo_root / "Biblioteca" / "Demonstrations" / "Demo_20260402_000000_example.lean"
+    lean_path.parent.mkdir(parents=True, exist_ok=True)
+    lean_path.write_text("namespace Biblioteca.Demonstrations\nend Biblioteca.Demonstrations\n", encoding="utf-8")
+    section = SectionRecord(
+        stem="demo_20260402_000000_example",
+        path=section_path,
+        metadata=PaperMetadata("Example", "Example", "Abstract", "03B35", "Lean 4"),
+    )
+
+    entries = build_source_entries(repo_root, [section])
+
+    assert entries == [
+        LeanSourceEntry(
+            path=lean_path,
+            title="Biblioteca/Demonstrations/Demo_20260402_000000_example.lean",
+        )
+    ]
+
+
+def test_render_lean_appendix_includes_full_source_lines(tmp_path: Path) -> None:
+    build_dir = tmp_path / "build"
+    build_dir.mkdir()
+    lean_path = tmp_path / "Demo_example.lean"
+    lean_path.write_text(
+        "\n".join(
+            [
+                "theorem example : True := by",
+                "  trivial",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    appendix_path = render_lean_appendix(
+        build_dir,
+        [
+            LeanSourceEntry(
+                path=lean_path,
+                title="Biblioteca/Demonstrations/Demo_example.lean",
+            )
+        ],
+    )
+
+    appendix_text = appendix_path.read_text(encoding="utf-8")
+
+    assert r"\section*{Anexo}" in appendix_text
+    assert r"\texttt{Biblioteca/Demonstrations/Demo\_example.lean}" in appendix_text
+    assert r"\leanline{theorem example : True := by}" in appendix_text
+    assert r"\leanline{\leanindent{2}trivial}" in appendix_text
