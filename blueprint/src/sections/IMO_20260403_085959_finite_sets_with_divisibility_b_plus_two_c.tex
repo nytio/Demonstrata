@@ -1,0 +1,85 @@
+% title: Finite Sets with a Divisibility Closure Property
+% short-title: Finite Divisibility Sets
+% abstract: We formalize in Lean 4 the classification of finite nonempty sets of positive integers satisfying the condition that for every pair of elements there is a third element giving the divisibility relation used in the problem. The proof is structural: parity forces a common power of two factor, and in the odd case the map x goes to (M minus x) over 2 on the non-maximal elements collapses the set to the two possibilities {d} and {d,3d}.
+% subjclass: 11A05
+% keywords: divisibility, finite sets, olympiad problem, Lean 4
+% author: Mario Hernández M.
+
+\subsection{Finite Sets with a Divisibility Closure Property}
+
+We formalize the hypothesis as
+\lean{Biblioteca.Demonstrations.DivisibilitySet} and prove the classification
+theorem
+\lean{Biblioteca.Demonstrations.divisibility_set_classification}.
+
+\begin{theorem}
+Let \(S\) be a finite nonempty set of positive integers such that for every
+\(a,b \in S\) there exists \(c \in S\) with
+\[
+  a \mid b + 2c.
+\]
+Then \(S\) is either
+\[
+  \{d\}
+  \qquad\text{or}\qquad
+  \{d,3d\}
+\]
+for some positive integer \(d\). Conversely, every set of one of these two
+forms satisfies the divisibility condition.
+\end{theorem}
+
+\begin{proof}
+The converse is immediate. If \(S=\{d\}\), then choosing \(c=d\) gives
+\(d \mid d+2d\). If \(S=\{d,3d\}\), then for \(a=d\) the divisibility is
+obvious, while for \(a=3d\) one chooses \(c=b\), so that
+\[
+  3d \mid b+2b = 3b.
+\]
+
+For the classification, first observe that if \(S\) contains an even element
+\(a\), then every element of \(S\) is even: indeed \(a\mid b+2c\) forces
+\(b+2c\) to be even, hence \(b\) is even. Therefore either all elements are
+odd or all are even. In the even case we divide the whole set by \(2\); the
+same divisibility relation is preserved, so by iterating this reduction we may
+assume that all elements of \(S\) are odd.
+
+Now let \(M=\max S\). If \(S=\{M\}\), we are done. Otherwise consider any
+\(x \in S\) with \(x<M\). The hypothesis for \(a=M\) gives some \(c \in S\)
+such that \(M \mid x+2c\). Since \(x\), \(c\), and \(M\) are odd, the number
+\(x+2c\) is odd, so it cannot equal \(2M\). Also \(c \neq M\), because that
+would imply \(M \mid x\) with \(0 < x < M\). Hence \(c<M\), and therefore
+\[
+  0 < x+2c < 3M.
+\]
+The only positive odd multiple of \(M\) in that range is \(M\) itself, so
+\[
+  x+2c = M.
+\]
+Thus the map
+\[
+  f(x) = \frac{M-x}{2}
+\]
+sends \(S \setminus \{M\}\) to itself.
+
+Let \(m\) and \(v\) be respectively the minimum and maximum of
+\(S \setminus \{M\}\). The map \(f\) is injective on this finite set, hence it
+permutes it. Since \(f\) is strictly decreasing, its image of the minimum is
+the maximum, and its image of the maximum is the minimum:
+\[
+  f(m)=v,\qquad f(v)=m.
+\]
+Equivalently,
+\[
+  2v = M-m,\qquad 2m = M-v.
+\]
+Subtracting these equations gives \(v=m\), and then \(M=3m\). So every
+non-maximal element is equal to \(m\), and therefore
+\[
+  S = \{m,3m\}.
+\]
+Undoing the powers of \(2\) removed at the beginning yields the final
+classification
+\[
+  S=\{d\}\quad\text{or}\quad S=\{d,3d\}.
+\]
+\end{proof}
