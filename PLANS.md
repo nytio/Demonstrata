@@ -223,3 +223,209 @@ el bootstrap con `mathlib` reduce el riesgo de una configuracion Lean incompleta
 **Ultima Actualizacion:** [2026-04-02T20:51:28.191+0000]
 
 ---
+
+## [PLAN-20260403-01] [Publicacion GitHub con licencia MIT y README orientado a usuario]
+
+**Plan ID:** [PLAN-20260403-01] (debe coincidir con el encabezado de la seccion)
+**Objetivo General:** Preparar el repositorio para una publicacion clara en
+GitHub mediante una licencia MIT en raiz, un `README.md` profesional orientado
+a usuarios y un `.gitignore` que preserve fuentes y artefactos publicables.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-03]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-03T17:12:09.254+0000]
+**Evidencia de aprobacion (chat/referencia):** [Conversacion actual: mensaje del usuario "Apruebo el plan"]
+**Evidencia de /plan:** [no interactivo/sin slash commands: `codex exec --skip-git-repo-check --json 'Analiza el repositorio actual y produce un plan breve en 3 fases para dejarlo listo para publicarse en GitHub: licencia MIT, README profesional y ajuste de .gitignore para conservar .tex/.lean/.pdf y excluir artefactos temporales de build. No ejecutes cambios; solo planifica.'` ejecutado el 2026-04-03; `thread_id=019d544f-904e-7ca0-9bd6-908944c51514`; evidencia visible en la sesion actual con items `item_39` y `item_40`; referencia oficial: https://developers.openai.com/codex/noninteractive/#make-output-machine-readable]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: crear `LICENSE` con texto MIT; rediseñar `README.md` para presentar
+  el proyecto, sus ventajas, ejemplos de uso, la dinamica del skill
+  `olympiad-formalize`, los archivos que genera, dependencias de sistema,
+  librerias Python y ecosistema Lean/Mathlib; ajustar `.gitignore` para
+  versionar `.lean`, `.tex` y `.pdf` publicables mientras se ignoran artefactos
+  temporales.
+- Excluye: cambiar la estructura del repo; renombrar el proyecto o namespace
+  Lean; modificar demostraciones `.lean`; alterar workflows de GitHub Actions;
+  decidir o crear un remoto GitHub concreto.
+
+**Supuestos:**
+- El nombre editorial puede presentarse como `Biblioteca` aunque el directorio
+  local del repo siga siendo `mimate`.
+- La licencia solicitada debe ser MIT y el titular puede dejarse alineado con el
+  autor ya visible en los `.tex` del blueprint salvo que el usuario indique otro.
+- Los PDFs archivados en `blueprint/library/pdf/` forman parte del material
+  publicable, mientras `blueprint/build/` sigue siendo temporal.
+
+**Dependencias:**
+- Sistema y herramientas a documentar: `git`, `python3`, entorno `.venv`,
+  `elan`, `lean`, `lake`, `latexmk`, `xelatex`.
+- Dependencias Python declaradas: `pytest`, `sympy`.
+- Dependencias Lean visibles por el proyecto: `mathlib` (`v4.29.0`) y el
+  toolchain `leanprover/lean4:v4.29.0`.
+- Referencias consultadas: `README.md`, `.gitignore`, `requirements.txt`,
+  `lakefile.toml`, `lean-toolchain`, `.agents/skills/olympiad-formalize/SKILL.md`,
+  `tools/demo_library.py`, `tools/blueprint_paper.py`, `clean.sh`.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Medio]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** [Analisis manual en PLANS.md + evidencia externa en `codex exec --json`]
+**Justificacion del modo elegido:** El cambio afecta la presentacion publica del
+repositorio, la politica de archivos versionados y la documentacion principal.
+Hay que equilibrar exactitud tecnica, copy editorial y semantica de artefactos
+publicables frente a temporales.
+**Modo de seguimiento en `PROGRESS.md`:** [Estandar]
+**Justificacion del modo de seguimiento:** El trabajo se puede dividir por hitos
+claros (licencia, README, ignores y validacion final) y ya existe
+`PROGRESS.md`; conviene sincronizar el avance por step una vez aprobado el plan.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde: `.venv/bin/pytest -q`.
+- [ ] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual reproducible documentada.
+- [x] (`Documentacion`) Exactitud tecnica verificada y enlaces/comandos validados.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no reporta severidad explicita.
+- [x] Documentacion actualizada en: `README.md`, `PLANS.md`, `PROGRESS.md` (si aplica), `LICENSE`.
+- [x] Criterios de aceptacion funcional cumplidos:
+  - [CA-1] GitHub puede detectar una licencia MIT en la raiz.
+  - [CA-2] `README.md` explica el proyecto, Lean 4, dependencias, ventajas,
+    ejemplos de uso y el workflow `olympiad-formalize` con artefactos reales.
+  - [CA-3] `.gitignore` conserva `.lean`, `.tex` y `.pdf` publicables y sigue
+    ignorando artefactos temporales de build.
+- [ ] Rollback definido y validado (si aplica).
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o commit).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: documentar un flujo de `olympiad-formalize` distinto al implementado.
+  - Mitigacion: basar la seccion en `.agents/skills/olympiad-formalize/SKILL.md`
+    y en los scripts reales que scaffoldean y compilan artefactos.
+- Riesgo: abrir demasiado `.gitignore` y empezar a versionar basura temporal.
+  - Mitigacion: conservar ignores de `.lake`, caches Python y
+    `blueprint/build/`; validar con `git status --ignored`.
+- Riesgo: fijar un branding publico que el usuario no quiera.
+  - Mitigacion: mantener el enfoque editorial en `Biblioteca` sin renombrar
+    archivos ni namespace; si aparece conflicto, elevarlo como decision aparte.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto` (`Rubrica de severidad para hallazgos`).
+- Si una herramienta no reporta severidad, clasificar cada hallazgo con esa rubrica
+  y registrar la clasificacion/evidencia en este plan.
+- Si existe duda entre dos severidades, usar la mas alta de forma preventiva.
+
+**Alternativas Evaluadas y Rubrica:**
+- Escala cuantitativa recomendada: `1..5` por criterio (`5` es mejor).
+- Pesos:
+  - Alcance (20%)
+  - Simplicidad (20%)
+  - Riesgo tecnico (25%)
+  - Testabilidad (20%)
+  - Mantenibilidad (15%)
+- Alternativa A: README integral orientado a GitHub, licencia MIT en raiz y
+  `.gitignore` selectivo para preservar PDFs archivados.
+  - Score por criterio: [A=5 S=4 R=4 T=5 M=5]
+  - Puntaje total ponderado: [90/100]
+- Alternativa B: cambios minimos; anadir licencia y un README corto, mantener el
+  `README` actual casi intacto y seguir ignorando `blueprint/library/`.
+  - Score por criterio: [A=2 S=5 R=3 T=2 M=2]
+  - Puntaje total ponderado: [56/100]
+- Alternativa C: publicar solo fuentes (`.lean` y `.tex`) y excluir todos los
+  PDFs para forzar generacion local por parte del usuario final.
+  - Score por criterio: [A=3 S=4 R=4 T=3 M=3]
+  - Puntaje total ponderado: [68/100]
+
+**Plan Seleccionado (resumen):**
+Elegir la alternativa A. Es la unica que alinea el repo con una publicacion
+convincente en GitHub sin perder el valor diferencial del proyecto: pruebas
+formales en Lean, skill-based workflow para problemas olympiad y entregables
+finales en PDF listos para consulta.
+
+## Pasos del Plan
+
+- [x] STEP-01: Añadir licencia MIT y reflejar la politica de distribucion.
+  - Evidencia/resultado esperado: existe `LICENSE` en raiz con texto MIT y el
+    README la menciona de forma consistente.
+  - Validacion: `sed -n '1,40p' LICENSE`
+  - Artefacto esperado: `LICENSE`.
+  - Evidencia capturada: `LICENSE` creado con texto MIT; `README.md` enlaza a
+    `LICENSE`.
+- [x] STEP-02: Reescribir `README.md` con orientacion publica y tecnica.
+  - Evidencia/resultado esperado: el README presenta el proyecto, ventajas,
+    instalacion, stack Lean/Python, ejemplos, flujo `olympiad-formalize`,
+    artefactos generados y valor de Lean 4.
+  - Validacion: `sed -n '1,260p' README.md`
+  - Artefacto esperado: `README.md`.
+  - Evidencia capturada: nuevo README en espanol con secciones de valor,
+    instalacion, ecosistema Lean/Python, flujo olimpico y artefactos generados.
+- [x] STEP-03: Ajustar `.gitignore` para versionar fuentes y PDFs archivados sin
+  versionar temporales.
+  - Evidencia/resultado esperado: `blueprint/build/` sigue ignorado; los PDFs de
+    `blueprint/library/pdf/` dejan de estar bloqueados; `.lean` y `.tex` no se
+    ignoran por patron.
+  - Validacion: `git status --short --ignored blueprint/build blueprint/library .gitignore`
+  - Artefacto esperado: `.gitignore`.
+  - Evidencia capturada: `git status --short --ignored blueprint/build blueprint/library .gitignore README.md LICENSE`
+    muestra `?? blueprint/library/` y `!! blueprint/build/`.
+- [x] STEP-04: Ejecutar validaciones y cerrar trazabilidad.
+  - Evidencia/resultado esperado: diff revisado, tests/documentacion validados y
+    `PLANS.md`/`PROGRESS.md` sincronizados.
+  - Validacion: `.venv/bin/pytest -q`, `git diff -U3`, validacion manual del
+    README y `git status --ignored`.
+  - Artefacto esperado: trazabilidad actualizada.
+  - Evidencia capturada: `.venv/bin/pytest -q` -> `22 passed`; `git diff -U3 HEAD`
+    revisado sin hallazgos bloqueantes; validacion manual del README y de la
+    politica de ignores completada.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: comprobar que `README.md` menciona herramientas reales del repo y
+  que los comandos citados existen.
+- Escenario 2: verificar que `git status --ignored` muestra `blueprint/build/`
+  como ignorado pero ya no `blueprint/library/pdf/`.
+- Escenario 3: revisar que la seccion `olympiad-formalize` coincide con la
+  skill y con los scripts `new_demo`/`build_blueprint_pdf`.
+- Evidencia capturada en: diff final, salida de comandos y actualizacion de
+  `PLANS.md`/`PROGRESS.md`.
+
+**Plan de Rollback:**
+- Trigger: el README pierde exactitud tecnica o `.gitignore` empieza a exponer
+  artefactos temporales no deseados.
+- Acciones:
+  - Revertir `README.md`, `.gitignore` y `LICENSE` a su estado previo.
+  - Restaurar la politica previa de ignores si los archivos publicables generan
+    ruido inesperado.
+- Verificacion posterior: confirmar con `git status --ignored` y lectura del
+  README que el repo vuelve al estado anterior sin artefactos adicionales.
+
+**Comandos Relevantes:**
+- `.venv/bin/pytest -q` - asegurar que la automatizacion Python del repo sigue estable.
+- `git status --short --ignored blueprint/build blueprint/library .gitignore` -
+  validar la politica de ignores antes y despues del cambio.
+- `git diff -U3` - revisar los cambios documentales y de policy.
+- `sed -n '1,260p' README.md` - inspeccion final del README renderizable.
+- Fallback si faltan herramientas/skills: checklist manual de exactitud
+  documental y politica de ignores.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [Estandar]
+- Ultimo sync confirmado: [2026-04-03T17:17:10.738+0000]
+- Divergencias detectadas: [Ninguna]
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-03T17:17:10.738+0000]
+
+---

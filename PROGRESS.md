@@ -187,3 +187,112 @@ para la sincronizacion del mismo evento)
 - ETA siguiente hito: [N/A]
 
 ---
+
+## [2026-04-03] [Cambio de estado]: [Plan aprobado e inicio de implementacion para publicacion GitHub]
+
+**Timestamp:** [2026-04-03T17:12:09.254+0000] (usar el mismo valor que en `PLANS.md`
+para la sincronizacion del mismo evento)
+**Modo de seguimiento:** [Estandar]
+**Estado:** [En curso]
+**Owner:** [Codex]
+**Plan ID:** [PLAN-20260403-01]
+**Referencia al plan:** `PLANS.md` ([PLAN-20260403-01 / inicio de ejecucion])
+**Estado sincronizado en `PLANS.md`:** [Si]
+**Ultima sincronizacion confirmada con `PLANS.md`:** [2026-04-03T17:12:09.254+0000]
+**Divergencias detectadas vs `PLANS.md`:** [Ninguna]
+**Accion de sincronizacion ejecutada:** [Cambio de estado]
+**Evidencia asociada:** [Aprobacion del usuario en chat + actualizacion de `PLANS.md`]
+
+**Cambios realizados:**
+- Se registro la aprobacion del plan de publicacion GitHub.
+- Se habilito la ejecucion de los cambios en licencia, README y `.gitignore`.
+- Se mantuvo el modo de seguimiento `Estandar` para sincronizar por hitos.
+
+**Validacion ejecutada:**
+- Tests: `[N/A]` -> [Aun no aplica en este hito]
+- Validacion manual (si aplica): [Gate de aprobacion y sincronizacion de artefactos completados]
+
+**Bloqueos/Riesgos:**
+- [Ninguno]
+- Owner del bloqueo: [N/A]
+- ETA de desbloqueo: [N/A]
+
+**Siguiente accion:**
+- Ejecutar `STEP-01` a `STEP-03`: agregar licencia MIT, reescribir `README.md`
+  y corregir `.gitignore`.
+- Owner de la siguiente accion: [Codex]
+- ETA siguiente hito: [2026-04-03]
+
+---
+
+## [2026-04-03] [Cierre de step]: [STEP-01 a STEP-03 completados]
+
+**Timestamp:** [2026-04-03T17:17:10.706+0000] (usar el mismo valor que en `PLANS.md`
+para la sincronizacion del mismo evento)
+**Modo de seguimiento:** [Estandar]
+**Estado:** [Completado]
+**Owner:** [Codex]
+**Plan ID:** [PLAN-20260403-01]
+**Referencia al plan:** `PLANS.md` ([PLAN-20260403-01 / STEP-01 a STEP-03])
+**Estado sincronizado en `PLANS.md`:** [Si]
+**Ultima sincronizacion confirmada con `PLANS.md`:** [2026-04-03T17:17:10.706+0000]
+**Divergencias detectadas vs `PLANS.md`:** [Ninguna]
+**Accion de sincronizacion ejecutada:** [Cierre de step]
+**Evidencia asociada:** [`LICENSE`, `README.md`, `.gitignore`, `git status --short --ignored blueprint/build blueprint/library .gitignore README.md LICENSE`]
+
+**Cambios realizados:**
+- Se agrego `LICENSE` con texto MIT en la raiz.
+- Se reemplazo `README.md` por una version publica, profesional y orientada a GitHub.
+- Se ajusto `.gitignore` para conservar `.lean`, `.tex` y PDFs archivados.
+
+**Validacion ejecutada:**
+- Tests: [`git status --short --ignored blueprint/build blueprint/library .gitignore README.md LICENSE`] -> [`blueprint/build/` sigue ignorado y `blueprint/library/` ya es trackeable]
+- Validacion manual (si aplica): [`sed -n '1,260p' README.md`] -> [README actualizado con contenido tecnico y editorial alineado al repo]
+
+**Bloqueos/Riesgos:**
+- [Ninguno]
+- Owner del bloqueo: [N/A]
+- ETA de desbloqueo: [N/A]
+
+**Siguiente accion:**
+- Ejecutar `STEP-04`: correr pruebas, revisar el diff y cerrar la trazabilidad.
+- Owner de la siguiente accion: [Codex]
+- ETA siguiente hito: [2026-04-03]
+
+---
+
+## [2026-04-03] [Cierre de step]: [STEP-04 validacion final y cierre]
+
+**Timestamp:** [2026-04-03T17:17:10.738+0000] (usar el mismo valor que en `PLANS.md`
+para la sincronizacion del mismo evento)
+**Modo de seguimiento:** [Estandar]
+**Estado:** [Completado]
+**Owner:** [Codex]
+**Plan ID:** [PLAN-20260403-01]
+**Referencia al plan:** `PLANS.md` ([PLAN-20260403-01 / STEP-04])
+**Estado sincronizado en `PLANS.md`:** [Si]
+**Ultima sincronizacion confirmada con `PLANS.md`:** [2026-04-03T17:17:10.738+0000]
+**Divergencias detectadas vs `PLANS.md`:** [Ninguna]
+**Accion de sincronizacion ejecutada:** [Cierre de step]
+**Evidencia asociada:** [`.venv/bin/pytest -q`, `git diff -U3 HEAD`, `git diff --stat HEAD`, `PLANS.md`]
+
+**Cambios realizados:**
+- Se ejecutaron las pruebas Python del repositorio.
+- Se reviso el diff completo contra `HEAD`.
+- Se actualizaron `PLANS.md` y `PROGRESS.md` con el cierre del plan.
+
+**Validacion ejecutada:**
+- Tests: [`.venv/bin/pytest -q`] -> [22 passed]
+- Validacion manual (si aplica): [`git diff -U3 HEAD`] -> [Sin hallazgos bloqueantes; exactitud documental y politica de ignores validadas]
+
+**Bloqueos/Riesgos:**
+- [Ninguno]
+- Owner del bloqueo: [N/A]
+- ETA de desbloqueo: [N/A]
+
+**Siguiente accion:**
+- No aplica; plan completado.
+- Owner de la siguiente accion: [N/A]
+- ETA siguiente hito: [N/A]
+
+---
