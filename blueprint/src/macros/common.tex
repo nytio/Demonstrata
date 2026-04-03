@@ -4,6 +4,7 @@
   \usepackage{amssymb}
 \else
   \usepackage{fontspec}
+  \usepackage{newunicodechar}
   \usepackage{unicode-math}
   \setmathfont{Latin Modern Math}
 \fi
@@ -21,7 +22,20 @@
 \ifPDFTeX
   \newcommand{\leanmonofont}{\ttfamily}
 \else
-  \newfontfamily\leanmonofont{Noto Sans Mono}[Scale=MatchLowercase]
+  % Lean source frequently uses Unicode-only syntax such as strict implicit
+  % binders `⦃ ⦄` and generated names containing `✝`. Prefer a mono font with
+  % broader coverage for the appendix, while keeping a safe fallback.
+  \IfFontExistsTF{FreeMono}
+    {\newfontfamily\leanmonofont{FreeMono}[Scale=MatchLowercase]}
+    {%
+      \newfontfamily\leanmonofont{Noto Sans Mono}[Scale=MatchLowercase]%
+      % Fallbacks for Lean-specific symbols that are not covered by some mono
+      % fonts. Keep the mathematical meaning even when the exact glyph is not
+      % available.
+      \newunicodechar{⦃}{\ensuremath{\lbrace\mkern-3mu\lbrace}}
+      \newunicodechar{⦄}{\ensuremath{\rbrace\mkern-3mu\rbrace}}
+      \newunicodechar{✝}{\ensuremath{\dagger}}
+    }
 \fi
 \newlength{\leanindentwidth}
 \setlength{\leanindentwidth}{0.6em}

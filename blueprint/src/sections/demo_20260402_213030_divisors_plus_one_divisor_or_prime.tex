@@ -1,0 +1,74 @@
+% title: Divisors with Prime or Dividing Successor
+% short-title: Successor Divisor Problem
+% abstract: We formalize in Lean 4 the divisor condition asking for all positive integers \(n\) such that for every positive divisor \(d\mid n\), either \(d+1\mid n\) or \(d+1\) is prime. The proof is structural: after separating the odd part of \(n\), the hypothesis forces that odd part to be one less than a power of two, and a second divisor argument reduces the remaining cases to \(n\in\{1,2,4,12\}\).
+% subjclass: 03B35
+% keywords: divisors, number theory, olympiad problem, Lean 4
+% author: Mario Hernández M.
+
+\subsection{Divisors with Prime or Dividing Successor}
+
+We define the property
+\lean{Biblioteca.Demonstrations.SuccessorDivisorOrPrime} and prove the
+classification theorem
+\lean{Biblioteca.Demonstrations.successor_divisor_or_prime_classification}.
+
+\begin{theorem}
+The positive integers \(n\) such that for every positive divisor \(d\mid n\),
+either \(d+1\mid n\) or \(d+1\) is prime, are exactly
+\[
+  1,\ 2,\ 4,\ 12.
+\]
+\end{theorem}
+
+\begin{proof}
+The numbers \(1,2,4,12\) are checked directly. For the converse, write
+\[
+  n = 2^k m
+\]
+with \(m\) odd. This is the standard odd-part decomposition and is the starting
+point of the Lean proof.
+
+If \(m=1\), then \(n\) is a power of two. The divisor \(8\) shows that
+\(k\ge 3\) is impossible: indeed \(8\mid n\) would force \(9\mid n\) or \(9\)
+prime, and neither can happen. Hence \(k\le 2\), so \(n\in\{1,2,4\}\).
+
+Assume now \(m>1\). Taking \(d=m\), the number \(m+1\) is even and strictly
+greater than \(2\), so it is not prime; therefore \(m+1\mid n\). Since
+\(\gcd(m,m+1)=1\), this implies that \(m+1\) divides the power of two part,
+hence
+\[
+  m+1 = 2^b
+\]
+for some \(b\le k\).
+
+If \(b\) is odd, then \(2^b\mid n\). Applying the hypothesis to \(d=2^b\), we
+would need \(2^b+1\mid n\) or \(2^b+1\) prime. But for odd \(b\), the number
+\(2^b+1\) is divisible by \(3\), so it is composite, and it is also an odd
+divisor larger than the odd part \(m=2^b-1\), so it cannot divide \(n\). This
+is impossible. Thus \(b\) is even, say \(b=2c\).
+
+If \(c=1\), then \(m=3\). The divisor \(3\) forces \(4\mid n\), and the same
+``\(8\) implies \(9\)'' obstruction shows that \(k\) cannot exceed \(2\). Hence
+\(n=12\).
+
+It remains to rule out \(c\ge 2\). Since
+\[
+  m = 2^{2c}-1 = (2^c-1)(2^c+1),
+\]
+the divisor \(2^c+1\) also divides \(n\). Its successor \(2^c+2\) is even and
+greater than \(2\), so it cannot be prime; therefore \(2^c+2\mid n\). Hence
+the odd factor \(2^{c-1}+1\) divides \(n\), and therefore divides the odd part
+\(m\). On the other hand,
+\[
+  m = (2^{c-1}+1)(2^{c+1}-4)+3,
+\]
+so \(2^{c-1}+1\mid 3\). This forces \(c=2\), hence \(m=15\). But then
+\(24\mid n\), so the hypothesis at \(d=24\) would force \(25\mid n\) or \(25\)
+prime. Since \(25\) is composite and is an odd divisor larger than the odd part
+\(15\), this is impossible.
+
+Therefore no further cases occur, and the only solutions are
+\[
+  n=1,2,4,12.
+\]
+\end{proof}
