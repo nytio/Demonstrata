@@ -69,11 +69,10 @@
 \newcommand{\leaninputfile}[2]{%
   \inputminted[
     breaklines,
+    breakanywhere,
     fontsize=\small,
     tabsize=2,
-    style=friendly,
-    bgcolor=leanmintedbg,
-    frame=lines
+    style=friendly
   ]{#1}{#2}%
 }
 \newcommand{\leanstatement}[1]{%
@@ -92,6 +91,9 @@
 \newcommand{\notready}{%
   \par\smallskip\noindent\textcolor{orange!80!black}{\textbf{Blueprint note: not ready for formalization.}}\par\smallskip
 }
+\newenvironment{problemstatement}
+  {\par\smallskip\noindent\textbf{Problem: }\ignorespaces}
+  {\par\smallskip}
 \newcommand{\uses}[1]{}
 \newcommand{\discussion}[1]{%
   \par\smallskip\noindent\textbf{Discussion issue: }#1\par\smallskip

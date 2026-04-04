@@ -218,6 +218,79 @@ para la sincronizacion del mismo evento)
 - ETA de desbloqueo: [N/A]
 
 **Siguiente accion:**
+
+---
+
+## [2026-04-04] [Cambio de estado]: [Plan aprobado e inicio de implementacion para glossary Lean con estrategia del anexo]
+
+**Timestamp:** [2026-04-04T06:19:39.000+0000] (usar el mismo valor que en `PLANS.md`
+para la sincronizacion del mismo evento)
+**Modo de seguimiento:** [Estandar]
+**Estado:** [En curso]
+**Owner:** [Codex]
+**Plan ID:** [PLAN-20260404-01]
+**Referencia al plan:** `PLANS.md` ([PLAN-20260404-01 / inicio de ejecucion])
+**Estado sincronizado en `PLANS.md`:** [Si]
+**Ultima sincronizacion confirmada con `PLANS.md`:** [2026-04-04T06:19:39.000+0000]
+**Divergencias detectadas vs `PLANS.md`:** [Ninguna]
+**Accion de sincronizacion ejecutada:** [Cambio de estado]
+**Evidencia asociada:** [Aprobacion del usuario en chat + actualizacion de `PLANS.md`]
+
+**Cambios realizados:**
+- Se registro la aprobacion del plan para unificar el formato Lean del glossary con el anexo.
+- Se habilito la ejecucion de cambios en el builder Python, el render TeX y las pruebas asociadas.
+- Se mantuvo el modo de seguimiento `Estandar` para sincronizar por hito tecnico.
+
+**Validacion ejecutada:**
+- Tests: `[N/A]` -> [Aun no aplica en este hito]
+- Validacion manual (si aplica): [Gate de aprobacion y sincronizacion de artefactos completados]
+
+**Bloqueos/Riesgos:**
+- [Ninguno]
+- Owner del bloqueo: [N/A]
+- ETA de desbloqueo: [N/A]
+
+**Siguiente accion:**
+- Ejecutar `STEP-01`: refactorizar el render del glossary para producir snippets Lean temporales.
+- Owner de la siguiente accion: [Codex]
+- ETA siguiente hito: [2026-04-04]
+
+---
+
+## [2026-04-04] [Cierre de step]: [PLAN-20260404-01 completado]
+
+**Timestamp:** [2026-04-04T06:26:27.349+0000] (usar el mismo valor que en `PLANS.md`
+para la sincronizacion del mismo evento)
+**Modo de seguimiento:** [Estandar]
+**Estado:** [Completado]
+**Owner:** [Codex]
+**Plan ID:** [PLAN-20260404-01]
+**Referencia al plan:** `PLANS.md` ([PLAN-20260404-01 / cierre])
+**Estado sincronizado en `PLANS.md`:** [Si]
+**Ultima sincronizacion confirmada con `PLANS.md`:** [2026-04-04T06:26:27.349+0000]
+**Divergencias detectadas vs `PLANS.md`:** [Ninguna]
+**Accion de sincronizacion ejecutada:** [Cierre de step]
+**Evidencia asociada:** [`.venv/bin/pytest -q tests/test_blueprint_paper.py`, `scripts/build_blueprint_pdf.sh`, `git diff -U3`]
+
+**Cambios realizados:**
+- El glossary Lean ahora genera snippets `.lean` temporales y los renderiza con `\leaninputfile`, reutilizando la misma via de `minted` que el anexo.
+- Los nombres de snippet del glossary ahora son unicos por label, evitando colisiones entre declaraciones con el mismo `short_name`.
+- El macro `\leaninputfile` se endurecio para codigo Lean largo con `breakanywhere` y se simplifico quitando `frame` y `bgcolor`, lo que elimino el error LaTeX `Dimension too large` en el anexo del demo actual.
+
+**Validacion ejecutada:**
+- Tests: [`.venv/bin/pytest -q tests/test_blueprint_paper.py`] -> [15 passed]
+- Validacion manual (si aplica): [`scripts/build_blueprint_pdf.sh`] -> [Build completado; PDF archivado en `blueprint/library/pdf/Demo_20260403_172608_n_good_polynomials.pdf`]
+- Observacion residual: [XeLaTeX sigue reportando warnings no bloqueantes por un glifo `≥` faltante y algunas cajas overfull/underfull; la compilacion completa del PDF ya no falla]
+
+**Bloqueos/Riesgos:**
+- [Ninguno bloqueante]
+- Owner del bloqueo: [N/A]
+- ETA de desbloqueo: [N/A]
+
+**Siguiente accion:**
+- No aplica; plan completado.
+- Owner de la siguiente accion: [N/A]
+- ETA siguiente hito: [N/A]
 - Ejecutar `STEP-01`: ajustar el builder para `minted`, `-shell-escape` y `pygmentize` del venv.
 - Owner de la siguiente accion: [Codex]
 - ETA siguiente hito: [2026-04-03]
@@ -361,6 +434,78 @@ para la sincronizacion del mismo evento)
 
 **Bloqueos/Riesgos:**
 - [Ninguno]
+- Owner del bloqueo: [N/A]
+- ETA de desbloqueo: [N/A]
+
+**Siguiente accion:**
+- No aplica; plan completado.
+- Owner de la siguiente accion: [N/A]
+- ETA siguiente hito: [N/A]
+
+---
+
+## [2026-04-03] [Cambio de estado]: [Plan aprobado e inicio de implementacion para problema origen en PDF]
+
+**Timestamp:** [2026-04-04T05:46:41.859+0000] (usar el mismo valor que en `PLANS.md`
+para la sincronizacion del mismo evento)
+**Modo de seguimiento:** [Estandar]
+**Estado:** [En curso]
+**Owner:** [Codex]
+**Plan ID:** [PLAN-20260403-03]
+**Referencia al plan:** `PLANS.md` ([PLAN-20260403-03 / inicio de ejecucion])
+**Estado sincronizado en `PLANS.md`:** [Si]
+**Ultima sincronizacion confirmada con `PLANS.md`:** [2026-04-04T05:46:41.859+0000]
+**Divergencias detectadas vs `PLANS.md`:** [Ninguna]
+**Accion de sincronizacion ejecutada:** [Cambio de estado]
+**Evidencia asociada:** [Aprobacion del usuario en chat + actualizacion de `PLANS.md`]
+
+**Cambios realizados:**
+- Se registro la aprobacion del plan para preservar el enunciado original en el PDF final.
+- Se habilito la ejecucion de cambios en scaffold TeX, macros del blueprint y skills operativas.
+- Se mantuvo el modo de seguimiento `Estandar` para sincronizar por hito tecnico.
+
+**Validacion ejecutada:**
+- Tests: [`N/A`] -> [Aun no aplica en este hito]
+- Validacion manual (si aplica): [Gate de aprobacion y sincronizacion de artefactos completados]
+
+**Bloqueos/Riesgos:**
+- [Ninguno]
+- Owner del bloqueo: [N/A]
+- ETA de desbloqueo: [N/A]
+
+**Siguiente accion:**
+- Ejecutar `STEP-01`: introducir el bloque TeX reutilizable y actualizar el scaffold.
+- Owner de la siguiente accion: [Codex]
+- ETA siguiente hito: [2026-04-04]
+
+---
+
+## [2026-04-03] [Cierre de step]: [PLAN-20260403-03 completado]
+
+**Timestamp:** [2026-04-04T05:56:51.987+0000] (usar el mismo valor que en `PLANS.md`
+para la sincronizacion del mismo evento)
+**Modo de seguimiento:** [Estandar]
+**Estado:** [Completado]
+**Owner:** [Codex]
+**Plan ID:** [PLAN-20260403-03]
+**Referencia al plan:** `PLANS.md` ([PLAN-20260403-03 / cierre])
+**Estado sincronizado en `PLANS.md`:** [Si]
+**Ultima sincronizacion confirmada con `PLANS.md`:** [2026-04-04T05:56:51.987+0000]
+**Divergencias detectadas vs `PLANS.md`:** [Ninguna]
+**Accion de sincronizacion ejecutada:** [Cierre de step]
+**Evidencia asociada:** [`.venv/bin/pytest -q tests/test_demo_library.py tests/test_blueprint_paper.py`, `git diff -U3`, validacion temporal en `/tmp/mimate_plan03_validation_min`, `pdftotext` sobre el PDF generado]
+
+**Cambios realizados:**
+- Se agrego el entorno TeX `problemstatement` para renderizar el enunciado origen en el paper.
+- El scaffold de `tools/demo_library.py` ahora crea un bloque activo para demos con prefijos de fuente como `IMO` y deja un placeholder comentado para demos genericas.
+- Las skills `olympiad-formalize` y `lean-prove` ahora exigen preservar y copiar el LaTeX original del problema al bloque correspondiente.
+
+**Validacion ejecutada:**
+- Tests: [`.venv/bin/pytest -q tests/test_demo_library.py tests/test_blueprint_paper.py`] -> [20 passed]
+- Validacion manual (si aplica): [`scripts/build_blueprint_pdf.sh --demo IMO_20260403_235539_problem_statement_validation` en `/tmp/mimate_plan03_validation_min`] -> [Build completado y `pdftotext` confirma la presencia de `Problem:` en el PDF]
+
+**Bloqueos/Riesgos:**
+- [Ninguno bloqueante]
 - Owner del bloqueo: [N/A]
 - ETA de desbloqueo: [N/A]
 

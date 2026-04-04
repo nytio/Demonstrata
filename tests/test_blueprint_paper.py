@@ -220,16 +220,53 @@ def test_render_lean_support_files_include_short_names_and_glossary(tmp_path: Pa
     ]
 
     refs_path = render_lean_refs(build_dir, glossary_entries)
-    glossary_path = render_lean_glossary(build_dir, glossary_entries)
+    glossary_path = render_lean_glossary(build_dir, glossary_entries, lexer_name="lean4")
 
     refs_text = refs_path.read_text(encoding="utf-8")
     glossary_text = glossary_path.read_text(encoding="utf-8")
+    snippet_text = (
+        build_dir / "lean_glossary" / "example-one.lean"
+    ).read_text(encoding="utf-8")
 
     assert "leanref@Biblioteca.Demonstrations.example_one" in refs_text
     assert r"\texttt{example\_one}" in refs_text
     assert r"\section*{Lean Glossary}" in glossary_text
     assert r"\texttt{example\_one}" in glossary_text
-    assert r"\leanstatement{theorem example\_one : True}" in glossary_text
+    assert (
+        r"\leaninputfile{lean4}{\detokenize{lean_glossary/example-one.lean}}"
+        in glossary_text
+    )
+    assert snippet_text == "theorem example_one : True\n"
+
+
+def test_render_lean_glossary_uses_unique_snippet_names_for_duplicate_short_names(tmp_path: Path) -> None:
+    build_dir = tmp_path / "build"
+    build_dir.mkdir()
+    glossary_entries = [
+        LeanGlossaryEntry(
+            declaration="Biblioteca.Demonstrations.Foo.of_dvd",
+            short_name="of_dvd",
+            label="lean-glossary:biblioteca-demonstrations-foo-of-dvd",
+            signature="theorem Foo.of_dvd : True",
+        ),
+        LeanGlossaryEntry(
+            declaration="Biblioteca.Demonstrations.Bar.of_dvd",
+            short_name="of_dvd",
+            label="lean-glossary:biblioteca-demonstrations-bar-of-dvd",
+            signature="theorem Bar.of_dvd : True",
+        ),
+    ]
+
+    glossary_path = render_lean_glossary(build_dir, glossary_entries, lexer_name="lean4")
+    glossary_text = glossary_path.read_text(encoding="utf-8")
+
+    foo_snippet = build_dir / "lean_glossary" / "biblioteca-demonstrations-foo-of-dvd.lean"
+    bar_snippet = build_dir / "lean_glossary" / "biblioteca-demonstrations-bar-of-dvd.lean"
+
+    assert foo_snippet.read_text(encoding="utf-8") == "theorem Foo.of_dvd : True\n"
+    assert bar_snippet.read_text(encoding="utf-8") == "theorem Bar.of_dvd : True\n"
+    assert r"\detokenize{lean_glossary/biblioteca-demonstrations-foo-of-dvd.lean}" in glossary_text
+    assert r"\detokenize{lean_glossary/biblioteca-demonstrations-bar-of-dvd.lean}" in glossary_text
 
 
 def test_build_source_entries_uses_matching_lean_file(tmp_path: Path) -> None:

@@ -276,6 +276,10 @@ def declaration_label(declaration: str) -> str:
     return f"lean-glossary:{slug or 'entry'}"
 
 
+def glossary_snippet_name(entry: LeanGlossaryEntry) -> str:
+    return entry.label.split(":", maxsplit=1)[-1] + ".lean"
+
+
 def latex_escape(text: str) -> str:
     replacements = {
         "\\": r"\textbackslash{}",
@@ -423,9 +427,16 @@ def render_lean_refs(build_dir: Path, entries: list[LeanGlossaryEntry]) -> Path:
     return path
 
 
-def render_lean_glossary(build_dir: Path, entries: list[LeanGlossaryEntry]) -> Path:
+def render_lean_glossary(
+    build_dir: Path,
+    entries: list[LeanGlossaryEntry],
+    *,
+    lexer_name: str,
+) -> Path:
+    glossary_dir = build_dir / "lean_glossary"
     lines: list[str] = []
     if entries:
+        glossary_dir.mkdir(parents=True, exist_ok=True)
         lines.extend(
             [
                 r"\section*{Lean Glossary}",
@@ -435,6 +446,8 @@ def render_lean_glossary(build_dir: Path, entries: list[LeanGlossaryEntry]) -> P
             ]
         )
         for entry in entries:
+            snippet_path = glossary_dir / glossary_snippet_name(entry)
+            snippet_path.write_text(entry.signature + "\n", encoding="utf-8")
             lines.extend(
                 [
                     r"\noindent\hypertarget{"
@@ -442,7 +455,9 @@ def render_lean_glossary(build_dir: Path, entries: list[LeanGlossaryEntry]) -> P
                     + r"}{\texttt{"
                     + latex_escape(entry.short_name)
                     + r"}}\par",
-                    r"\leanstatement{" + latex_escape(entry.signature) + r"}",
+                    r"\leaninputfile{" + lexer_name + r"}{"
+                    + latex_detokenize(relative_tex_path(build_dir, snippet_path))
+                    + r"}",
                 ]
             )
         lines.append(r"\endgroup")
@@ -635,7 +650,7 @@ def main(argv: list[str] | None = None) -> int:
     source_entries = build_source_entries(repo_root, sections)
     render_selected_content(build_dir, sections)
     render_lean_refs(build_dir, glossary_entries)
-    render_lean_glossary(build_dir, glossary_entries)
+    render_lean_glossary(build_dir, glossary_entries, lexer_name=minted_config.lexer_name)
     render_lean_appendix(build_dir, source_entries, lexer_name=minted_config.lexer_name)
     render_paper_tex(build_dir, metadata, include_toc=len(sections) > 1)
     run_latexmk(build_dir, minted_config=minted_config)

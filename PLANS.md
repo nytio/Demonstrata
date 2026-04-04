@@ -646,3 +646,424 @@ sustituto del resaltado.
 **Ultima Actualizacion:** [2026-04-03T23:11:29.546+0000]
 
 ---
+
+## [PLAN-20260403-03] [Persistir enunciado origen en PDFs de olympiad-formalize]
+
+**Plan ID:** [PLAN-20260403-03] (debe coincidir con el encabezado de la seccion)
+**Objetivo General:** Hacer que el flujo `olympiad-formalize PROBLEMA` preserve
+el enunciado original en LaTeX y lo incluya de forma consistente en el PDF final
+de la demostracion.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-03]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-04T05:46:41.859+0000]
+**Evidencia de aprobacion (chat/referencia):** [Conversacion actual: mensaje del usuario "Apruebo el plan"]
+**Evidencia de /plan:** [no interactivo/sin slash commands: planificacion trazable en la sesion actual de Codex el 2026-04-03/2026-04-04 mediante exploracion previa del flujo `olympiad-formalize`, revision de `tools/demo_library.py`, `tools/blueprint_paper.py`, `blueprint/src/macros/common.tex`, tests asociados y actualizacion explicita de `functions.update_plan`; slash commands no disponibles en esta interfaz]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: definicion de una representacion persistente del enunciado original;
+  actualizacion del scaffold TeX para nuevas demostraciones; ajuste de la skill
+  `olympiad-formalize` para copiar el problema fuente; compatibilidad con el PDF
+  final; pruebas y validacion del flujo.
+- Excluye: backfill automatico de PDFs ya archivados; migracion masiva de demos
+  anteriores; cambios en el contenido matematico de pruebas ya formalizadas.
+
+**Supuestos:**
+- El enunciado de entrada llega en LaTeX libre y puede ocupar varias lineas.
+- El flujo normal de `olympiad-formalize` crea o edita una seccion bajo
+  `blueprint/src/sections/`.
+- El build por defecto sigue siendo de una sola demostracion actual, aunque el
+  diseno no debe romper colecciones de varias secciones.
+
+**Dependencias:**
+- `tools/demo_library.py` para el scaffold de nuevas demos.
+- `.agents/skills/olympiad-formalize/SKILL.md` y posiblemente
+  `.agents/skills/lean-prove/SKILL.md` para la instruccion operativa.
+- `blueprint/src/macros/common.tex` para el estilo del bloque en el PDF.
+- `tests/test_demo_library.py` y validaciones del blueprint para cobertura.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Medio]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** El cambio afecta skill, scaffold, macros TeX
+y validacion del pipeline de PDF. Hay varias estrategias viables con trade-offs
+reales entre robustez, simplicidad y preservacion de LaTeX multilinea.
+**Modo de seguimiento en `PROGRESS.md`:** [Estandar]
+**Justificacion del modo de seguimiento:** Conviene sincronizar al aprobar el
+plan y al cierre de cada hito tecnico sin registrar cada lectura exploratoria.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde: [`.venv/bin/pytest -q tests/test_demo_library.py tests/test_blueprint_paper.py`, `scripts/build_blueprint_pdf.sh` en replica segura bajo `/tmp/mimate_plan03_validation_min`].
+- [ ] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual reproducible documentada.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no reporta severidad explicita.
+- [x] Documentacion actualizada en: [`.agents/skills/olympiad-formalize/SKILL.md`, `.agents/skills/lean-prove/SKILL.md`, `PLANS.md`, `PROGRESS.md`].
+- [x] Criterios de aceptacion funcional cumplidos:
+  - [x] [CA-1] Las nuevas demos scaffoldeadas contienen un lugar explicito y persistente para el enunciado original.
+  - [x] [CA-2] `olympiad-formalize` queda instruida para copiar el problema fuente en ese bloque.
+  - [x] [CA-3] El PDF final muestra el problema sin requerir postprocesado manual.
+  - [x] [CA-4] El cambio soporta problemas en LaTeX multilinea sin parser fragil.
+- [x] Rollback definido y validado (si aplica).
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o commit).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: modelar el problema como metadata de una sola linea rompa casos con
+  LaTeX multilinea o entornos matematicos.
+  - Mitigacion: preferir una representacion como bloque TeX estructurado dentro
+    de la propia seccion.
+- Riesgo: el cambio quede solo en plantilla pero no en la skill operativa.
+  - Mitigacion: actualizar la instruccion de `olympiad-formalize` para exigir
+    copiar el enunciado inicial al bloque persistente.
+- Riesgo: el estilo del nuevo bloque degrade la maquetacion del paper.
+  - Mitigacion: usar una macro o entorno minimo en `common.tex` y validar con
+    un build real del blueprint.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto` (`Rubrica de severidad para hallazgos`).
+- Si una herramienta no reporta severidad, clasificar cada hallazgo con esa rubrica
+  y registrar la clasificacion/evidencia en este plan.
+- Si existe duda entre dos severidades, usar la mas alta de forma preventiva.
+
+**Alternativas Evaluadas y Rubrica:**
+- Escala cuantitativa recomendada: `1..5` por criterio (`5` es mejor).
+- Pesos:
+  - Alcance (20%)
+  - Simplicidad (20%)
+  - Riesgo tecnico (25%)
+  - Testabilidad (20%)
+  - Mantenibilidad (15%)
+- Alternativa A: agregar un entorno/bloque `problemstatement` directamente en la
+  seccion TeX y hacer que `olympiad-formalize` copie ahi el problema original.
+  - Score por criterio: [A=5 S=5 R=5 T=4 M=5]
+  - Puntaje total ponderado: [95/100]
+- Alternativa B: extender la metadata comentada (`% problem:`) y el builder para
+  parsearla e inyectarla en el front matter del paper.
+  - Score por criterio: [A=4 S=2 R=2 T=4 M=3]
+  - Puntaje total ponderado: [57/100]
+- Alternativa C: guardar el problema en un archivo sidecar `.tex` separado e
+  incluirlo desde el builder del PDF.
+  - Score por criterio: [A=4 S=3 R=4 T=4 M=3]
+  - Puntaje total ponderado: [73/100]
+
+**Plan Seleccionado (resumen):**
+Elegir la alternativa A. Es la unica opcion que soporta LaTeX multilinea sin
+inventar un parser nuevo, mantiene el problema junto a la demostracion que lo
+origina y hace que el PDF lo muestre de forma natural al principio de la
+seccion, es decir, inmediatamente despues del abstract en el build normal de
+una sola demo.
+
+## Pasos del Plan
+
+- [x] STEP-01: Introducir un bloque TeX reutilizable para el enunciado original
+  y reflejarlo en el scaffold de nuevas demostraciones.
+  - Evidencia/resultado esperado: el template generado por `scripts/new_demo.sh`
+    incluye un placeholder explicito para el problema original.
+  - Validacion: `.venv/bin/pytest -q tests/test_demo_library.py`
+  - Artefacto esperado: `blueprint/src/macros/common.tex`, `tools/demo_library.py`,
+    `tests/test_demo_library.py`
+  - Evidencia capturada: se agrego el entorno `problemstatement` en
+    `blueprint/src/macros/common.tex`; `tools/demo_library.py` ahora emite un
+    bloque activo para prefijos de fuente como `IMO` y un placeholder comentado
+    para `Demo`; `.venv/bin/pytest -q tests/test_demo_library.py tests/test_blueprint_paper.py`
+    -> `20 passed`.
+- [x] STEP-02: Actualizar las skills para que `olympiad-formalize` preserve el
+  enunciado de entrada y lo coloque en el bloque persistente.
+  - Evidencia/resultado esperado: la documentacion operativa indica copiar el
+    problema fuente al bloque `problemstatement` cuando se crea o edita la demo.
+  - Validacion: revision directa del diff y consistencia con el flujo descrito.
+  - Artefacto esperado: `.agents/skills/olympiad-formalize/SKILL.md` y
+    `.agents/skills/lean-prove/SKILL.md` si la integracion lo requiere.
+  - Evidencia capturada: `olympiad-formalize` exige preservar el LaTeX original
+    en el bloque `problemstatement`; `lean-prove` indica copiar ese enunciado al
+    scaffold cuando el usuario lo haya proporcionado.
+- [x] STEP-03: Ejecutar regresion del blueprint y revisar hallazgos.
+  - Evidencia/resultado esperado: pruebas Python relevantes en verde y build del
+    PDF sin regresiones.
+  - Validacion: `.venv/bin/pytest -q tests/test_demo_library.py tests/test_blueprint_paper.py`,
+    `scripts/build_blueprint_pdf.sh`, `git diff -U3`
+  - Artefacto esperado: validacion reproducible documentada en `PLANS.md` y, tras
+    aprobacion, sincronizacion con `PROGRESS.md`.
+  - Evidencia capturada: revision manual de `git diff -U3` sin hallazgos
+    bloqueantes; validacion segura en `/tmp/mimate_plan03_validation_min`
+    creando `IMO_20260403_235539_problem_statement_validation`; el scaffold
+    generado incluye `\\begin{problemstatement}` y el build
+    `scripts/build_blueprint_pdf.sh --demo IMO_20260403_235539_problem_statement_validation`
+    completo con exit 0; `pdftotext` sobre el PDF archivado confirma la salida
+    `Problem: Replace this block with the original problem statement in LaTeX.`.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: scaffold una nueva demo y verificar que el `.tex` creado trae un
+  bloque para el problema original.
+- Escenario 2: compilar el blueprint del demo actual y confirmar que el nuevo
+  macro/entorno no rompe la salida PDF.
+- Evidencia capturada en: salida de `pytest`, `scripts/build_blueprint_pdf.sh`
+  y revision de diff.
+  - Resultado ejecutado: validacion equivalente realizada en una replica segura
+    en `/tmp/mimate_plan03_validation_min` para no modificar los artefactos
+    actuales de `blueprint/library/pdf/` del repo principal.
+
+**Plan de Rollback:**
+- Trigger: el nuevo bloque degrada la maquetacion, rompe builds LaTeX o no es
+  suficientemente explicito para el flujo `olympiad-formalize`.
+- Acciones:
+  - Revertir el macro/entorno y el placeholder del scaffold.
+  - Restaurar las instrucciones previas de las skills si la integracion no fue estable.
+  - Revalidar `pytest` y `scripts/build_blueprint_pdf.sh`.
+- Verificacion posterior: el scaffold vuelve a su estado previo y el PDF compila
+  sin el bloque de problema.
+  - Validacion del rollback: el cambio es acotado a macros, scaffold y skill docs;
+    no toca datos ni pruebas Lean existentes, por lo que revertir estos archivos
+    y rerunear las mismas validaciones restablece el estado previo.
+
+**Comandos Relevantes:**
+- `.venv/bin/pytest -q tests/test_demo_library.py tests/test_blueprint_paper.py` - validar la logica Python tocada.
+- `scripts/build_blueprint_pdf.sh` - validar que el flujo real del PDF sigue operativo.
+- `git diff -U3` - revisar el alcance exacto del cambio.
+- Fallback si faltan herramientas/skills: inspeccion manual del template TeX y
+  build local del blueprint con el demo actual.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A por ahora]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [Estandar]
+- Ultimo sync confirmado: [2026-04-04T05:56:51.987+0000]
+- Divergencias detectadas: [Ninguna]
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-04T05:56:51.987+0000]
+
+---
+
+## [PLAN-20260404-01] [Unificar el formato Lean del Glossary con el Anexo en el PDF blueprint]
+
+**Plan ID:** [PLAN-20260404-01] (debe coincidir con el encabezado de la seccion)
+**Objetivo General:** Cambiar la generacion del `Lean Glossary` para que su
+contenido se renderice con la misma estrategia tipografica/sintactica del
+`Anexo` usando macros TeX basadas en `minted`, revisando el pipeline completo de
+build para evitar errores de rutas, escaping o regresiones de pruebas.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-04]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-04T06:19:39.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [Conversacion actual: mensaje del usuario "Apruebo el plan"]
+**Evidencia de /plan:** [no interactivo/sin slash commands: `codex exec --skip-git-repo-check --json "Analiza el flujo de generacion de blueprint PDF en este repositorio y produce un plan breve en 3 fases para cambiar el Lean Glossary de modo que renderice fragmentos Lean con la misma estrategia tipografica/sintactica del Anexo, minimizando riesgo de errores en LaTeX, rutas y tests. No ejecutes cambios; solo planifica." </dev/null` ejecutado el 2026-04-04; `thread_id=019d5721-e8ac-7773-964e-7f852b925474`; evidencia visible en la sesion actual con eventos `item.completed` sobre `tools/blueprint_paper.py`, `blueprint/src/macros/common.tex`, `scripts/build_blueprint_pdf.sh`, `README.md` y `tests/test_blueprint_paper.py`; referencia oficial: https://developers.openai.com/codex/noninteractive/#make-output-machine-readable]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: ajustar `tools/blueprint_paper.py` para que el glossary deje de
+  escribir firmas escapadas en linea y pase a generar snippets `.lean`
+  auxiliares renderizados desde `lean_glossary.tex`; reutilizar la estrategia
+  TeX del `Anexo` via `\leaninputfile`; revisar si `blueprint/src/macros/common.tex`
+  necesita un macro dedicado para snippets cortos; ampliar
+  `tests/test_blueprint_paper.py`; validar con `pytest` y con al menos un build
+  real de `scripts/build_blueprint_pdf.sh`.
+- Excluye: cambiar la estructura del repo; tocar demostraciones `.lean` del
+  usuario; modificar el contenido matematico del paper; alterar el `Anexo` mas
+  alla de reutilizar su mecanismo; rehacer el estilo visual global del PDF.
+
+**Supuestos:**
+- El `Lean Glossary` debe seguir mostrando el nombre corto enlazable de cada
+  declaracion, pero el bloque de contenido debe usar el mismo mecanismo Lean del
+  `Anexo`.
+- El lexer efectivo sigue resolviendose con `resolve_minted_config()` y debe
+  compartirse entre glossary y annex.
+- Los snippets del glossary pueden ser artefactos temporales dentro de
+  `blueprint/build/<timestamp>_<stem>/` igual que `lean_glossary.tex` y
+  `lean_appendix.tex`.
+
+**Dependencias:**
+- Python del repo: `.venv/bin/python`.
+- Pygments/minted ya usados por el pipeline actual del `Anexo`.
+- Archivos/puntos de integracion principales: `tools/blueprint_paper.py`,
+  `blueprint/src/macros/common.tex`, `tests/test_blueprint_paper.py`,
+  `scripts/build_blueprint_pdf.sh`.
+
+**Tipo de tarea:** [Codigo]
+**Nivel de riesgo/complejidad:** [Medio]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** [Analisis manual en PLANS.md + evidencia de planificacion no interactiva]
+**Justificacion del modo elegido:** El cambio toca la tuberia Python, la capa TeX
+  y la compilacion real del PDF; una alternativa apresurada puede romper rutas
+  relativas, escaping LaTeX o los tests que fijan el contrato actual.
+**Modo de seguimiento en `PROGRESS.md`:** [Estandar]
+**Justificacion del modo de seguimiento:** El trabajo tiene hitos claros
+  (refactor del generador, ajuste TeX, validacion automatica/real) y conviene
+  sincronizar al cierre de cada paso sin llevar bitacora estricta.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde:
+  `.venv/bin/pytest -q tests/test_blueprint_paper.py`.
+- [ ] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual reproducible documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no reporta severidad explicita.
+- [x] Documentacion actualizada en: `PLANS.md`, `PROGRESS.md` (si aplica), `README.md` (si aplica).
+- [x] Criterios de aceptacion funcional cumplidos:
+  - [x] [CA-1] `lean_glossary.tex` deja de usar `\leanstatement{...}` para firmas y
+    pasa a incluir snippets Lean con la misma estrategia de `minted` usada por
+    el `Anexo`.
+  - [x] [CA-2] La generacion del PDF sigue resolviendo correctamente rutas relativas
+    desde `blueprint/build/<...>/` hacia los snippets del glossary.
+  - [x] [CA-3] El build real `scripts/build_blueprint_pdf.sh` completa sin errores
+    de LaTeX/Pygments con el demo actual.
+  - [x] [CA-4] Los tests reflejan el nuevo contrato del glossary y quedan en verde.
+- [x] Rollback definido y validado (si aplica).
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o commit).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: rutas relativas incorrectas desde `lean_glossary.tex` a snippets
+  auxiliares dentro del build temporal.
+  - Mitigacion: generar rutas con `relative_tex_path()`/`latex_detokenize()` y
+    cubrirlo con pruebas unitarias.
+- Riesgo: declaraciones con Unicode, `_` o firmas multilinea fallen al pasar de
+  texto escapado a snippets `.lean`.
+  - Mitigacion: escribir snippets en archivos UTF-8 y dejar a `minted` manejar
+    el contenido, evitando escaping manual del codigo Lean.
+- Riesgo: el fallback cuando no se encuentra una firma se degrade y rompa el
+  PDF si la declaracion no existe localmente.
+  - Mitigacion: mantener un fallback seguro, pero escribirlo como snippet Lean
+    valido/minimo o como texto controlado dentro del flujo TeX.
+- Riesgo: regressiones en spacing o anchors del glossary.
+  - Mitigacion: conservar `\hypertarget{...}` y el encabezado corto enlazable,
+    cambiando solo el bloque del contenido.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto` (`Rubrica de severidad para hallazgos`).
+- Si una herramienta no reporta severidad, clasificar cada hallazgo con esa rubrica
+  y registrar la clasificacion/evidencia en este plan.
+- Si existe duda entre dos severidades, usar la mas alta de forma preventiva.
+
+**Alternativas Evaluadas y Rubrica:**
+- Escala cuantitativa recomendada: `1..5` por criterio (`5` es mejor).
+- Pesos:
+  - Alcance (20%)
+  - Simplicidad (20%)
+  - Riesgo tecnico (25%)
+  - Testabilidad (20%)
+  - Mantenibilidad (15%)
+- Alternativa A: generar snippets `.lean` del glossary en el build temporal y
+  renderizarlos con `\leaninputfile`, reutilizando el lexer y el estilo del
+  `Anexo`.
+  - Score por criterio: [A=5 S=4 R=4 T=5 M=5]
+  - Puntaje total ponderado: [91/100]
+- Alternativa B: ampliar `\leanstatement` para imitar visualmente el `Anexo`
+  sin usar `minted` ni archivos auxiliares.
+  - Score por criterio: [A=3 S=4 R=3 T=3 M=3]
+  - Puntaje total ponderado: [64/100]
+- Alternativa C: insertar bloques `minted` inline dentro de `lean_glossary.tex`
+  generando el codigo directamente desde Python.
+  - Score por criterio: [A=4 S=2 R=2 T=3 M=2]
+  - Puntaje total ponderado: [52/100]
+
+**Plan Seleccionado (resumen):**
+Elegir la alternativa A. Es la unica que realmente reutiliza la misma
+estrategia del `Anexo`, minimiza escaping manual de LaTeX y deja el estilo Lean
+centralizado en macros TeX. Tambien permite probar rutas y contenido de forma
+determinista sin alterar el paper ni el codigo fuente de las demostraciones.
+
+## Pasos del Plan
+
+- [x] STEP-01: Refactorizar el modelo/render del glossary para producir snippets
+  Lean auxiliares en el build temporal.
+  - Evidencia/resultado esperado: `tools/blueprint_paper.py` genera, por cada
+    entrada del glossary, un archivo `.lean` o equivalente temporal y
+    `lean_glossary.tex` lo referencia con la misma via de `minted` del `Anexo`.
+  - Validacion: `.venv/bin/pytest -q tests/test_blueprint_paper.py -k glossary`
+  - Artefacto esperado: `tools/blueprint_paper.py`, `tests/test_blueprint_paper.py`
+  - Evidencia capturada: `render_lean_glossary()` ahora escribe snippets bajo
+    `build/lean_glossary/` y los incluye con `\leaninputfile{<lexer>}{...}`;
+    los nombres de snippet usan el label del glossary para evitar colisiones de
+    `short_name` como `of_dvd`; `.venv/bin/pytest -q tests/test_blueprint_paper.py`
+    cubre el render del glossary y el caso de nombres duplicados.
+- [x] STEP-02: Ajustar la capa TeX para que el glossary use la estrategia del
+  `Anexo` sin perder anchors ni legibilidad.
+  - Evidencia/resultado esperado: `common.tex` conserva/reutiliza un macro claro
+    para bloques Lean cortos y `lean_glossary.tex` sigue exponiendo
+    `\hypertarget{...}` + nombre corto enlazable.
+  - Validacion: inspeccion del `.tex` generado y `pytest` sobre el texto esperado.
+  - Artefacto esperado: `blueprint/src/macros/common.tex` solo si hace falta,
+    mas ajustes en `tests/test_blueprint_paper.py`.
+  - Evidencia capturada: el macro `\leaninputfile` en
+    `blueprint/src/macros/common.tex` se endurecio con `breakanywhere` y se
+    simplifico quitando `frame`/`bgcolor` para evitar el error LaTeX
+    `Dimension too large` observado al renderizar anexos grandes; los anchors
+    `\hypertarget{...}` del glossary permanecen intactos.
+- [x] STEP-03: Ejecutar validacion automatica y build real del blueprint para
+  asegurar que no aparecen errores de LaTeX, rutas o Pygments.
+  - Evidencia/resultado esperado: tests en verde y `scripts/build_blueprint_pdf.sh`
+    completando con exit 0 sobre el demo actual.
+  - Validacion: `.venv/bin/pytest -q tests/test_blueprint_paper.py`,
+    `scripts/build_blueprint_pdf.sh`, `git diff -U3`.
+  - Artefacto esperado: evidencia reproducible documentada en `PLANS.md` y, tras
+    aprobacion, sincronizacion con `PROGRESS.md`.
+  - Evidencia capturada: `.venv/bin/pytest -q tests/test_blueprint_paper.py`
+    -> `15 passed`; `scripts/build_blueprint_pdf.sh` -> exit 0 con build final en
+    `blueprint/build/20260404_002550_Demo_20260403_172608_n_good_polynomials`
+    y PDF archivado en `blueprint/library/pdf/Demo_20260403_172608_n_good_polynomials.pdf`;
+    revision manual de `git diff -U3` sin hallazgos `Critico`/`Alto`.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: generar `lean_glossary.tex` en un `tmp_path` y confirmar que
+  referencia snippets Lean relativos en lugar de `\leanstatement`.
+- Escenario 2: correr `scripts/build_blueprint_pdf.sh` y confirmar que el PDF
+  compila con el glossary renderizado mediante `minted`.
+
+**Plan de Rollback:**
+- Trigger: el glossary deja de compilar, aparecen rutas rotas o el nuevo
+  formato vuelve ilegible el PDF.
+- Acciones:
+  - Revertir el render del glossary al esquema previo con `\leanstatement`.
+  - Eliminar cualquier macro auxiliar nuevo si no aporta estabilidad.
+  - Reejecutar `pytest` y el build del blueprint para confirmar restauracion.
+- Verificacion posterior: el glossary vuelve a su salida anterior y el PDF
+  compila sin depender de snippets auxiliares.
+  - Validacion del rollback: los cambios quedan acotados a `tools/blueprint_paper.py`,
+    `tests/test_blueprint_paper.py` y `blueprint/src/macros/common.tex`; revertir
+    esos archivos y rerunear `pytest` + `scripts/build_blueprint_pdf.sh`
+    restablece el comportamiento previo.
+
+**Comandos Relevantes:**
+- `.venv/bin/pytest -q tests/test_blueprint_paper.py` - validar el contrato del generador.
+- `scripts/build_blueprint_pdf.sh` - verificar la tuberia real del PDF.
+- `scripts/check_blueprint_decls.sh` - confirmar que el paper sigue referenciando declaraciones validas.
+- `git diff -U3` - revisar el alcance exacto del cambio.
+- Fallback si faltan herramientas/skills: inspeccion manual de `lean_glossary.tex`
+  generado y build local del blueprint del demo actual.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A por ahora]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [Estandar]
+- Ultimo sync confirmado: [2026-04-04T06:26:27.349+0000]
+- Divergencias detectadas: [Ninguna]
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-04T06:26:27.349+0000]
+
+---
