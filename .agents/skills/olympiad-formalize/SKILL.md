@@ -31,6 +31,9 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
    - Restate the claim precisely.
    - Identify the mathematical domain: number theory, combinatorics, algebra, inequalities, geometry, or mixed.
    - Decide whether the final Lean development likely needs one theorem or several helper lemmas.
+   - Preserve the original user-provided LaTeX statement. Once the paired blueprint
+     section exists, copy that statement into its `problemstatement` block instead
+     of paraphrasing it away.
 
 2. Start with `mimate-proof-strategy`.
    - Use `mimate-proof-strategy` first to search for 2-3 viable proof strategies.
@@ -56,6 +59,8 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
 
 6. Generate the final PDF.
    - After Lean verification succeeds, update the blueprint section for the selected demonstration.
+   - Keep the original problem statement in the section's `problemstatement`
+     block so the final PDF records the source problem explicitly.
    - Keep `\lean{...}` references aligned with the theorems actually discussed in the paper.
    - Run the repo PDF flow only after the Lean file is accepted.
    - The final PDF should rely on repo tooling for:

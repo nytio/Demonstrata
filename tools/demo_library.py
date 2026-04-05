@@ -91,7 +91,23 @@ def lean_template(title: str) -> str:
     )
 
 
-def tex_template(title: str) -> str:
+def problem_statement_template(*, prefix: str) -> str:
+    if normalize_prefix(prefix) == "Demo":
+        return (
+            "% If this demonstration originates from an external problem statement,\n"
+            "% replace the commented block below with the original LaTeX source.\n"
+            "% \\begin{problemstatement}\n"
+            "% Paste the original problem statement here.\n"
+            "% \\end{problemstatement}\n\n"
+        )
+    return (
+        "\\begin{problemstatement}\n"
+        "Replace this block with the original problem statement in LaTeX.\n"
+        "\\end{problemstatement}\n\n"
+    )
+
+
+def tex_template(title: str, *, prefix: str = "Demo") -> str:
     return (
         f"% title: {title.title()}\n"
         "% short-title: Lean Demonstration\n"
@@ -100,6 +116,7 @@ def tex_template(title: str) -> str:
         "% keywords: Lean 4, formalized mathematics, theorem proving\n"
         "% author: Mario Hernández M.\n\n"
         f"\\subsection{{{title}}}\n\n"
+        f"{problem_statement_template(prefix=prefix)}"
         "\\notready\n"
         "This demonstration entry was scaffolded automatically. Add a newly "
         "formalized theorem, its `\\lean{...}` reference, and a mathematical "
@@ -145,7 +162,7 @@ def scaffold_demo(
 ) -> DemoNames:
     names = build_names(title, stamp=stamp, prefix=prefix)
     ensure_file(repo_root / names.lean_path, lean_template(title))
-    ensure_file(repo_root / names.tex_path, tex_template(title))
+    ensure_file(repo_root / names.tex_path, tex_template(title, prefix=names.prefix))
     insert_before_marker(
         repo_root / "Biblioteca" / "Demonstrations.lean",
         IMPORTS_END,

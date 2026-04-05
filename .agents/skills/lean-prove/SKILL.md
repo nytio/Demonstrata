@@ -24,7 +24,8 @@ description: Draft or refine a Lean theorem in this repository and iterate until
    `scripts/new_demo.sh "<title>"` so the Lean file and blueprint section stay
    aligned from the beginning. If the result comes from a named source such as
    an olympiad, use `scripts/new_demo.sh --prefix IMO "<title>"` or another
-   relevant sigla.
+   relevant sigla. If the user also supplied the original problem statement,
+   copy that LaTeX into the blueprint section's `problemstatement` block.
 4. Import the smallest Mathlib modules that support the proof.
 5. Prefer helper lemmas if the proof script becomes unstable or opaque.
 6. Verify the edited file with `scripts/check_lean_json.sh <file.lean>`.

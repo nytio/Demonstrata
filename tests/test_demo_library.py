@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tools.demo_library import build_names, insert_before_marker, slugify
+from tools.demo_library import build_names, insert_before_marker, slugify, tex_template
 
 
 def test_slugify_normalizes_to_lowercase_underscored_words() -> None:
@@ -42,3 +42,17 @@ def test_insert_before_marker_adds_line_once(tmp_path: Path) -> None:
     insert_before_marker(target, "MARKER", "new-line")
 
     assert target.read_text(encoding="utf-8") == "a\nnew-line\nMARKER\nb\n"
+
+
+def test_tex_template_comments_problemstatement_for_demo_prefix() -> None:
+    template = tex_template("Odd Numbers Sum", prefix="Demo")
+
+    assert "% \\begin{problemstatement}" in template
+    assert "Replace this block with the original problem statement in LaTeX." not in template
+
+
+def test_tex_template_activates_problemstatement_for_named_source_prefix() -> None:
+    template = tex_template("Least Norwegian Number", prefix="IMO")
+
+    assert "\\begin{problemstatement}" in template
+    assert "Replace this block with the original problem statement in LaTeX." in template
