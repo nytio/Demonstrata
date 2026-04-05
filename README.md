@@ -10,11 +10,11 @@
 <p align="center">
   Un entorno de trabajo para convertir problemas matemáticos en demostraciones
   formales verificadas por Lean 4, documentadas en LaTeX y listas para
-  publicarse.
+  publicar.
 </p>
 
-`Biblioteca` combina Lean 4, Mathlib, automatización en Python y skills locales
-de Codex para construir una biblioteca viva de demostraciones. La idea central
+`Biblioteca` combina Lean 4, Mathlib4, automatización en Python y skills locales
+de Codex CLI para construir una biblioteca viva de demostraciones. La idea central
 es simple: el asistente puede proponer estrategias y borradores, pero la última
 palabra siempre la tiene el verificador formal.
 
@@ -26,7 +26,7 @@ palabra siempre la tiene el verificador formal.
   sección LaTeX y PDF final.
 - Mantiene un flujo reproducible con scripts concretos para compilar, depurar y
   publicar resultados.
-- Aprovecha `mathlib` como base de conocimiento matemática sin convertir el
+- Aprovecha `mathlib4` como base de conocimiento matemática sin convertir el
   proyecto en una simple búsqueda de teoremas existentes.
 - Deja listo el repositorio para crecer como biblioteca de demostraciones, no
   como una carpeta de experimentos aislados.
@@ -57,7 +57,7 @@ Ese modelo tiene mucho potencial para las matemáticas:
 - ayuda a detectar huecos lógicos que en una prueba informal pueden pasar
   desapercibidos;
 - obliga a explicitar hipótesis, cuantificadores y dependencias;
-- permite reutilizar resultados ya formalizados en `mathlib`;
+- permite reutilizar resultados ya formalizados en `mathlib4`;
 - facilita generar documentos técnicos donde el texto matemático y el código
   Lean están alineados.
 
@@ -147,7 +147,7 @@ scripts/build_blueprint_pdf.sh
 
 ## Ejemplo de uso
 
-Simplemente pedir a Codex un flujo olímpico completo:
+Simplemente pedir a Codex CLI un flujo olímpico completo:
 
 ```text
 /olympiad-formalize resuelve este problema:
@@ -160,7 +160,7 @@ Ver solución en: [blueprint/library/pdf/IMO_20260402_213030_divisors_plus_one_d
 ## Cómo funciona el skill `olympiad-formalize`
 
 `olympiad-formalize` es el skill coordinador para problemas de estilo
-olimpiada de matemáticas. No se limita a "buscar algo en Mathlib": organiza una secuencia
+olimpiada de matemáticas. No se limita a buscar algo en Mathlib, organiza una secuencia
 completa para pasar de un enunciado informal a una demostración formal y a un
 PDF final.
 
@@ -204,7 +204,7 @@ Además, el generador crea dentro de `blueprint/build/` archivos auxiliares como
 el PDF compilado. Esos artefactos temporales no se versionan; el PDF archivado
 sí.
 
-## Flujo recomendado de trabajo
+## Flujo interno de trabajo
 
 1. Crear una demostración nueva con `scripts/new_demo.sh`.
 2. Escribir o refinar el argumento matemático apoyándote en los skills del
@@ -224,7 +224,7 @@ paper con las declaraciones Lean. El resultado final incluye:
 - un `Anexo` con el código Lean completo de la demostración seleccionada.
 
 Por defecto, `scripts/build_blueprint_pdf.sh` trabaja sobre la demostración
-actual. Si quieres una colección:
+actual. Si se requier una colección usar:
 
 ```bash
 scripts/build_blueprint_pdf.sh --demo demo_20260402_155831_cubic_increment_sum --demo IMO_20260403_085959_finite_sets_with_divisibility_b_plus_two_c
@@ -233,7 +233,7 @@ scripts/build_blueprint_pdf.sh --all
 
 ## Exploración avanzada
 
-Para una navegación más profunda de `Mathlib`, el repo documenta dos rutas
+Para una navegación más profunda de `Mathlib4`, el repo documenta dos rutas
 opcionales en `docs/mathlib-exploration.md`:
 
 - exportación NDJSON con `lean4export`;
