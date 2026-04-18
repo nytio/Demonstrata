@@ -25,6 +25,9 @@ DECLARATION_HEAD_PATTERN = re.compile(
     r"^\s*(theorem|lemma|def|abbrev|instance|class|structure|inductive)\s+([A-Za-z0-9_']+)\b"
 )
 PYGMENTS_LEXER_PATTERN = re.compile(r"^\*\s+([^:]+):\s*$")
+TEXT_MODE_MATH_COMMAND_PATTERN = re.compile(
+    r"(?<!\\)\\(ge|le|neq|ne|mid|nmid|to|mapsto|iff|implies|Rightarrow|leftarrow|rightarrow|infty)\b"
+)
 
 
 @dataclass(frozen=True)
@@ -296,6 +299,31 @@ def latex_escape(text: str) -> str:
     return "".join(replacements.get(char, char) for char in text)
 
 
+def sanitize_latex_text(text: str) -> str:
+    """Wrap standalone math control sequences so metadata remains valid in text mode."""
+
+    def replace(match: re.Match[str]) -> str:
+        command = match.group(1)
+        return rf"\ensuremath{{\{command}}}"
+
+    return TEXT_MODE_MATH_COMMAND_PATTERN.sub(replace, text)
+
+
+def latex_breakable_mono(text: str) -> str:
+    rendered: list[str] = []
+    previous: str | None = None
+    for char in text:
+        if previous is not None and char.isupper() and (previous.islower() or previous.isdigit()):
+            rendered.append(r"\hspace{0pt}")
+
+        rendered.append(latex_escape(char))
+        if char in {"_", ".", "/"}:
+            rendered.append(r"\hspace{0pt}")
+        previous = char
+
+    return "".join(rendered)
+
+
 def extract_declarations_from_text(content: str) -> list[str]:
     declarations: list[str] = []
     for raw_names in LEAN_MACRO_PATTERN.findall(content):
@@ -419,7 +447,7 @@ def render_lean_refs(build_dir: Path, entries: list[LeanGlossaryEntry]) -> Path:
     for entry in entries:
         lines.append(
             r"\expandafter\def\csname leanref@" + entry.declaration + r"\endcsname{"
-            + r"\hyperlink{" + entry.label + r"}{\texttt{" + latex_escape(entry.short_name) + r"}}"
+            + r"\leaninline{" + latex_breakable_mono(entry.short_name) + r"}"
             + r"}"
         )
     path = build_dir / "lean_refs.tex"
@@ -452,8 +480,8 @@ def render_lean_glossary(
                 [
                     r"\noindent\hypertarget{"
                     + entry.label
-                    + r"}{\texttt{"
-                    + latex_escape(entry.short_name)
+                    + r"}{\leanname{"
+                    + latex_breakable_mono(entry.short_name)
                     + r"}}\par",
                     r"\leaninputfile{" + lexer_name + r"}{"
                     + latex_detokenize(relative_tex_path(build_dir, snippet_path))
@@ -551,19 +579,23 @@ def render_paper_tex(
     *,
     include_toc: bool,
 ) -> Path:
+    safe_title = sanitize_latex_text(metadata.title)
+    safe_short_title = sanitize_latex_text(metadata.short_title)
+    safe_keywords = sanitize_latex_text(metadata.keywords)
+    safe_abstract = sanitize_latex_text(metadata.abstract)
     content = "\n".join(
         [
             r"\documentclass[11pt]{amsart}",
             rf"\input{{{latex_path(Path('../../src/macros/common.tex'))}}}",
             rf"\input{{{latex_path(Path('../../src/macros/print.tex'))}}}",
             r"\input{lean_refs.tex}",
-            rf"\title[{metadata.short_title}]{{{metadata.title}}}",
+            rf"\title[{safe_short_title}]{{{safe_title}}}",
             rf"\author{{{metadata.author}}}",
             rf"\subjclass[2020]{{{metadata.subjclass}}}",
-            rf"\keywords{{{metadata.keywords}}}",
+            rf"\keywords{{{safe_keywords}}}",
             r"\date{\today}",
             r"\begin{document}",
-            rf"\begin{{abstract}}{metadata.abstract}\end{{abstract}}",
+            rf"\begin{{abstract}}{safe_abstract}\end{{abstract}}",
             r"\maketitle",
             r"\tableofcontents" if include_toc else "",
             r"\input{selected_content.tex}",

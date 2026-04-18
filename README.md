@@ -143,6 +143,18 @@ scripts/build_blueprint_pdf.sh
 
 # Ejecutar pruebas Python
 .venv/bin/pytest -q
+
+# Persistir el indice local de loogle para evitar esperas en frio
+scripts/build_loogle_index.sh
+
+# Consultar Mathlib usando explicitamente el indice persistido canonico
+scripts/loogle_local.sh --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib 'Fintype.card_subtype'
+
+# Verificar que el servicio local de loogle responde y devuelve JSON
+scripts/check_loogle_local.sh
+
+# Levantar loogle, compilar, correr tests y abrir Codex con una consulta inicial
+scripts/init.sh "Tu consulta para Codex"
 ```
 
 ## Ejemplo de uso
@@ -233,11 +245,26 @@ scripts/build_blueprint_pdf.sh --all
 
 ## Exploración avanzada
 
-Para una navegación más profunda de `Mathlib4`, el repo documenta dos rutas
-opcionales en `docs/mathlib-exploration.md`:
+Para una navegación más profunda de `Mathlib4`, el repo documenta el orden de
+uso recomendado y tres capas opcionales en `docs/mathlib-exploration.md`:
 
-- exportación NDJSON con `lean4export`;
-- exploración semántica con LeanExplore.
+- primero, built-ins de Lean como `#check`, `#find`, `exact?`, `apply?`, `rw?`,
+  junto con `rg`;
+- después, búsqueda local con `loogle` mediante:
+  `scripts/build_loogle_local.sh`,
+  `scripts/build_loogle_index.sh`,
+  `scripts/check_loogle_local.sh`,
+  `scripts/loogle_local.sh`,
+  `scripts/start_loogle_local_server.sh`;
+- luego, exportación NDJSON con `lean4export`;
+- y por último, exploración semántica con LeanExplore.
+
+Para un clon limpio, `scripts/build_loogle_local.sh` asume que ya existe el
+source upstream de `loogle` en `.local-tools/loogle`. La búsqueda sobre
+`Biblioteca` sigue siendo por módulo (`--module`), no como agregado global.
+Para `Mathlib`, la ruta canónica del índice persistido en este workspace es
+`/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra` y se
+reutiliza con `--read-index`; solo se regenera cuando cambia `Mathlib`.
 
 No son requisitos de la puesta en marcha base. Son aceleradores opcionales
 cuando la exploración de resultados en `mathlib` se vuelve un cuello de botella

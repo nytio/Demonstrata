@@ -23,7 +23,24 @@ description: Verify Lean files and projects in this repository using the strict 
    `.venv/bin/python scripts/summarize_lean_json.py <jsonl-file>`
 4. After a local fix, run `scripts/build_strict.sh`.
 5. If symbol discovery is the blocker rather than verification itself, consult
-   `docs/mathlib-exploration.md` for NDJSON export and semantic-index options.
+   `docs/mathlib-exploration.md` for the local search order:
+   - `#check`, `#find`, `exact?`, `apply?`, `rw?`, and `rg` first;
+   - `scripts/check_loogle_local.sh` before depending on the local server path;
+   - `scripts/loogle_local.sh '<query>'` for `Mathlib`;
+   - for `Mathlib` in sandbox-sensitive flows, prefer the explicit persisted
+     index path:
+     `scripts/loogle_local.sh --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib '<query>'`;
+   - `scripts/loogle_local.sh --module <Biblioteca.Module> '<query>'` for
+     built repo modules;
+   - if `loogle` gets stuck on a cold index, say that explicitly, check for a
+     repo-local persisted index under `.local-tools/loogle-indexes/`; for
+     `Mathlib`, rerun explicitly with
+     `--read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib`;
+     if there is no persisted index, fall back to `rg` and direct declaration
+     inspection instead of waiting indefinitely;
+   - `scripts/start_loogle_local_server.sh` only when you specifically want
+     Lean-side `#loogle` queries to resolve against the local server after the
+     health check passes.
 6. Treat warnings that hide incomplete proofs as failures.
 7. If the task also touches the PDF blueprint, run
    `scripts/check_blueprint_decls.sh` after Lean verification.
@@ -41,6 +58,12 @@ description: Verify Lean files and projects in this repository using the strict 
 - Verification is not limited to imported declarations already present in
   `Mathlib` or `Biblioteca`; it must also support newly authored proofs created
   by the LLM in this repo.
+- Prefer built-in Lean lookup and direct declaration inspection before
+  escalating to `loogle`, NDJSON export, or LeanExplore.
+- Prefer local `loogle` before NDJSON export or LeanExplore when the main issue
+  is declaration lookup rather than semantic retrieval.
+- Treat `Biblioteca` lookup as module-scoped unless the aggregate import is
+  explicitly known to be stable.
 - Treat NDJSON export and semantic indexes as optional accelerators, not as a
   replacement for Lean verification.
 - Prefer NDJSON export before a full semantic-search stack when the need is

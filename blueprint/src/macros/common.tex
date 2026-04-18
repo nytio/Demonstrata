@@ -47,18 +47,35 @@
 \newcommand{\leanindent}[1]{\hspace*{\dimexpr #1\leanindentwidth\relax}}
 
 \ExplSyntaxOn
+\NewDocumentCommand{\leanname}{m}{\texttt{#1}}
+\NewDocumentCommand{\leaninline}{m}
+  {
+    \ifmmode
+      \text{\leanname{#1}}
+    \else
+      \leanname{#1}
+    \fi
+  }
+\NewDocumentCommand{\leanlink}{m m}
+  {
+    \ifmmode
+      \text{\hyperlink{#1}{\leanname{#2}}}
+    \else
+      \hyperlink{#1}{\leanname{#2}}
+    \fi
+  }
 \cs_new:Npn \lean_lookup:n #1
   {
     \cs_if_exist:cTF { leanref@#1 }
       { \use:c { leanref@#1 } }
-      { \nolinkurl{#1} }
+      { \leaninline{#1} }
   }
 \cs_new_protected:Npn \lean_render:n #1
   {
     \seq_set_split:Nnn \l_tmpa_seq { , } { #1 }
     \seq_map_indexed_inline:Nn \l_tmpa_seq
       {
-        \int_compare:nNnT { ##1 } > { 1 } { ,~ }
+        \int_compare:nNnT { ##1 } > { 1 } { ,\allowbreak\space }
         \lean_lookup:n { \tl_trim_spaces:n { ##2 } }
       }
   }

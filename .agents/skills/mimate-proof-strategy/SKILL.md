@@ -78,7 +78,24 @@ Use this section when the task is a mathematical problem, especially olympiad-st
 
 **5. Search for nearby formal ingredients**
 - Check whether the repo already contains a similar theorem or lemma pattern.
-- For Mathlib exploration, first use local search and diagnostics. If deeper exploration is needed, consult `docs/mathlib-exploration.md`.
+- For Mathlib exploration, first use local search and diagnostics:
+  - `#check`, `#find`, `exact?`, `apply?`, `rw?`;
+  - `rg` and direct declaration inspection;
+  - `scripts/check_loogle_local.sh`;
+  - `scripts/loogle_local.sh '<query>'` for `Mathlib`;
+  - for `Mathlib` in sandbox-sensitive flows, prefer the explicit persisted
+    index path:
+    `scripts/loogle_local.sh --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib '<query>'`;
+  - `scripts/loogle_local.sh --module <Biblioteca.Module> '<query>'` for built
+    repo modules;
+  - if `loogle` stalls while building or loading an index, report that,
+    check for a persisted repo-local index under `.local-tools/loogle-indexes/`;
+    for `Mathlib`, rerun with
+    `--read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib`;
+    if no persisted index exists continue with `rg` and the declarations already located;
+  - `scripts/start_loogle_local_server.sh` only when Lean-side `#loogle`
+    queries are the right fit and the health check already passes.
+- If deeper exploration is still needed, consult `docs/mathlib-exploration.md`.
 - Treat Mathlib lookup as support, not as the substitute for a new proof.
 - If a theorem appears to exist, still decide whether the repo needs a new demonstration entry or just a shorter proof using that theorem.
 
@@ -107,6 +124,10 @@ Use this section when the task is a mathematical problem, especially olympiad-st
   - structural reduction vs bounded remainder cases;
   - explicit construction vs impossibility obstruction.
 - For theorem search, inspect local declarations first. Escalate to the documented Mathlib exploration path only when names or nearby results are the blocker.
+- In this repo, `loogle` is the first advanced lookup tool. NDJSON export and
+  LeanExplore are later escalations, not the starting point.
+- For `Biblioteca`, default to module-scoped lookup until the aggregate library
+  is known to be stable for search.
 - For repo workflow or skill changes, focus on trigger boundaries, progressive disclosure, whether scripts or references are justified, and interaction with existing skills.
 - For UI work in an existing product surface, preserve the established visual language unless the user explicitly asks to explore alternatives.
 - For OpenAI or third-party tooling choices, delegate the documentation lookup to `openai-docs` or `context7-docs` instead of embedding stale guidance here.

@@ -1,0 +1,149 @@
+% title: n-Good Polynomials
+% short-title: n-Good Polynomials
+% abstract: We prove that every integer polynomial is n-good if and only if n \ge 3. The note explains the modular reduction, the finite checks for n=3 and n=4, and the odd-prime argument based on rootless quadratic polynomials over finite fields. The attached Lean file formalizes the reduction from modular witnesses to integer witnesses, the bad cases n=1 and n=2, the complete residue-class verifications for n=3 and n=4, the odd-prime analysis, and the final classification theorem.
+% subjclass: 11C08, 11T06
+% keywords: polynomial congruences, finite fields, quadratic polynomials, Lean 4
+% author: Mario Hernández M.
+
+\subsection{\(n\)-Good Polynomials}
+
+We say that an integer polynomial \(P\) is \(n\)-good if there exists a quadratic
+polynomial \(Q\in\mathbf Z[x]\) such that
+\[
+  n \nmid Q(k)\bigl(P(k)+Q(k)\bigr)
+\]
+for every integer \(k\). In Lean this condition is encoded by
+\lean{Biblioteca.Demonstrations.IntFunctionNGood},
+\lean{Biblioteca.Demonstrations.PolynomialNGood}, and
+\lean{Biblioteca.Demonstrations.AllPolynomialsNGood}.
+
+\begin{theorem}
+Every polynomial with integer coefficients is \(n\)-good if and only if
+\[
+  n \ge 3.
+\]
+\end{theorem}
+
+\begin{proof}
+The cases \(n=1\) and \(n=2\) are impossible. For \(n=1\), divisibility by \(1\)
+is automatic, so no witness can exist. For \(n=2\), take \(P(x)=1\); then
+\(Q(k)(Q(k)+1)\) is always even, so the product is always divisible by \(2\).
+These obstructions are formalized in
+\lean{Biblioteca.Demonstrations.not_allPolynomialsNGood_one} and
+\lean{Biblioteca.Demonstrations.not_allPolynomialsNGood_two}.
+
+The positive direction starts with a monotonicity observation: if \(d\mid n\) and
+every polynomial is \(d\)-good, then every polynomial is \(n\)-good, because
+non-divisibility by \(d\) implies non-divisibility by \(n\). This is the content
+of the lifting lemmas
+\lean{Biblioteca.Demonstrations.IntFunctionNGood.of_dvd},
+\lean{Biblioteca.Demonstrations.PolynomialNGood.of_dvd}, and
+\lean{Biblioteca.Demonstrations.AllPolynomialsNGood.of_dvd}.
+Hence it is enough to prove the claim for \(n=3\), \(n=4\), and every odd prime
+\(p\ge 5\).
+
+For \(n=3\) and \(n=4\), one may reduce modulo \(n\) and work with polynomial
+functions on \(\mathbf Z/n\mathbf Z\). The Lean file introduces the modular
+predicate \(\lean{Biblioteca.Demonstrations.GoodModProduct}\) and the reduction
+map \(\lean{Biblioteca.Demonstrations.polynomialModFn}\), then lifts any modular
+quadratic witness back to an integer quadratic witness through
+\lean{Biblioteca.Demonstrations.polynomialNGood_of_goodModProduct}. The residue
+class checks themselves are finite and are formalized by
+\lean{Biblioteca.Demonstrations.goodModProduct_zmod_three},
+\lean{Biblioteca.Demonstrations.goodModProduct_zmod_four},
+\lean{Biblioteca.Demonstrations.allPolynomialsNGood_three}, and
+\lean{Biblioteca.Demonstrations.allPolynomialsNGood_four}.
+
+It remains to handle an odd prime \(p\ge 5\). Reduce \(P\) modulo \(p\), and
+view it as a polynomial function \(f:\mathbf F_p\to\mathbf F_p\). We split into
+three cases, exactly as in the Lean proof.
+
+First, if \(f\equiv 0\), it is enough to choose a quadratic with no root in
+\(\mathbf F_p\); for instance \(q(x)=x^2-u\), where \(u\) is a fixed nonsquare.
+Then \(q(x)\neq 0\) for every \(x\), so
+\[
+  q(x)\bigl(q(x)+f(x)\bigr)=q(x)^2\neq 0
+\]
+for all \(x\in\mathbf F_p\).
+
+Second, suppose \(f\) has both a zero and a nonzero value. Fix \(z\) with
+\(f(z)=0\), and choose \(x_0\) with \(f(x_0)\neq 0\). Also choose a nonzero
+value \(y_0\) such that \(y_0\neq -f(x_0)\). Consider the family of rootless
+quadratics \(q\) satisfying \(q(x_0)=y_0\). If every such \(q\) were bad, we
+could assign to it some point \(x\) such that \(q(x)=-f(x)\). That point cannot
+be \(x_0\), by the choice of \(y_0\), and it cannot be \(z\), because a rootless
+quadratic never vanishes. Thus every bad quadratic produces a point in
+\(\mathbf F_p\setminus\{x_0,z\}\). For each fixed \(x\neq x_0,z\), the condition
+\(q(x)=-f(x)\) cuts the family down to at most \((p+1)/2\) possibilities. Since
+there are only \(p-2\) such points, double counting would give
+\[
+  p\cdot\frac{p-1}{2}\le (p-2)\cdot\frac{p+1}{2},
+\]
+which is false for odd \(p\). Hence some rootless quadratic in the family avoids
+\(-f(x)\) everywhere.
+
+Third, assume that \(f\) is nowhere zero. If \(f\) misses some nonzero value
+\(a\), then the constant quadratic \(q(x)=-a\) already works: it is never zero
+and \(q(x)+f(x)=f(x)-a\neq 0\) for every \(x\). So the only difficult case is
+when \(f\) is surjective onto \(\mathbf F_p^\times\).
+
+In that last case, choose for each nonzero \(y\) one preimage \(x\) with
+\(f(x)=y\). Since \(|\mathbf F_p^\times|=p-1<p=|\mathbf F_p|\), this choice
+cannot cover all of \(\mathbf F_p\); let \(x_{\mathrm{extra}}\) be a point that
+is not selected. Now fix a nonsquare \(n\in\mathbf F_p^\times\), and set
+\[
+  y_0=-f(x_{\mathrm{extra}}),\qquad
+  u=\frac{n}{f(x_{\mathrm{extra}})},\qquad
+  x_0 \text{ chosen so that } f(x_0)=u.
+\]
+Then \(y_0(-u)=n\) is a nonsquare, so in particular \(y_0\neq -f(x_0)\).
+Consider again the family of rootless quadratics \(q\) with \(q(x_0)=y_0\).
+
+If every such \(q\) were bad, then each one would either be bad at the special
+point \(x_{\mathrm{extra}}\), or else at some point of the form \(x=\pi(y)\),
+where \(y\in\mathbf F_p^\times\setminus\{u\}\) and \(\pi(y)\) is the chosen
+preimage of \(y\). For a fixed \(y\), the number of quadratics with
+\(q(\pi(y))=-y\) depends on whether \(y_0(-y)\) is a square or a nonsquare:
+in the square case there are at most \((p-1)/2\), and in the nonsquare case at
+most \((p+1)/2\). Moreover, because multiplication by \(y_0\) permutes
+\(\mathbf F_p^\times\) and \(y_0(-u)=n\) is a nonsquare, the values
+\(y_0(-y)\) split as follows when \(y\) runs through
+\(\mathbf F_p^\times\setminus\{u\}\):
+\[
+  \frac{p-1}{2}\text{ of them are squares, and }\frac{p-3}{2}\text{ are nonsquares.}
+\]
+The special point \(x_{\mathrm{extra}}\) contributes at most \((p-1)/2\) more
+quadratics. Therefore double counting would force
+\[
+  p\cdot\frac{p-1}{2}
+  \le
+  \frac{p-1}{2}
+  +\frac{p-1}{2}\cdot\frac{p-1}{2}
+  +\frac{p-3}{2}\cdot\frac{p+1}{2},
+\]
+and this inequality is again false for odd \(p\). Hence some rootless
+quadratic \(q\) in the family is not bad at any point. In other words,
+\[
+  q(x)\bigl(q(x)+f(x)\bigr)\neq 0
+  \qquad\text{for all }x\in\mathbf F_p.
+\]
+
+Finally, lift \(q\) to an integer quadratic \(Q\). Since \(Q(k)\) and \(P(k)\)
+reduce to \(q(\bar k)\) and \(f(\bar k)\) modulo \(p\), the product
+\(Q(k)(P(k)+Q(k))\) is never divisible by \(p\), and therefore not divisible by
+any multiple of \(p\). Together with the cases \(3\) and \(4\), this proves that
+every polynomial is \(n\)-good for every \(n\ge 3\).
+\end{proof}
+
+The Lean development formalizes the odd-prime analysis through
+\lean{Biblioteca.Demonstrations.goodModFunction_zmod_odd_prime_zero},
+\lean{Biblioteca.Demonstrations.goodModFunction_zmod_odd_prime_has_zero},
+\lean{Biblioteca.Demonstrations.goodModFunction_zmod_of_not_surjective_nonzero},
+\lean{Biblioteca.Demonstrations.goodModFunction_zmod_odd_prime_nowhere_zero_surjective},
+\lean{Biblioteca.Demonstrations.goodModProduct_zmod_odd_prime}, and
+\lean{Biblioteca.Demonstrations.allPolynomialsNGood_odd_prime}, and concludes
+with the classification theorem
+\lean{Biblioteca.Demonstrations.allPolynomialsNGood_iff_of_pos}. It also keeps
+the interpolation lemma
+\lean{Biblioteca.Demonstrations.card_quadCoeff_eval_eq} as a reusable
+finite-field ingredient.

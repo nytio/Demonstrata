@@ -30,7 +30,27 @@ description: Draft or refine a Lean theorem in this repository and iterate until
 5. Prefer helper lemmas if the proof script becomes unstable or opaque.
 6. Verify the edited file with `scripts/check_lean_json.sh <file.lean>`.
 7. If the missing ingredient is declaration discovery inside `Mathlib`, consult
-   `docs/mathlib-exploration.md` before expanding imports blindly.
+   `docs/mathlib-exploration.md` before expanding imports blindly. The default
+   local path in this repo is:
+   - try `#check`, `#find`, `exact?`, `apply?`, `rw?`, and `rg` first;
+   - run `scripts/check_loogle_local.sh` before relying on the local `loogle`
+     path;
+   - use `scripts/loogle_local.sh '<query>'` for `Mathlib`;
+   - when `Mathlib` is the target and sandbox startup is sensitive, prefer the
+     explicit persisted-index path:
+     `scripts/loogle_local.sh --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib '<query>'`;
+   - use `scripts/loogle_local.sh --module <Biblioteca.Module> '<query>'` for
+     built modules in `Biblioteca`;
+   - if `loogle` stalls while building or loading its index, say that
+     explicitly; for `Mathlib`, rerun with
+     `--read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib`;
+     for other modules, look for a repo-local persisted index under
+     `.local-tools/loogle-indexes/`; only if no persisted index exists continue
+     with `rg` plus the declarations already located instead of waiting indefinitely;
+   - if repeated Lean-side `#loogle` queries are useful, start
+     `scripts/start_loogle_local_server.sh` and make sure the health check
+     passes so LeanSearchClient hits the local server configured in
+     `.codex/config.toml`.
 8. Finish with `scripts/build_strict.sh`.
 9. If the user wants a PDF or a narrative counterpart, update the local
    blueprint and run `scripts/check_blueprint_decls.sh`.
@@ -48,8 +68,14 @@ description: Draft or refine a Lean theorem in this repository and iterate until
   demonstration and prove it under LLM guidance rather than stopping at a list
   of possibly relevant lemmas.
 - Explain the blocking diagnostic if Lean rejects the theorem.
+- Prefer built-in Lean lookup (`#find`, `#check`, `exact?`, `apply?`, `rw?`)
+  before escalating to external search tools.
 - Use NDJSON export or a semantic index only when normal `Mathlib` navigation
   stops being efficient.
+- Prefer local `loogle` before NDJSON export or LeanExplore when the blocker is
+  discovering the right declaration name or nearby theorem shape.
+- Treat `Biblioteca` lookup as module-scoped until the repo documents a stable
+  aggregate search path.
 - Prefer NDJSON export when you need bulk declaration context; prefer LeanExplore
   only when the challenge is semantic retrieval of unknown names.
 - Use `\lean{...}` references in `blueprint/src` when the formalized result

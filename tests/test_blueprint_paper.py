@@ -17,6 +17,7 @@ from tools.blueprint_paper import (
     render_lean_appendix,
     render_lean_glossary,
     render_lean_refs,
+    render_paper_tex,
     remove_legacy_archive_pdfs,
     resolve_minted_config,
     resolve_selected_sections,
@@ -229,9 +230,9 @@ def test_render_lean_support_files_include_short_names_and_glossary(tmp_path: Pa
     ).read_text(encoding="utf-8")
 
     assert "leanref@Biblioteca.Demonstrations.example_one" in refs_text
-    assert r"\texttt{example\_one}" in refs_text
+    assert r"\leaninline{example\_\hspace{0pt}one}" in refs_text
     assert r"\section*{Lean Glossary}" in glossary_text
-    assert r"\texttt{example\_one}" in glossary_text
+    assert r"\leanname{example\_\hspace{0pt}one}" in glossary_text
     assert (
         r"\leaninputfile{lean4}{\detokenize{lean_glossary/example-one.lean}}"
         in glossary_text
@@ -414,3 +415,29 @@ def test_render_lean_appendix_uses_inputminted_with_relative_path(tmp_path: Path
     ) in appendix_text
     assert r"\addcontentsline{toc}{subsection}{Demo example.lean}" in appendix_text
     assert r"\leaninputfile{lean4}{\detokenize{../Demo_example.lean}}" in appendix_text
+
+
+def test_render_paper_tex_sanitizes_text_mode_math_commands_in_metadata(tmp_path: Path) -> None:
+    build_dir = tmp_path / "build"
+    build_dir.mkdir()
+
+    paper_path = render_paper_tex(
+        build_dir,
+        PaperMetadata(
+            title=r"n \ge 3",
+            short_title=r"n \ge 3",
+            abstract=r"We prove n \ge 3 and d \mid n.",
+            subjclass="03B35",
+            keywords=r"cases n \ge 3",
+        ),
+        include_toc=False,
+    )
+
+    paper_text = paper_path.read_text(encoding="utf-8")
+
+    assert r"\title[n \ensuremath{\ge} 3]{n \ensuremath{\ge} 3}" in paper_text
+    assert (
+        r"\begin{abstract}We prove n \ensuremath{\ge} 3 and d \ensuremath{\mid} n.\end{abstract}"
+        in paper_text
+    )
+    assert r"\keywords{cases n \ensuremath{\ge} 3}" in paper_text

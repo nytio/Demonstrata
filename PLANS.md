@@ -1067,3 +1067,591 @@ determinista sin alterar el paper ni el codigo fuente de las demostraciones.
 **Ultima Actualizacion:** [2026-04-04T06:26:27.349+0000]
 
 ---
+## [PLAN-20260416-01] Integracion operativa de busqueda Lean
+
+**Plan ID:** PLAN-20260416-01
+**Objetivo General:** Cerrar la ruta operativa de descubrimiento de declaraciones para `Mathlib` y `Biblioteca`, unificando docs y skills, y agregando un health-check reproducible para `loogle` local.
+**Owner:** Codex
+**Fecha de inicio:** 2026-04-16
+**Estado de aprobacion:** Aprobado
+**Aprobado por:** Usuario (chat)
+**Timestamp de aprobacion:** 2026-04-17T02:20:42.000+0000
+**Evidencia de aprobacion (chat/referencia):** Mensajes del usuario: "Adelante" y luego "Adelante, ejecuta este plan" en esta sesion.
+**Evidencia de /plan:** Planificacion no interactiva registrada en chat y mediante la herramienta `update_plan` de esta sesion; no hubo slash commands disponibles.
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: actualizar `README.md`, `docs/mathlib-exploration.md`, los skills Lean relevantes, agregar `scripts/check_loogle_local.sh`, y sumar tests Python minimos para el servidor local de `loogle`.
+- Excluye: estabilizar el agregado global de `Biblioteca`, corregir demostraciones Lean rotas, o redisenar la arquitectura del servidor local.
+
+**Supuestos:**
+- El flujo recomendado del repo debe priorizar primitives de Lean, `rg` y `loogle` local antes de `lean4export` o LeanExplore.
+- `Biblioteca` sigue siendo consultable por modulo, no como corpus global estable.
+
+**Dependencias:**
+- `rg`, `curl`, `rsync`, `.venv/bin/python`, `$HOME/.elan/bin/lake`.
+- Scripts existentes: `scripts/build_loogle_local.sh`, `scripts/loogle_local.sh`, `scripts/start_loogle_local_server.sh`.
+
+**Tipo de tarea:** Mixta
+**Nivel de riesgo/complejidad:** Medio
+**Modo de planificacion:** Completo (2-3 alternativas)
+**Origen de alternativas:** Analisis manual en chat y `PLANS.md`
+**Justificacion del modo elegido:** El trabajo toca documentacion, skills, shell scripts y Python, y requiere validacion cruzada sin alterar la estructura base del repo.
+**Modo de seguimiento en `PROGRESS.md`:** No aplica (sin `PROGRESS.md`)
+**Justificacion del modo de seguimiento:** La trazabilidad del cambio queda suficientemente cubierta en este plan y la tarea no requiere bitacora separada.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde: `.venv/bin/python -m pytest -q`.
+- [x] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual reproducible documentada.
+- [x] (`Documentacion`) Exactitud tecnica verificada y enlaces/comandos validados.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no reporta severidad explicita.
+- [x] Documentacion actualizada en: `README.md`, `docs/mathlib-exploration.md`.
+- [x] Criterios de aceptacion funcional cumplidos: `CA-1`, `CA-2`, `CA-3`.
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o commit).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: romper cambios locales ya presentes en docs/skills.
+  - Mitigacion: editar solo secciones puntuales y revisar el diff antes de cerrar.
+- Riesgo: que el health-check dependa de red o permisos de loopback del entorno.
+  - Mitigacion: separar validacion shell y validacion de socket; documentar cualquier limitacion restante.
+
+**Alternativas Evaluadas y Rubrica:**
+- Alternativa A: corregir solo docs.
+  - Score por criterio: [A=2 S=5 R=4 T=2 M=2]
+  - Puntaje total ponderado: 61/100
+- Alternativa B: docs + skills + health-check + tests minimos.
+  - Score por criterio: [A=5 S=4 R=4 T=5 M=5]
+  - Puntaje total ponderado: 91/100
+- Alternativa C: redisenar ademas el indexado global de `Biblioteca`.
+  - Score por criterio: [A=3 S=1 R=1 T=2 M=2]
+  - Puntaje total ponderado: 35/100
+
+**Plan Seleccionado (resumen):**
+Ejecutar la alternativa B. Corrige la incoherencia operativa real del repo, deja una verificacion reproducible para `loogle` local y mantiene fuera de alcance la estabilizacion mas costosa de `Biblioteca`.
+
+## Pasos del Plan
+
+- [x] STEP-01: Unificar la ruta operativa en `README.md` y `docs/mathlib-exploration.md`.
+  - Evidencia/resultado esperado: docs alineadas sobre el orden `Lean built-ins -> rg -> loogle -> lean4export -> LeanExplore`.
+  - Validacion: `git diff -U3 -- README.md docs/mathlib-exploration.md`
+  - Artefacto esperado: diff de documentacion.
+- [x] STEP-02: Ajustar los skills Lean para usar el mismo orden operativo.
+  - Evidencia/resultado esperado: `lean-prove`, `lean-verify` y `mimate-proof-strategy` mencionan built-ins, `scripts/check_loogle_local.sh` y el uso por modulo de `Biblioteca`.
+  - Validacion: `git diff -U3 -- .agents/skills/lean-prove/SKILL.md .agents/skills/lean-verify/SKILL.md .agents/skills/mimate-proof-strategy/SKILL.md`
+  - Artefacto esperado: diff de skills.
+- [x] STEP-03: Agregar `scripts/check_loogle_local.sh` y tests Python minimos para el servidor local.
+  - Evidencia/resultado esperado: script nuevo y test de `tools/loogle_local_server.py`.
+  - Validacion: `bash -n scripts/check_loogle_local.sh` y `.venv/bin/python -m pytest -q`
+  - Artefacto esperado: script y test.
+- [x] STEP-04: Validar el cambio y dejar trazabilidad final en este plan.
+  - Evidencia/resultado esperado: comandos de validacion ejecutados y estado final actualizado.
+  - Validacion: `git diff -U3`, `.venv/bin/python -m pytest -q`
+  - Artefacto esperado: evidencia en respuesta final.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: `scripts/check_loogle_local.sh` detecta falta de bootstrap de `loogle` y emite mensaje accionable.
+- Escenario 2: con el servidor local arriba, `scripts/check_loogle_local.sh` confirma salud del endpoint `/` y de `/json`.
+- Evidencia capturada en:
+  - `bash -n scripts/check_loogle_local.sh scripts/build_loogle_local.sh scripts/loogle_local.sh scripts/start_loogle_local_server.sh`
+  - `.venv/bin/python -m pytest -q` -> `31 passed`
+  - `scripts/check_loogle_local.sh` -> error accionable cuando el servidor no esta arriba
+  - `scripts/check_loogle_local.sh --start` -> `Local loogle server is healthy at http://127.0.0.1:8088`
+
+**Plan de Rollback:**
+- Trigger: regresion en docs/skills o fallo del nuevo health-check.
+- Acciones: revertir los cambios en docs/skills/script/test de este plan.
+- Verificacion posterior: rerun de `.venv/bin/python -m pytest -q` y revision del diff.
+
+**Comandos Relevantes:**
+- `.venv/bin/python -m pytest -q` - validar tests Python.
+- `bash -n scripts/check_loogle_local.sh scripts/build_loogle_local.sh scripts/loogle_local.sh scripts/start_loogle_local_server.sh` - validar shell scripts.
+- `git diff -U3` - revisar el alcance exacto del parche.
+
+**Trazabilidad (links):**
+- Issue/Ticket: N/A
+- PR/Commit: N/A
+- Decision(es) relacionada(s): N/A
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: No aplica
+- Ultimo sync confirmado: N/A
+- Divergencias detectadas: Ninguna
+
+**Estado Actual:** Completado
+**Ultima Actualizacion:** 2026-04-17T02:27:57.000+0000
+
+---
+## [PLAN-20260416-02] Verificacion final de servicio loogle
+
+**Plan ID:** PLAN-20260416-02
+**Objetivo General:** Verificar que el servicio local de `loogle` ya instalado este integrado con el proyecto y dejar documentado el arranque manual del servicio en la documentacion tecnica correspondiente.
+**Owner:** Codex
+**Fecha de inicio:** 2026-04-16
+**Estado de aprobacion:** Aprobado
+**Aprobado por:** Usuario (chat)
+**Timestamp de aprobacion:** 2026-04-17T02:50:32.000+0000
+**Evidencia de aprobacion (chat/referencia):** Mensaje del usuario: "Ya quedó instalado el servicio loogle, verifica que esté integrado con el proyecto, así como documentar como inciar el servicio para utilizarlo el el archivo correspondiente."
+**Evidencia de /plan:** Planificacion no interactiva registrada en chat y mediante la herramienta `update_plan` de esta sesion; no hubo slash commands disponibles.
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: verificar el health-check del servicio, confirmar la integracion con `LeanSearchClient` y documentar el arranque manual del servicio en `docs/mathlib-exploration.md`.
+- Excluye: redisenar la arquitectura de `loogle`, cambiar el backend del servicio o estabilizar la busqueda global de `Biblioteca`.
+
+**Tipo de tarea:** Mixta
+**Nivel de riesgo/complejidad:** Medio
+**Modo de planificacion:** Simplificado no-pequeno (1 alternativa + 1 descartada)
+**Origen de alternativas:** Analisis manual en `PLANS.md`
+**Justificacion del modo elegido:** Es una fase acotada de validacion y documentacion sobre una integracion ya implementada.
+**Modo de seguimiento en `PROGRESS.md`:** No aplica (sin `PROGRESS.md`)
+**Justificacion del modo de seguimiento:** La trazabilidad en `PLANS.md` es suficiente para esta fase corta.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde: `scripts/check_loogle_local.sh`.
+- [x] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual reproducible documentada.
+- [x] (`Documentacion`) Exactitud tecnica verificada y enlaces/comandos validados.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Documentacion actualizada en: `docs/mathlib-exploration.md`.
+
+**Alternativas Evaluadas y Rubrica:**
+- Alternativa elegida: verificar la integracion real y documentar el arranque manual en la doc tecnica existente.
+  - Justificacion: maximiza coherencia con el flujo ya documentado y evita duplicar instrucciones en archivos secundarios.
+- Alternativa descartada: limitarse a revisar config y no ejecutar una verificacion real del servicio.
+  - Justificacion: no prueba la integracion end-to-end con el proyecto.
+
+## Pasos del Plan
+
+- [x] STEP-01: Verificar el health-check y la respuesta del servicio local.
+  - Validacion: `scripts/check_loogle_local.sh`
+- [x] STEP-02: Verificar la integracion con `LeanSearchClient`/`#loogle`.
+  - Validacion: consulta Lean contra la URL local configurada.
+- [x] STEP-03: Documentar el arranque manual y uso del servicio.
+  - Validacion: `git diff -U3 -- docs/mathlib-exploration.md`
+
+**Validacion Manual (evidencia):**
+- `scripts/check_loogle_local.sh --start` -> `Local loogle server is healthy at http://127.0.0.1:8088`
+- Consulta Lean-side validada con:
+  `LEANSEARCHCLIENT_LOOGLE_API_URL=http://127.0.0.1:8088/json /home/mario/.elan/bin/lake env /home/mario/.elan/bin/lean <tmpfile>`
+- Salida observada: `Loogle Search Results` con `Nat.add_comm` como primer resultado.
+
+**Estado Actual:** Completado
+**Ultima Actualizacion:** 2026-04-17T02:50:32.000+0000
+
+---
+## [PLAN-20260416-03] [Fallback operativo de loogle con indice persistido]
+
+**Plan ID:** [PLAN-20260416-03]
+**Objetivo General:** Evitar que el flujo de exploracion con `loogle` quede bloqueado cuando el CLI tarda demasiado construyendo o cargando indice, agregando soporte repo-local para indices persistidos y documentando el fallback operativo en scripts, docs y skills.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-17]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-17T04:06:17.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [Mensaje del usuario: "Apruebo el plan".]
+**Evidencia de /plan:** [Planificacion interactiva registrada en chat y mediante `update_plan` en esta sesion; no hubo slash commands accesibles desde este entorno.]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: agregar un flujo repo-local para escribir y reutilizar indices persistidos de `loogle`, ajustar el wrapper/salud operativa para preferir `--read-index` cuando exista, y alinear docs/skills con el fallback esperado dentro de una sesion de Codex.
+- Excluye: redisenar `loogle`, cambiar el backend del servidor local, o resolver la busqueda global sobre todo `Biblioteca`.
+
+**Supuestos:**
+- El problema principal es de experiencia operativa del agente, no de compatibilidad del binario de `loogle`.
+- Para `Mathlib`, un indice persistido local puede acelerar el primer uso y evitar bloqueos percibidos en sandbox.
+- Para `Biblioteca`, la busqueda sigue siendo principalmente por modulo, aunque el indice persistido pueda usarse si el modulo es estable.
+
+**Dependencias:**
+- `scripts/loogle_local.sh`, `scripts/check_loogle_local.sh`, `scripts/start_loogle_local_server.sh`.
+- Fuente local de `loogle` en `.local-tools/loogle` y workspace compilado en `.local-tools/loogle-mimate`.
+- `.venv/bin/python -m pytest -q` para regression checks del soporte Python ya existente.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Medio]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** Analisis manual en chat, `PLANS.md` y codigo local del wrapper/CLI de `loogle`.
+**Justificacion del modo elegido:** Toca varios scripts, skills y documentacion, con validacion shell y de comportamiento esperado del agente, pero sin requerir redisenos profundos.
+**Modo de seguimiento en `PROGRESS.md`:** No aplica (sin `PROGRESS.md`)
+**Justificacion del modo de seguimiento:** La trazabilidad en este plan es suficiente para un cambio operativo corto.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde: `.venv/bin/python -m pytest -q`.
+- [x] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual reproducible documentada.
+- [x] (`Documentacion`) Exactitud tecnica verificada y comandos validados.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Documentacion actualizada en: `docs/mathlib-exploration.md` y skills Lean relevantes.
+
+**Alternativas Evaluadas y Rubrica:**
+- Alternativa A: documentar solo el fallback narrativo en skills/docs.
+  - Score por criterio: [A=2 S=5 R=4 T=2 M=2]
+  - Puntaje total ponderado: 59/100
+- Alternativa B: agregar indice persistido repo-local y hacer que el wrapper lo use automaticamente cuando exista; alinear skills/docs con ese comportamiento.
+  - Score por criterio: [A=5 S=4 R=4 T=5 M=5]
+  - Puntaje total ponderado: 91/100
+- Alternativa C: forzar siempre reconstruccion de indice en cada arranque del servidor o del wrapper.
+  - Score por criterio: [A=3 S=1 R=2 T=3 M=2]
+  - Puntaje total ponderado: 42/100
+
+**Plan Seleccionado (resumen):**
+Ejecutar la alternativa B. Deja una ruta reproducible para persistir el indice, permite reusar `--read-index` sin friccion cuando ya exista, y alinea el comportamiento esperado del agente con la documentacion del repo.
+
+## Pasos del Plan
+
+- [x] STEP-01: Agregar soporte repo-local para escribir y reutilizar indices persistidos de `loogle`.
+  - Evidencia/resultado esperado: existe un script para construir indice y el wrapper usa `--read-index` cuando corresponde.
+  - Validacion: `bash -n` sobre los scripts modificados y revison del diff.
+- [x] STEP-02: Alinear docs y skills con el fallback operativo esperado dentro de Codex.
+  - Evidencia/resultado esperado: la documentacion y los skills describen el mensaje/fallback correcto cuando `loogle` tarda demasiado.
+  - Validacion: `git diff -U3 -- docs/mathlib-exploration.md .agents/skills/lean-prove/SKILL.md .agents/skills/lean-verify/SKILL.md .agents/skills/mimate-proof-strategy/SKILL.md`
+- [x] STEP-03: Ejecutar validaciones y dejar trazabilidad final.
+  - Evidencia/resultado esperado: shell scripts sin errores de sintaxis y `pytest` en verde.
+  - Validacion: `bash -n ...` y `.venv/bin/python -m pytest -q`
+
+**Validacion Manual (evidencia):**
+- Escenario 1: si existe un indice persistido repo-local, `scripts/loogle_local.sh` debe preferirlo sin que el usuario pase `--read-index`.
+- Escenario 2: si no existe ese indice, el wrapper debe seguir funcionando con el comportamiento actual.
+- Escenario 3: docs/skills describen el fallback operativo: intentar indice persistido y, si no existe, seguir con `rg` y declaraciones ya localizadas.
+- Evidencia capturada en:
+  - `bash -n scripts/loogle_local.sh scripts/build_loogle_index.sh scripts/check_loogle_local.sh scripts/build_loogle_local.sh scripts/start_loogle_local_server.sh`
+  - `./scripts/build_loogle_index.sh --help`
+  - `./scripts/loogle_local.sh --help`
+  - `.venv/bin/python -B -m pytest -q -p no:cacheprovider` -> `32 passed`
+  - `validate-plan-approval.sh PLANS.md PLAN-20260416-03` -> gate valido
+
+**Plan de Rollback:**
+- Trigger: el wrapper deja de funcionar para consultas normales o el fallback introduce ambiguedad/documentacion incorrecta.
+- Acciones: revertir cambios en scripts/docs/skills de este plan.
+- Verificacion posterior: `bash -n` sobre scripts relevantes y `.venv/bin/python -m pytest -q`.
+
+**Comandos Relevantes:**
+- `bash -n scripts/loogle_local.sh scripts/check_loogle_local.sh scripts/build_loogle_local.sh` - validar shell.
+- `.venv/bin/python -m pytest -q` - regression check del soporte Python.
+- `git diff -U3` - revisar el alcance del cambio.
+
+**Trazabilidad (links):**
+- Issue/Ticket: N/A
+- PR/Commit: N/A
+- Decision(es) relacionada(s): N/A
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: No aplica
+- Ultimo sync confirmado: N/A
+- Divergencias detectadas: Ninguna
+
+**Estado Actual:** Completado
+**Ultima Actualizacion:** 2026-04-17T04:13:11.000+0000
+
+---
+## [PLAN-20260417-01] [Endurecer uso explicito del indice Mathlib persistido en loogle]
+
+**Plan ID:** [PLAN-20260417-01]
+**Objetivo General:** Hacer que el repo use de forma explicita y consistente el indice persistido de `Mathlib` en `loogle`, por ruta absoluta y con `--read-index`, para evitar reconstrucciones innecesarias dentro de sesiones de Codex en sandbox.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-17]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-18T02:05:06.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [Mensaje del usuario: "Apruebo el plan, con alternativa 2".]
+**Evidencia de /plan:** [Planificacion interactiva registrada en chat y mediante `update_plan` en esta sesion; se contrasto ademas con la documentacion primaria de `loogle` (`README.md`) y Context7 para confirmar el uso recomendado de `--read-index` y `--write-index`.]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: endurecer `scripts/loogle_local.sh`, `tools/loogle_local_server.py`, `scripts/init.sh`, docs y skills para que el indice persistido de `Mathlib` se use por ruta absoluta cuando exista; revisar si esa es la tecnica correcta segun la documentacion de `loogle`; y alinear mensajes operativos con la experiencia observada en sandbox.
+- Excluye: cambiar el formato del indice, redisenar el backend de `loogle`, o generalizar el mismo tratamiento explicito a toda `Biblioteca` mas alla del flujo actual por modulo.
+
+**Supuestos:**
+- El indice persistido canónico para `Mathlib` en este workspace es `/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra`.
+- Ese indice solo debe regenerarse cuando cambie la libreria `Mathlib`, no en cada sesion ni en cada consulta.
+- La documentacion primaria de `loogle` considera valido `--read-index <file>` siempre que el caller garantice que el indice corresponde al modulo y al search path correctos.
+
+**Dependencias:**
+- Wrapper local de `loogle`: `scripts/loogle_local.sh`.
+- Servicio JSON local: `tools/loogle_local_server.py`.
+- Skills Lean y documentacion del repo.
+- `.venv/bin/python -m pytest -q` para regression checks del soporte Python.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Medio]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** [Analisis manual en chat, inspeccion del repo y documentacion primaria de `loogle`.]
+**Justificacion del modo elegido:** [Toca scripts shell, un servicio Python, skills y documentacion. Requiere validar el comportamiento correcto de `--read-index` sin cambiar la arquitectura general.]
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica (sin `PROGRESS.md`)]
+**Justificacion del modo de seguimiento:** [La trazabilidad en `PLANS.md` es suficiente para este ajuste acotado.]
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde: `.venv/bin/python -m pytest -q`.
+- [x] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual reproducible documentada.
+- [x] (`Documentacion`) Exactitud tecnica verificada y comandos validados.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Documentacion actualizada en: `README.md`, `docs/mathlib-exploration.md`, skills Lean relevantes.
+
+**Alternativas Evaluadas y Rubrica:**
+- Alternativa A: solo documentar la ruta absoluta del indice `Mathlib.extra`.
+  - Score por criterio: [A=2 S=5 R=4 T=2 M=2]
+  - Puntaje total ponderado: 58/100
+- Alternativa B: endurecer scripts, servicio, docs y skills para usar de forma explicita `--read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra` cuando aplique.
+  - Score por criterio: [A=5 S=4 R=4 T=5 M=5]
+  - Puntaje total ponderado: 91/100
+- Alternativa C: cambiar el flujo a una estrategia distinta basada solo en `LoogleMathlibCache`.
+  - Score por criterio: [A=3 S=2 R=2 T=3 M=3]
+  - Puntaje total ponderado: 50/100
+
+**Plan Seleccionado (resumen):**
+Ejecutar la alternativa B. Es la que mejor refleja la experiencia real observada en sandbox, coincide con la documentacion primaria de `loogle` sobre `--read-index`, y deja un comportamiento mas determinista para `Mathlib`.
+
+## Pasos del Plan
+
+- [x] STEP-01: Hacer explicito el uso del indice persistido de `Mathlib` en wrapper, servicio e inicio de sesion.
+  - Evidencia/resultado esperado: los procesos del repo usan o anuncian la ruta absoluta `/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra` cuando corresponde.
+  - Validacion: `bash -n` sobre scripts modificados y tests Python del servidor.
+- [x] STEP-02: Alinear docs y skills con el comando explicito de `--read-index` para `Mathlib`.
+  - Evidencia/resultado esperado: la doc y los skills recomiendan la ruta absoluta del indice `Mathlib.extra` y aclaran que solo se regenera cuando cambia `Mathlib`.
+  - Validacion: `git diff -U3 -- README.md docs/mathlib-exploration.md .agents/skills/lean-prove/SKILL.md .agents/skills/lean-verify/SKILL.md .agents/skills/mimate-proof-strategy/SKILL.md`
+- [x] STEP-03: Validar el cambio y cerrar trazabilidad.
+  - Evidencia/resultado esperado: shell scripts validos, tests en verde y plan actualizado.
+  - Validacion: `bash -n ...`, `.venv/bin/python -m pytest -q`, `git diff -U3`
+
+**Validacion Manual (evidencia):**
+- Escenario 1: una consulta `Mathlib` desde el wrapper o el servicio usa explicitamente el indice persistido si `/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra` existe.
+- Escenario 2: la documentacion del repo deja claro que ese indice solo se regenera cuando cambia `Mathlib`.
+- Escenario 3: si el indice no existe, el fallback sigue siendo explicito y accionable.
+- Evidencia capturada en:
+  - `validate-plan-approval.sh PLANS.md PLAN-20260417-01` -> gate valido
+  - `bash -n scripts/loogle_local.sh scripts/build_loogle_index.sh scripts/check_loogle_local.sh scripts/init.sh scripts/start_loogle_local_server.sh`
+  - `./scripts/build_loogle_index.sh --help`
+  - `./scripts/loogle_local.sh --help`
+  - `.venv/bin/python -B -m pytest -q -p no:cacheprovider` -> `34 passed`
+  - revision manual del diff y de las lineas clave en `scripts/loogle_local.sh`, `scripts/build_loogle_index.sh`, `scripts/init.sh`, `tools/loogle_local_server.py`, `tests/test_loogle_local_server.py`, `docs/mathlib-exploration.md`
+
+**Plan de Rollback:**
+- Trigger: el endurecimiento rompe consultas normales de `loogle` o vuelve inconsistente el flujo por modulo.
+- Acciones: revertir cambios de este plan en scripts, servicio, docs y skills.
+- Verificacion posterior: `bash -n` + `.venv/bin/python -m pytest -q`.
+
+**Comandos Relevantes:**
+- `bash -n scripts/loogle_local.sh scripts/build_loogle_index.sh scripts/check_loogle_local.sh scripts/init.sh` - validar shell.
+- `.venv/bin/python -m pytest -q` - regression check del soporte Python.
+- `git diff -U3` - revisar el alcance del cambio.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [No aplica]
+- Ultimo sync confirmado: [N/A]
+- Divergencias detectadas: [Ninguna]
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-18T02:20:21.000+0000]
+
+---
+
+## [PLAN-20260418-01] [Reducir advertencias tipograficas del builder PDF]
+
+**Plan ID:** [PLAN-20260418-01] (debe coincidir con el encabezado de la seccion)
+**Objetivo General:** Corregir la generacion del PDF blueprint para eliminar las
+advertencias tipograficas no fatales observadas en la compilacion reciente,
+especialmente el caracter Unicode `≥` en metadatos, los `overfull hbox`
+provocados por referencias Lean largas y el ruido recurrente del layout del
+glossary/anexo.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-18]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-18T12:50:11.146+0000]
+**Evidencia de aprobacion (chat/referencia):** [Conversacion actual: mensaje del usuario "Apruebo el plan"]
+**Evidencia de /plan:** [no interactivo/sin slash commands: planificacion registrada en esta sesion mediante inspeccion del repo + `update_plan` antes de implementar; evidencia visible en la sesion actual con pasos "Inspeccionar builder PDF, macros TeX y logs..." y "Definir alternativas y plan de cambio para el pipeline PDF"; referencia oficial: https://developers.openai.com/codex/noninteractive/]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: ajustar el builder Python del PDF, las macros TeX comunes y las
+  pruebas del pipeline para sanear metadatos, permitir cortes de linea en
+  referencias Lean largas y reducir las advertencias tipograficas del build real.
+- Excluye: cambiar el contenido matematico de las demostraciones, editar el
+  archivo `.tex` del demo actual como solucion puntual, migrar de motor TeX o
+  alterar la estructura general del blueprint.
+
+**Supuestos:**
+- El warning del caracter `≥` proviene de metadatos inyectados en `paper.tex`
+  como texto normal, no de contenido matematico del cuerpo del paper.
+- Las referencias `\lean{...}` deben seguir siendo enlazables y mostrarse con el
+  nombre corto, pero necesitan un renderizado mas flexible para no forzar cajas
+  demasiado anchas.
+- El builder actual con `XeLaTeX + minted` debe mantenerse; el objetivo es
+  corregir la entrada y la maquetacion, no silenciar warnings de forma global.
+
+**Dependencias:**
+- Archivos afectados previstos:
+  - `tools/blueprint_paper.py`
+  - `blueprint/src/macros/common.tex`
+  - `blueprint/src/macros/print.tex` (si hace falta ajustar hyperref/layout)
+  - `tests/test_blueprint_paper.py`
+- Validaciones relevantes:
+  - `.venv/bin/pytest -q tests/test_blueprint_paper.py`
+  - `scripts/build_blueprint_pdf.sh`
+
+**Tipo de tarea:** [Codigo]
+**Nivel de riesgo/complejidad:** [Medio]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** El cambio toca el pipeline oficial de build,
+cruza Python y TeX, y necesita validacion automatica y real del PDF; una
+solucion local al documento o un silenciamiento de warnings seria insuficiente.
+**Modo de seguimiento en `PROGRESS.md`:** [Estandar]
+**Justificacion del modo de seguimiento:** Hay hitos claros de ejecucion
+(trazabilidad inicial, implementacion, validacion) y conviene dejar sincronizada
+la bitacora sin llegar a un seguimiento estricto por subpaso.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde: `.venv/bin/pytest -q tests/test_blueprint_paper.py`, `scripts/build_blueprint_pdf.sh`.
+- [x] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual reproducible documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no reporta severidad explicita.
+- [x] Documentacion actualizada en: `PLANS.md`, `PROGRESS.md`.
+- [x] Criterios de aceptacion funcional cumplidos:
+  - [CA-1] El build real del PDF ya no emite el warning `Missing character: There is no ≥ ...`.
+  - [CA-2] Las referencias Lean largas del cuerpo/glossary ya no producen `overfull/underfull` tipograficos en el caso reproducido.
+  - [CA-3] El pipeline sigue compilando con `XeLaTeX` y mantiene el output archivado habitual.
+- [x] Rollback definido y validado (si aplica).
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o commit).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: sanear metadatos de forma demasiado agresiva y deformar el contenido
+  del abstract o keywords.
+  - Mitigacion: limitar el cambio a texto usado en `\title`, `\abstract`,
+    `\keywords` y bookmarks PDF, con pruebas unitarias para los casos con
+    operadores matematicos comunes.
+- Riesgo: permitir saltos de linea en referencias Lean y romper enlaces o el
+  render del glossary.
+  - Mitigacion: conservar la estructura de hipervinculo y cubrir el nuevo
+    contrato con pruebas en `tests/test_blueprint_paper.py`.
+- Riesgo: seguir teniendo warnings del anexo por limites de `minted`.
+  - Mitigacion: ajustar el layout minimo en macros comunes y validar sobre el
+    caso real antes de cerrar el plan.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto` (`Rubrica de severidad para hallazgos`).
+- Si una herramienta no reporta severidad, clasificar cada hallazgo con esa rubrica
+  y registrar la clasificacion/evidencia en este plan.
+- Si existe duda entre dos severidades, usar la mas alta de forma preventiva.
+
+**Alternativas Evaluadas y Rubrica:**
+- Escala cuantitativa recomendada: `1..5` por criterio (`5` es mejor).
+- Pesos:
+  - Alcance (20%)
+  - Simplicidad (20%)
+  - Riesgo tecnico (25%)
+  - Testabilidad (20%)
+  - Mantenibilidad (15%)
+- Alternativa A: corregir el pipeline Python/TeX para sanear metadatos, mejorar
+  `\lean{...}` y ajustar el layout del anexo/glossary.
+  - Score por criterio: [A=5 S=4 R=4 T=5 M=5]
+  - Puntaje total ponderado: [91/100]
+- Alternativa B: silenciar warnings de LaTeX o relajar umbrales sin tocar la
+  causa real.
+  - Score por criterio: [A=2 S=5 R=2 T=2 M=2]
+  - Puntaje total ponderado: [49/100]
+- Alternativa C: editar solo el `.tex` del demo actual para quitar `\ge` y
+  acortar nombres largos.
+  - Score por criterio: [A=2 S=4 R=4 T=2 M=1]
+  - Puntaje total ponderado: [49/100]
+
+**Plan Seleccionado (resumen):**
+Ejecutar la alternativa A. Corrige la causa en la ruta oficial de build, mejora
+la estabilidad del pipeline para futuros demos y deja pruebas que fijan el
+comportamiento esperado.
+
+## Pasos del Plan
+
+- [x] STEP-01: Introducir trazabilidad, helpers y pruebas para metadatos y referencias Lean.
+  - Evidencia/resultado esperado: el builder puede normalizar metadatos
+    problematicos y las pruebas describen el nuevo contrato.
+  - Validacion: `.venv/bin/pytest -q tests/test_blueprint_paper.py`
+  - Artefacto esperado: cambios en `tools/blueprint_paper.py` y `tests/test_blueprint_paper.py`
+- [x] STEP-02: Ajustar macros TeX para permitir mejor corte de linea y reducir ruido tipografico del PDF.
+  - Evidencia/resultado esperado: las macros comunes soportan referencias Lean
+    largas y mejor spacing del anexo/glossary.
+  - Validacion: `git diff -U3 -- tools/blueprint_paper.py blueprint/src/macros/common.tex blueprint/src/macros/print.tex tests/test_blueprint_paper.py`
+  - Artefacto esperado: cambios en macros TeX y, si aplica, en el generador del paper.
+- [x] STEP-03: Validar el build real del PDF y cerrar trazabilidad.
+  - Evidencia/resultado esperado: el caso reproducido compila sin el warning del
+    caracter `≥` y con menos warnings de cajas.
+  - Validacion: `scripts/build_blueprint_pdf.sh`, revision del `paper.log`, `git diff -U3`
+  - Artefacto esperado: plan y progreso actualizados con evidencia final.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: generar el PDF del demo actual y confirmar que el log ya no
+  contiene `Missing character: There is no ≥`.
+- Escenario 2: verificar que el log del caso reproducido ya no reporta
+  `Overfull \hbox`, `Underfull \hbox` ni `Underfull \vbox` en los bloques que antes desbordaban.
+- Evidencia capturada en:
+  - `.venv/bin/pytest -q tests/test_blueprint_paper.py` -> `16 passed`
+  - `scripts/build_blueprint_pdf.sh` -> `Build directory: /home/mario/code/mimate/blueprint/build/20260418_082009_Demo_20260403_172608_n_good_polynomials`
+  - `rg -n -F "Missing character: There is no ≥" blueprint/build/20260418_082009_Demo_20260403_172608_n_good_polynomials/paper.log` -> sin coincidencias
+  - `rg -n -F "Token not allowed in a PDF string" blueprint/build/20260418_082009_Demo_20260403_172608_n_good_polynomials/paper.log` -> sin coincidencias
+  - `rg -n -F "Overfull \hbox" blueprint/build/20260418_082009_Demo_20260403_172608_n_good_polynomials/paper.log` -> sin coincidencias
+  - `rg -n -F "Underfull \hbox" blueprint/build/20260418_082009_Demo_20260403_172608_n_good_polynomials/paper.log` -> sin coincidencias
+  - `rg -n -F "Underfull \vbox" blueprint/build/20260418_082009_Demo_20260403_172608_n_good_polynomials/paper.log` -> sin coincidencias
+
+**Plan de Rollback:**
+- Trigger: el builder deja de generar el PDF o el saneamiento de metadatos
+  degrada el contenido visible del paper.
+- Acciones: revertir cambios en `tools/blueprint_paper.py`,
+  `blueprint/src/macros/common.tex`, `blueprint/src/macros/print.tex` y
+  `tests/test_blueprint_paper.py`.
+- Verificacion posterior: `.venv/bin/pytest -q tests/test_blueprint_paper.py` y
+  `scripts/build_blueprint_pdf.sh`.
+
+**Comandos Relevantes:**
+- `.venv/bin/pytest -q tests/test_blueprint_paper.py` - validar el contrato del builder.
+- `scripts/build_blueprint_pdf.sh` - reproducir y verificar el PDF real.
+- `git diff -U3` - revisar el alcance del cambio.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [Estandar]
+- Ultimo sync confirmado: [2026-04-18T12:50:11.146+0000]
+- Divergencias detectadas: [Ninguna]
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-18T14:21:00.530+0000]
+
+---
