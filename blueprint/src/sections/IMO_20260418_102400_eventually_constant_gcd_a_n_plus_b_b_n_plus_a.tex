@@ -1,0 +1,131 @@
+% title: Eventually Constant GCD of Shifted Power Sums
+% short-title: Eventually Constant GCD
+% abstract: We formalize the IMO 2024 Shortlist problem asking for all positive integers \(a,b\) such that \(\text{gcd}(a^n+b,\, b^n+a)\) is eventually constant. The proof first shows that any eventual constant \(g\) must divide \(2\text{gcd}(a,b)\), then normalizes by \(d=\text{gcd}(a,b)\) and uses Euler's theorem modulo \(d^2xy+1\) to force \(d=x=y=1\).
+% subjclass: 03B35
+% keywords: olympiad number theory, gcd, Euler theorem, Lean 4
+% author: Mario Hernández M.
+
+\subsection{Eventually Constant GCD of Shifted Power Sums}
+
+\begin{problemstatement}
+Determine all positive integers \(a\) and \(b\) such that there exists a positive integer \(g\) satisfying
+\[
+  \text{gcd}(a^n+b,\; b^n+a)=g
+\]
+for all sufficiently large positive integers \(n\).
+\end{problemstatement}
+
+We formalize the predicate
+\lean{Biblioteca.Demonstrations.EventuallyConstantGCD} and prove the
+classification theorem
+\lean{Biblioteca.Demonstrations.eventually_constant_gcd_classification}.
+
+\begin{theorem}
+The only pair \((a,b)\) of positive integers for which there exists a positive
+integer \(g\) such that
+\[
+  \text{gcd}(a^n+b,\; b^n+a)=g
+\]
+for all sufficiently large \(n\) is \((a,b)=(1,1)\).
+\end{theorem}
+
+\begin{proof}
+The pair \((1,1)\) clearly works, since
+\[
+  \text{gcd}(1^n+1,\;1^n+1)=2
+\]
+for every \(n\).
+
+Conversely, assume that for some positive integers \(a,b,g\) and all
+sufficiently large \(n\) we have
+\[
+  \text{gcd}(a^n+b,\;b^n+a)=g.
+\]
+Fix such a large \(N\). Since \(g\mid a^N+b\) and \(g\mid a^{N+1}+b\), we also
+have
+\[
+  g \mid a(a^N+b)-(a^{N+1}+b)=b(a-1).
+\]
+Similarly,
+\[
+  g \mid a(b-1).
+\]
+From these two divisibilities one obtains \(ab\equiv a\equiv b\pmod g\), hence
+\[
+  a \equiv b \pmod g
+\]
+and then
+\[
+  a^2 \equiv a \pmod g.
+\]
+Therefore every positive power of \(a\) is congruent to \(a\) modulo \(g\). In
+particular, using again \(g\mid a^N+b\), we get
+\[
+  a+b \equiv 0 \pmod g.
+\]
+Combining this with \(a\equiv b \pmod g\) yields
+\[
+  g \mid 2a
+  \qquad\text{and}\qquad
+  g \mid 2b.
+\]
+So if \(d=\text{gcd}(a,b)\), then \(g\mid 2d\). On the other hand, \(d\) divides both
+\(a^N+b\) and \(b^N+a\), hence \(d\mid g\). Thus \(g=d e\) for some divisor
+\(e\) of \(2\), so \(e\le 2\).
+
+Now write
+\[
+  a=dx,\qquad b=dy,
+\]
+where \(x\) and \(y\) are coprime. Then for every sufficiently large \(n\),
+\[
+  \text{gcd}(a^n+b,\;b^n+a)
+  = d\,\text{gcd}(d^{n-1}x^n+y,\; d^{n-1}y^n+x)
+  = d e,
+\]
+and therefore
+\[
+  \text{gcd}(d^{n-1}x^n+y,\; d^{n-1}y^n+x)=e\le 2.
+\]
+
+Set
+\[
+  K=d^2xy+1.
+\]
+Then \(K\) is coprime to each of \(d\), \(x\), and \(y\). Choose \(n\) so that
+\(n+1\) is a positive multiple of \(\varphi(K)\) and still large enough for the
+previous identity to hold. By Euler's theorem,
+\[
+  d^{n+1}\equiv x^{n+1}\equiv y^{n+1}\equiv 1 \pmod K.
+\]
+Multiplying \(d^{n-1}x^n+y\) by \(d^2x\), we obtain
+\[
+  d^2x(d^{n-1}x^n+y)=d^{n+1}x^{n+1}+d^2xy \equiv 1+d^2xy \equiv 0 \pmod K.
+\]
+Since \(\gcd(d^2x,K)=1\), it follows that
+\[
+  K \mid d^{n-1}x^n+y.
+\]
+In the same way,
+\[
+  K \mid d^{n-1}y^n+x.
+\]
+Hence
+\[
+  K \mid \text{gcd}(d^{n-1}x^n+y,\; d^{n-1}y^n+x)=e.
+\]
+But \(e\le 2\), so \(K\le 2\). Since \(K=d^2xy+1\), this forces
+\[
+  d^2xy=1,
+\]
+and therefore
+\[
+  d=x=y=1.
+\]
+Thus \(a=dx=1\) and \(b=dy=1\).
+
+So the unique solution is
+\[
+  (a,b)=(1,1).
+\]
+\end{proof}
