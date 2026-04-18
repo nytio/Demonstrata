@@ -56,3 +56,10 @@ def test_tex_template_activates_problemstatement_for_named_source_prefix() -> No
 
     assert "\\begin{problemstatement}" in template
     assert "Replace this block with the original problem statement in LaTeX." in template
+
+
+def test_tex_template_mentions_alignment_with_lean_argument() -> None:
+    template = tex_template("Odd Numbers Sum", prefix="Demo")
+
+    assert "Keep this LaTeX exposition aligned with the Lean proof" in template
+    assert "without changing the Lean file" in template

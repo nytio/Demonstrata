@@ -21,7 +21,8 @@ description: Verify Lean files and projects in this repository using the strict 
 2. For a focused failure, run `scripts/check_lean_json.sh <file.lean>`.
 3. If diagnostics are noisy, summarize them with:
    `.venv/bin/python scripts/summarize_lean_json.py <jsonl-file>`
-4. After a local fix, run `scripts/build_strict.sh`.
+4. After a local fix, run `scripts/build_strict.sh` only once the target
+   file-level check is clean.
 5. If symbol discovery is the blocker rather than verification itself, consult
    `docs/mathlib-exploration.md` for the local search order:
    - `#check`, `#find`, `exact?`, `apply?`, `rw?`, and `rg` first;
@@ -42,11 +43,13 @@ description: Verify Lean files and projects in this repository using the strict 
      Lean-side `#loogle` queries to resolve against the local server after the
      health check passes.
 6. Treat warnings that hide incomplete proofs as failures.
-7. If the task also touches the PDF blueprint, run
-   `scripts/check_blueprint_decls.sh` after Lean verification.
-8. When reviewing the library layout, prefer timestamped demonstration files
+7. If the task also touches the PDF blueprint, review the paired LaTeX section
+   so its olympiad-style exposition is argumentally consistent with the Lean
+   proof accepted in the previous steps; do not modify Lean during that review.
+8. After that LaTeX review, run `scripts/check_blueprint_decls.sh`.
+9. When reviewing the library layout, prefer timestamped demonstration files
    under `Biblioteca/Demonstrations/`.
-9. When the user is asking for a genuinely new theorem, verify the freshly
+10. When the user is asking for a genuinely new theorem, verify the freshly
    created timestamped demonstration file instead of treating the task as
    declaration lookup only.
 
@@ -54,6 +57,8 @@ description: Verify Lean files and projects in this repository using the strict 
 
 - Never accept `sorry` as a valid end state.
 - Prefer file-level verification first, then full project verification.
+- For demonstration workflows, treat a clean `scripts/check_lean_json.sh`
+  result as the gate before `scripts/build_strict.sh`.
 - Report the exact failing file and the first actionable diagnostic.
 - Verification is not limited to imported declarations already present in
   `Mathlib` or `Biblioteca`; it must also support newly authored proofs created
@@ -78,4 +83,5 @@ description: Verify Lean files and projects in this repository using the strict 
 - Verification result for one file or the full project.
 - A short summary of the first blocking diagnostics.
 - Confirmation that a newly authored demonstration compiles when that is the task.
+- Confirmation of the LaTeX consistency review when the task includes a paired blueprint section.
 - Clear next step if the build fails.

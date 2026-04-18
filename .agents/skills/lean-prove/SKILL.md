@@ -51,9 +51,12 @@ description: Draft or refine a Lean theorem in this repository and iterate until
      `scripts/start_loogle_local_server.sh` and make sure the health check
      passes so LeanSearchClient hits the local server configured in
      `.codex/config.toml`.
-8. Finish with `scripts/build_strict.sh`.
+8. Only after file-level verification passes, finish the formal check with
+   `scripts/build_strict.sh`.
 9. If the user wants a PDF or a narrative counterpart, update the local
-   blueprint and run `scripts/check_blueprint_decls.sh`.
+   blueprint, review the LaTeX exposition so it matches the accepted Lean proof
+   without modifying Lean in that step, and then run
+   `scripts/check_blueprint_decls.sh`.
 10. Prefer timestamped modules under `Biblioteca/Demonstrations/` over dumping
     new proofs into a catch-all file.
 
@@ -84,6 +87,10 @@ description: Draft or refine a Lean theorem in this repository and iterate until
   it should render short names in the body, feed the final Lean glossary, and
   pair with the automatically appended Lean-source annex, so avoid duplicating
   fully-qualified declaration names in prose unless needed.
+- When a demonstration also has a blueprint section, revise the `.tex`
+  argument so it narrates the same mathematics Lean accepted; do not use that
+  exposition pass to reopen or mutate the Lean proof unless a separate Lean
+  issue is found.
 - Use `scripts/new_demo.sh` when starting a fresh demonstration entry so the
   Lean module and blueprint section stay aligned.
 - Single-demo PDF builds should overwrite the prior archived PDF by reusing the

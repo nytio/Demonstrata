@@ -183,10 +183,13 @@ La dinámica real del skill es la siguiente:
 3. Elige una ruta estructural de estilo olímpico antes de escribir Lean.
 4. Pasa a `lean-prove` para crear la demostración nueva y dividirla en lemas si
    hace falta.
-5. Usa `lean-verify` para verificar primero el archivo y luego la compilación
-   completa.
-6. Cuando Lean acepta el desarrollo, activa el flujo del blueprint para
-   producir el PDF final.
+5. Usa `lean-verify` para correr primero `scripts/check_lean_json.sh` sobre el
+   demo Lean y, solo si pasa, cerrar la verificación formal con
+   `scripts/build_strict.sh`.
+6. Cuando Lean acepta el desarrollo, revisa la sección LaTeX emparejada para
+   que la exposición argumental coincida con la demostración aceptada en Lean;
+   en ese paso no se modifica el archivo Lean.
+7. Después activa el flujo del blueprint para producir el PDF final.
 
 El objetivo es privilegiar argumentos matemáticos comprensibles y no una
 enumeración ciega de casos o una búsqueda exhaustiva.
@@ -221,10 +224,16 @@ sí.
 1. Crear una demostración nueva con `scripts/new_demo.sh`.
 2. Escribir o refinar el argumento matemático apoyándote en los skills del
    repo.
-3. Ejecutar `scripts/build_strict.sh` hasta que Lean acepte el archivo.
-4. Comprobar referencias del blueprint con `scripts/check_blueprint_decls.sh`.
-5. Generar el PDF con `scripts/build_blueprint_pdf.sh`.
-6. Conservar el `.lean`, el `.tex` y el PDF archivado como salida publicable.
+3. Ejecutar `scripts/check_lean_json.sh <demo.lean>` hasta que el archivo del
+   demo quede limpio.
+4. Si el chequeo por archivo pasa, ejecutar `scripts/build_strict.sh` para
+   cerrar la validación formal completa.
+5. Revisar la sección LaTeX emparejada para que la exposición de estilo
+   olimpiada sea consistente con la demostración aceptada en Lean; ese paso
+   solo ajusta el `.tex`.
+6. Comprobar referencias del blueprint con `scripts/check_blueprint_decls.sh`.
+7. Generar el PDF con `scripts/build_blueprint_pdf.sh`.
+8. Conservar el `.lean`, el `.tex` y el PDF archivado como salida publicable.
 
 ## PDF blueprint y artefactos finales
 

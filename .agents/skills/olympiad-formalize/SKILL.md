@@ -52,7 +52,9 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
    - If a hidden support theorem is required, promote it to an explicit Lean theorem instead of burying it in prose.
 
 5. Hand off validation to `lean-verify`.
-   - Verify file-level first, then full project build.
+   - Verify the demo file first with `scripts/check_lean_json.sh <demo.lean>`.
+   - Only if file-level verification passes, close the formal check with
+     `scripts/build_strict.sh`.
    - If diagnostics show the strategy itself is wrong or incomplete, return to `mimate-proof-strategy`.
    - If diagnostics are local implementation issues, iterate with `lean-prove`.
    - Repeat until Lean accepts the development cleanly.
@@ -61,8 +63,11 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
    - After Lean verification succeeds, update the blueprint section for the selected demonstration.
    - Keep the original problem statement in the section's `problemstatement`
      block so the final PDF records the source problem explicitly.
+   - Review the LaTeX exposition so it is argumentally consistent with the
+     accepted Lean proof; this step refines only the `.tex`, not the Lean file.
    - Keep `\lean{...}` references aligned with the theorems actually discussed in the paper.
-   - Run the repo PDF flow only after the Lean file is accepted.
+   - Run `scripts/check_blueprint_decls.sh` and the repo PDF flow only after the
+     Lean file is accepted and the LaTeX review is done.
    - The final PDF should rely on repo tooling for:
      - short declaration names in the body,
      - the Lean glossary,
@@ -88,4 +93,5 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
 - An informal olympiad-quality proof strategy selected before coding.
 - A Lean development that makes the supporting lemmas explicit.
 - Successful verification through `lean-verify`.
+- A LaTeX section whose argument stays aligned with the accepted Lean proof.
 - A generated project PDF after the Lean development is accepted.

@@ -120,9 +120,12 @@ def tex_template(title: str, *, prefix: str = "Demo") -> str:
         "\\notready\n"
         "This demonstration entry was scaffolded automatically. Add a newly "
         "formalized theorem, its `\\lean{...}` reference, and a mathematical "
-        "proof sketch here. The `\\lean{...}` markers render short function "
-        "names in the paper body, populate the Lean glossary automatically, "
-        "and pair this section with the full Lean file in the final annex.\n"
+        "proof sketch here. Keep this LaTeX exposition aligned with the Lean "
+        "proof accepted for the paired demo, and use this pass to refine the "
+        "argument only, without changing the Lean file. The `\\lean{...}` "
+        "markers render short function names in the paper body, populate the "
+        "Lean glossary automatically, and pair this section with the full Lean "
+        "file in the final annex.\n"
     )
 
 

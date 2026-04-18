@@ -1655,3 +1655,192 @@ comportamiento esperado.
 **Ultima Actualizacion:** [2026-04-18T14:21:00.530+0000]
 
 ---
+
+## [PLAN-20260418-02] [Endurecer flujo de demostraciones Lean y LaTeX]
+
+**Plan ID:** [PLAN-20260418-02] (debe coincidir con el encabezado de la seccion)
+**Objetivo General:** Ajustar el proceso de elaboracion de demostraciones para
+que exija primero la verificacion Lean a nivel de archivo y despues el build
+estricto, y para que incluya una revision argumental del texto LaTeX alineada
+con la demostracion Lean antes del flujo final del blueprint.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-18]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-18T15:20:00.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [Conversacion actual: mensaje del usuario "Apruebo el plan"]
+**Evidencia de /plan:** [Planificacion no interactiva registrada en esta sesion mediante inspeccion del repo + `functions.update_plan`; se intento adicionalmente `codex exec --skip-git-repo-check --json 'Analiza el flujo de elaboración de demostraciones...'` el 2026-04-18, pero el wrapper local fallo al crear el thread por `Read-only file system` y luego por `bwrap: execvp .../vendor/.../codex: No such file or directory`; la evidencia utilizable queda en esta sesion y en este plan.]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: actualizar la documentacion operativa del flujo de demostraciones;
+  reforzar los skills que coordinan autoria/verificacion (`olympiad-formalize`,
+  `lean-prove`, `lean-verify`); ajustar guias globales (`AGENTS.md`,
+  `README.md`); revisar si el scaffold LaTeX debe recordar la alineacion
+  argumental con Lean; mantener o ampliar tests puntuales del scaffold si el
+  texto base cambia.
+- Excluye: cambiar la logica del builder PDF; introducir un nuevo comando de
+  build; modificar demostraciones Lean existentes; reestructurar el repo;
+  alterar artefactos binarios archivados.
+
+**Supuestos:**
+- El requisito pedido es de proceso/documentacion y no exige automatizar una
+  comprobacion semantica entre Lean y LaTeX mas alla de dejar el paso
+  explicitamente en el workflow y en el texto scaffold.
+- `scripts/check_lean_json.sh` sigue siendo el comando canonico para la
+  verificacion por archivo y `scripts/build_strict.sh` el cierre obligatorio.
+- La revision de LaTeX es argumental, breve y unilateral sobre el `.tex`; en
+  ese paso no se modifica el `.lean` salvo que un hallazgo posterior abra una
+  tarea distinta.
+
+**Dependencias:**
+- Skills repo-locales: `.agents/skills/olympiad-formalize/SKILL.md`,
+  `.agents/skills/lean-prove/SKILL.md`, `.agents/skills/lean-verify/SKILL.md`.
+- Guias globales: `AGENTS.md`, `README.md`.
+- Scaffold y tests: `tools/demo_library.py`, `tests/test_demo_library.py`.
+- Referencia oficial consultada: OpenAI docs de Codex CLI sobre slash commands
+  y uso no interactivo (`/plan`, `codex exec --json`) para contrastar la
+  trazabilidad de planificacion.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Bajo]
+**Modo de planificacion:** [Simplificado no-pequeno (1 alternativa + 1 descartada)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** El cambio toca varias fuentes de verdad del
+workflow, pero no introduce arquitectura nueva ni dependencias externas; el
+riesgo es bajo y basta un plan corto con una alternativa descartada.
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica (sin `PROGRESS.md`)]
+**Justificacion del modo de seguimiento:** La trazabilidad en `PLANS.md` es
+suficiente para un cambio de proceso/documentacion acotado; no se requiere una
+bitacora separada.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde: [`.venv/bin/pytest -q tests/test_demo_library.py`].
+- [ ] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual reproducible documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no reporta severidad explicita.
+- [x] Documentacion actualizada en: [`AGENTS.md`, `README.md`, `.agents/skills/olympiad-formalize/SKILL.md`, `.agents/skills/lean-prove/SKILL.md`, `.agents/skills/lean-verify/SKILL.md`, `tools/demo_library.py`, `tests/test_demo_library.py`].
+- [x] Criterios de aceptacion funcional cumplidos:
+  - [CA-1] El flujo documentado de demostraciones expresa sin ambiguedad:
+    `check_lean_json` del demo Lean, luego `build_strict`, y solo despues el
+    cierre del flujo formal.
+  - [CA-2] El workflow explicita una revision argumental de la seccion LaTeX
+    alineada con Lean, dejando claro que ese paso no modifica el archivo Lean.
+  - [CA-3] El scaffold o la documentacion inicial recuerdan esa alineacion
+    Lean/LaTeX cuando tiene sentido hacerlo.
+- [ ] Rollback definido y validado (si aplica).
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o commit).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: dejar instrucciones inconsistentes entre skills y documentacion
+  global.
+  - Mitigacion: actualizar todas las fuentes de verdad encontradas en la
+    inspeccion inicial y revisar el diff completo antes de cerrar.
+- Riesgo: sobreespecificar el paso LaTeX de forma que parezca una verificacion
+  formal automatizada.
+  - Mitigacion: redactar el paso explicitamente como revision argumental/manual
+    del `.tex`, separada de la verificacion Lean.
+- Riesgo: cambiar el scaffold y romper tests por expectativas de texto.
+  - Mitigacion: ajustar solo el mensaje minimo necesario y validar con
+    `.venv/bin/pytest -q`.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto` (`Rubrica de severidad para hallazgos`).
+- Si una herramienta no reporta severidad, clasificar cada hallazgo con esa rubrica
+  y registrar la clasificacion/evidencia en este plan.
+- Si existe duda entre dos severidades, usar la mas alta de forma preventiva.
+
+**Alternativas Evaluadas y Rubrica:**
+- Escala cuantitativa recomendada: `1..5` por criterio (`5` es mejor).
+- Pesos:
+  - Alcance (20%)
+  - Simplicidad (20%)
+  - Riesgo tecnico (25%)
+  - Testabilidad (20%)
+  - Mantenibilidad (15%)
+- Alternativa A: actualizar de forma coordinada skills, documentacion global y
+  scaffold minimo del `.tex`, con tests puntuales si cambian textos base.
+  - Score por criterio: [A=5 S=4 R=4 T=5 M=5]
+  - Puntaje total ponderado: [91/100]
+- Alternativa B: limitar el cambio a `README.md` y `AGENTS.md`, dejando skills y
+  scaffold como estan.
+  - Score por criterio: [A=2 S=5 R=3 T=2 M=2]
+  - Puntaje total ponderado: [56/100]
+
+**Plan Seleccionado (resumen):**
+Elegir la alternativa A. El proceso real de elaboracion de demostraciones en
+este repo depende de skills repo-locales y del scaffold, no solo del README;
+si el cambio queda solo en la documentacion general, Codex seguiria teniendo
+instrucciones incompletas durante la ejecucion.
+
+## Pasos del Plan
+
+- [x] STEP-01: Actualizar las fuentes de verdad del workflow para explicitar la
+  secuencia Lean correcta.
+  - Evidencia/resultado esperado: `AGENTS.md`, `README.md`,
+    `.agents/skills/olympiad-formalize/SKILL.md`,
+    `.agents/skills/lean-prove/SKILL.md` y
+    `.agents/skills/lean-verify/SKILL.md` reflejan primero
+    `scripts/check_lean_json.sh <demo.lean>` y luego `scripts/build_strict.sh`.
+  - Validacion: revision manual reproducible con `rg -n "check_lean_json|build_strict|LaTeX|argument"` sobre esos archivos.
+  - Artefacto esperado: diff coherente del workflow.
+- [x] STEP-02: Ajustar el scaffold o texto base del `.tex` para recordar la
+  revision argumental alineada con Lean sin tocar Lean en ese paso.
+  - Evidencia/resultado esperado: `tools/demo_library.py` deja una instruccion
+    consistente con el nuevo workflow.
+  - Validacion: inspeccion del template generado y tests del modulo si aplican.
+  - Artefacto esperado: diff minimo en `tools/demo_library.py` y
+    `tests/test_demo_library.py` si cambia una expectativa.
+- [x] STEP-03: Validar el cambio y cerrar la trazabilidad.
+  - Evidencia/resultado esperado: tests/documentacion consistentes y plan
+    actualizado.
+  - Validacion: `.venv/bin/pytest -q` (si aplica) y revision de `git diff -U3`.
+  - Artefacto esperado: `PLANS.md` en estado cerrado con evidencia.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: seguir el flujo documentado de una demo nueva y comprobar que la
+  secuencia distingue claramente entre verificacion Lean y revision LaTeX.
+- Escenario 2: inspeccionar el scaffold `.tex` y verificar que pide una
+  exposicion matematica alineada con Lean, no una modificacion del `.lean`.
+- Evidencia capturada en:
+  - `rg -n "check_lean_json|build_strict|LaTeX exposition|argumentally consistent|without changing the Lean file" AGENTS.md README.md .agents/skills tools tests -S`
+  - `git diff -U3 -- AGENTS.md README.md .agents/skills/olympiad-formalize/SKILL.md .agents/skills/lean-prove/SKILL.md .agents/skills/lean-verify/SKILL.md tools/demo_library.py tests/test_demo_library.py PLANS.md`
+
+**Plan de Rollback:**
+- Trigger: las instrucciones nuevas generan contradiccion, ambiguedad operativa
+  o fallos de tests.
+- Acciones:
+  - revertir los cambios en skills/documentacion/scaffold de esta tarea;
+  - restaurar las expectativas previas de tests si se tocaron;
+  - dejar constancia del motivo en `PLANS.md`.
+- Verificacion posterior: confirmar que `rg` vuelve a mostrar el flujo previo y
+  que las pruebas/documentacion relevantes quedan estables.
+
+**Comandos Relevantes:**
+- `rg -n "check_lean_json|build_strict|LaTeX|argument" AGENTS.md README.md .agents/skills tools tests` - localizar y revisar todos los puntos del flujo.
+- `.venv/bin/pytest -q` - validar tests Python si el scaffold cambia.
+- `git diff -U3` - revisar la consistencia del cambio antes de cerrar.
+- Fallback si faltan herramientas/skills: revision manual del diff y checklist funcional del workflow documentado.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [No aplica]
+- Ultimo sync confirmado: [N/A]
+- Divergencias detectadas: [Ninguna]
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-18T15:24:00.000+0000]
+
+---

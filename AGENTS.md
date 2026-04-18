@@ -23,6 +23,9 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - Never leave `sorry` in committed or final Lean code.
 - After editing Lean files, prefer file-level verification first, then a full build.
 - The final arbiter is successful compilation without warnings that would hide incomplete proofs.
+- After Lean verification succeeds for a demonstration, review the paired LaTeX
+  section so its olympiad-style exposition matches the accepted Lean argument;
+  that review step updates only the `.tex`, not the Lean file.
 - Prefer repo-local scripts over ad hoc command variants when they exist.
 - Do not rewrite repo structure broadly unless the task explicitly requires it.
 - Do not treat `Mathlib` or `Biblioteca` as search-only corpora. Retrieval is
@@ -118,7 +121,9 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - `scripts/new_demo.sh --prefix <SIGLA> "<title>"` should be used when the
   theorem origin needs to be reflected in filenames and section stems.
 - The intended authoring loop is: scaffold a fresh entry, write the theorem and
-  proof, verify it with Lean, then generate the current paper PDF.
+  proof, verify the demo file first with `scripts/check_lean_json.sh`, close the
+  formal check with `scripts/build_strict.sh`, revise the paired LaTeX section
+  so it matches the accepted Lean argument, then generate the current paper PDF.
 
 ## Blueprint PDF rules
 
@@ -126,9 +131,12 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - Default blueprint declaration checks should also target only the current demonstration.
 - `scripts/new_demo.sh` marks the newly scaffolded demonstration as current.
 - If no current marker exists, the latest modified blueprint section is used.
-- Recommended blueprint workflow: verify Lean with `scripts/build_strict.sh`,
-  then check declarations with `scripts/check_blueprint_decls.sh`, then build
-  the PDF with `scripts/build_blueprint_pdf.sh`.
+- Recommended blueprint workflow: verify the demo first with
+  `scripts/check_lean_json.sh <file.lean>`, then run `scripts/build_strict.sh`,
+  then review the paired LaTeX section for argument consistency with the
+  accepted Lean proof, then check declarations with
+  `scripts/check_blueprint_decls.sh`, then build the PDF with
+  `scripts/build_blueprint_pdf.sh`.
 - Use repeated `--demo` flags or `--all` only when the task genuinely needs a collection.
 - Build outputs are preserved under timestamped directories in `blueprint/build/`.
 - Archived PDFs in `blueprint/library/pdf/` should reuse the originating Lean
