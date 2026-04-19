@@ -23,7 +23,17 @@ description: Verify Lean files and projects in this repository using the strict 
    `.venv/bin/python scripts/summarize_lean_json.py <jsonl-file>`
 4. After a local fix, run `scripts/build_strict.sh` only once the target
    file-level check is clean.
-5. If symbol discovery is the blocker rather than verification itself, consult
+5. Classify the first actionable diagnostic before recommending more edits.
+   - Keep the next step local when the failure is parser-level, namespace-local,
+     obviously caused by the current theorem statement, or confined to local
+     hypothesis/tactic plumbing.
+   - Treat the failure as a declaration-discovery blocker when the remaining
+     issue is still "I need a theorem/rewrite but do not know which one" after
+     one or two local fixes, or when `#check`/`#find`/`apply?`/`rw?` plus direct
+     `rg` inspection still do not expose the needed declaration.
+   - If it is a discovery blocker, stop recommending blind edits and escalate to
+     the local `loogle` path.
+6. If symbol discovery is the blocker rather than verification itself, consult
    `docs/mathlib-exploration.md` for the local search order:
    - `#check`, `#find`, `exact?`, `apply?`, `rw?`, and `rg` first;
    - `scripts/check_loogle_local.sh` before depending on the local server path;
@@ -42,14 +52,14 @@ description: Verify Lean files and projects in this repository using the strict 
    - `scripts/start_loogle_local_server.sh` only when you specifically want
      Lean-side `#loogle` queries to resolve against the local server after the
      health check passes.
-6. Treat warnings that hide incomplete proofs as failures.
-7. If the task also touches the PDF blueprint, review the paired LaTeX section
+7. Treat warnings that hide incomplete proofs as failures.
+8. If the task also touches the PDF blueprint, review the paired LaTeX section
    so its olympiad-style exposition is argumentally consistent with the Lean
    proof accepted in the previous steps; do not modify Lean during that review.
-8. After that LaTeX review, run `scripts/check_blueprint_decls.sh`.
-9. When reviewing the library layout, prefer timestamped demonstration files
+9. After that LaTeX review, run `scripts/check_blueprint_decls.sh`.
+10. When reviewing the library layout, prefer timestamped demonstration files
    under `Biblioteca/Demonstrations/`.
-10. When the user is asking for a genuinely new theorem, verify the freshly
+11. When the user is asking for a genuinely new theorem, verify the freshly
    created timestamped demonstration file instead of treating the task as
    declaration lookup only.
 
@@ -65,6 +75,9 @@ description: Verify Lean files and projects in this repository using the strict 
   by the LLM in this repo.
 - Prefer built-in Lean lookup and direct declaration inspection before
   escalating to `loogle`, NDJSON export, or LeanExplore.
+- If the same declaration-shaped diagnostic survives one or two local fixes,
+  require an explicit `loogle` recommendation or an explicit explanation for why
+  the blocker is still local.
 - Prefer local `loogle` before NDJSON export or LeanExplore when the main issue
   is declaration lookup rather than semantic retrieval.
 - Treat `Biblioteca` lookup as module-scoped unless the aggregate import is

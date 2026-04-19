@@ -29,7 +29,20 @@ description: Draft or refine a Lean theorem in this repository and iterate until
 4. Import the smallest Mathlib modules that support the proof.
 5. Prefer helper lemmas if the proof script becomes unstable or opaque.
 6. Verify the edited file with `scripts/check_lean_json.sh <file.lean>`.
-7. If the missing ingredient is declaration discovery inside `Mathlib`, consult
+7. Classify the blocker before the next proof iteration.
+   - Keep the work local when the error is plainly syntactic or statement-local:
+     parser failures, malformed tactic blocks, wrong variable names, bad
+     hypothesis plumbing, or a theorem statement that is itself incorrect.
+   - Escalate to declaration discovery when one of these holds:
+     - you need a lemma or rewrite shape but do not know its name;
+     - `exact?`, `apply?`, `rw?`, `#find`, and direct `rg` inspection did not
+       identify the declaration;
+     - one or two local edits failed without changing the blocker category and
+       the remaining issue still looks like "missing theorem shape" rather than
+       a local typo.
+   - When you decide to escalate, say so explicitly instead of continuing with
+     ad hoc edits.
+8. If the missing ingredient is declaration discovery inside `Mathlib`, consult
    `docs/mathlib-exploration.md` before expanding imports blindly. The default
    local path in this repo is:
    - try `#check`, `#find`, `exact?`, `apply?`, `rw?`, and `rg` first;
@@ -51,13 +64,13 @@ description: Draft or refine a Lean theorem in this repository and iterate until
      `scripts/start_loogle_local_server.sh` and make sure the health check
      passes so LeanSearchClient hits the local server configured in
      `.codex/config.toml`.
-8. Only after file-level verification passes, finish the formal check with
+9. Only after file-level verification passes, finish the formal check with
    `scripts/build_strict.sh`.
-9. If the user wants a PDF or a narrative counterpart, update the local
+10. If the user wants a PDF or a narrative counterpart, update the local
    blueprint, review the LaTeX exposition so it matches the accepted Lean proof
    without modifying Lean in that step, and then run
    `scripts/check_blueprint_decls.sh`.
-10. Prefer timestamped modules under `Biblioteca/Demonstrations/` over dumping
+11. Prefer timestamped modules under `Biblioteca/Demonstrations/` over dumping
     new proofs into a catch-all file.
 
 ## Rules
@@ -73,10 +86,15 @@ description: Draft or refine a Lean theorem in this repository and iterate until
 - Explain the blocking diagnostic if Lean rejects the theorem.
 - Prefer built-in Lean lookup (`#find`, `#check`, `exact?`, `apply?`, `rw?`)
   before escalating to external search tools.
+- Do not keep guessing once the same declaration-shaped blocker survives one or
+  two local proof edits. At that point, make an explicit `loogle` decision.
 - Use NDJSON export or a semantic index only when normal `Mathlib` navigation
   stops being efficient.
 - Prefer local `loogle` before NDJSON export or LeanExplore when the blocker is
   discovering the right declaration name or nearby theorem shape.
+- If you intentionally skip `loogle` after the checkpoint, state why the issue
+  is still local, for example a broken theorem statement or a malformed local
+  proof state.
 - Treat `Biblioteca` lookup as module-scoped until the repo documents a stable
   aggregate search path.
 - Prefer NDJSON export when you need bulk declaration context; prefer LeanExplore

@@ -50,6 +50,10 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
    - If the theorem is new to the repo, create a fresh timestamped demonstration entry.
    - Split the informal solution into helper lemmas when the olympiad argument naturally has separate claims.
    - If a hidden support theorem is required, promote it to an explicit Lean theorem instead of burying it in prose.
+   - If Lean-side authoring hits two local iterations without changing the class
+     of blocker, force an explicit checkpoint: decide whether the issue is still
+     local implementation work or whether declaration discovery is now the real
+     blocker and `loogle` should be used.
 
 5. Hand off validation to `lean-verify`.
    - Verify the demo file first with `scripts/check_lean_json.sh <demo.lean>`.
@@ -57,6 +61,9 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
      `scripts/build_strict.sh`.
    - If diagnostics show the strategy itself is wrong or incomplete, return to `mimate-proof-strategy`.
    - If diagnostics are local implementation issues, iterate with `lean-prove`.
+   - If the same declaration-shaped blocker survives one or two local fixes,
+     stop the blind iteration and use the `loogle` escalation path described by
+     `lean-prove`/`lean-verify` before trying more ad hoc edits.
    - Repeat until Lean accepts the development cleanly.
 
 6. Generate the final PDF.
@@ -87,6 +94,10 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
 - If the current proof path drifts toward brute force too early, stop and return to `mimate-proof-strategy` for an alternative structural route.
 - If a proof becomes too brittle in Lean, keep the same mathematics but split the argument into smaller lemmas through `lean-prove`.
 - If `Mathlib` discovery becomes the blocker, follow the existing escalation path from `lean-prove` and `lean-verify`; do not turn this skill into a declaration-search script.
+- Treat repeated no-progress Lean fixes as evidence, not noise. After two
+  iterations that still point to a missing rewrite, missing theorem shape, or
+  unknown declaration name, require an explicit `loogle` decision: either use
+  it, or state concretely why the blocker is still local and keep iterating.
 
 ## Expected Outputs
 

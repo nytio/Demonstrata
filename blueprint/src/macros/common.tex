@@ -20,6 +20,17 @@
 \newtheorem{corollary}[theorem]{Corollary}
 \theoremstyle{definition}
 \newtheorem{definition}[theorem]{Definition}
+\newtheoremstyle{problemstyle}
+  {.5\baselineskip}
+  {.5\baselineskip}
+  {\normalfont}
+  {}
+  {\bfseries}
+  {.}
+  {\newline}
+  {}
+\theoremstyle{problemstyle}
+\newtheorem*{problemstatementblock}{Problem}
 \ifPDFTeX
   \newcommand{\leanmonofont}{\ttfamily}
 \else
@@ -109,8 +120,8 @@
   \par\smallskip\noindent\textcolor{orange!80!black}{\textbf{Blueprint note: not ready for formalization.}}\par\smallskip
 }
 \newenvironment{problemstatement}
-  {\par\smallskip\noindent\textbf{Problem: }\ignorespaces}
-  {\par\smallskip}
+  {\begin{problemstatementblock}}
+  {\end{problemstatementblock}}
 \newcommand{\uses}[1]{}
 \newcommand{\discussion}[1]{%
   \par\smallskip\noindent\textbf{Discussion issue: }#1\par\smallskip

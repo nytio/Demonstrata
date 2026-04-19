@@ -102,6 +102,9 @@ Use this section when the task is a mathematical problem, especially olympiad-st
 **6. Produce a handoff-ready proof plan**
 - State the recommended proof strategy in a short paragraph.
 - List the helper lemmas or case splits likely needed.
+- Flag whether declaration discovery already looks like a likely blocker, so the
+  downstream Lean workflow knows whether an early `loogle` checkpoint is
+  expected.
 - Name any finite checks separately from the structural part.
 - Then move into `olympiad-formalize`, `lean-prove`, or `lean-verify`.
 
@@ -126,6 +129,9 @@ Use this section when the task is a mathematical problem, especially olympiad-st
 - For theorem search, inspect local declarations first. Escalate to the documented Mathlib exploration path only when names or nearby results are the blocker.
 - In this repo, `loogle` is the first advanced lookup tool. NDJSON export and
   LeanExplore are later escalations, not the starting point.
+- If your recommended proof route obviously leans on a nontrivial library fact
+  whose name is unknown, say that early so `olympiad-formalize` and
+  `lean-prove` do not waste iterations rediscovering the need for `loogle`.
 - For `Biblioteca`, default to module-scoped lookup until the aggregate library
   is known to be stable for search.
 - For repo workflow or skill changes, focus on trigger boundaries, progressive disclosure, whether scripts or references are justified, and interaction with existing skills.

@@ -1844,3 +1844,413 @@ instrucciones incompletas durante la ejecucion.
 **Ultima Actualizacion:** [2026-04-18T15:24:00.000+0000]
 
 ---
+## [PLAN-20260418-03] [Incorporar checkpoint operativo de loogle en olympiad-formalize]
+
+**Plan ID:** [PLAN-20260418-03] (debe coincidir con el encabezado de la seccion)
+**Objetivo General:** Revisar y ajustar el workflow de `olympiad-formalize` y
+las skills Lean subordinadas para que `loogle` no quede omitido cuando hay
+iteraciones repetidas sin progreso real en la etapa de autoria/verificacion
+Lean, manteniendolo como escalacion guiada y no como paso obligatorio ciego.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-18]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-19T01:57:33.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [Conversacion actual: mensaje del usuario "Apruebo plan"]
+**Evidencia de /plan:** [N/A (solo riesgo Bajo)]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes,
+  impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: revisar el flujo coordinador de `olympiad-formalize`; endurecer el
+  criterio de escalacion hacia `loogle` en `lean-prove` y, si aplica, en
+  `lean-verify` y `mimate-proof-strategy`; dejar explicitos los disparadores
+  para usar `loogle`, el fallback cuando no convenga usarlo, y la expectativa
+  de reportar esa decision dentro de la ejecucion.
+- Excluye: cambiar la infraestructura de `loogle`, recompilar indices,
+  modificar scripts shell/Python de busqueda, introducir busqueda semantica
+  nueva, o alterar demostraciones Lean existentes.
+
+**Supuestos:**
+- El problema actual es de orquestacion y criterio de uso, no de ausencia de
+  tooling: el repo ya dispone de `loogle` local y de su fallback operativo.
+- El objetivo no es forzar `loogle` en todos los errores Lean, sino evitar
+  iteraciones por tanteo cuando ya hay evidencia de bloqueo por descubrimiento
+  de declaraciones o por estancamiento.
+- La fuente de verdad del cambio esta en las skills repo-locales y, solo si
+  hace falta para coherencia global, en `AGENTS.md` o `README.md`.
+
+**Dependencias:**
+- Skills repo-locales: `.agents/skills/olympiad-formalize/SKILL.md`,
+  `.agents/skills/lean-prove/SKILL.md`,
+  `.agents/skills/lean-verify/SKILL.md`,
+  `.agents/skills/mimate-proof-strategy/SKILL.md`.
+- Documentacion operativa existente: `docs/mathlib-exploration.md`,
+  `AGENTS.md`, `README.md`.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Bajo]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** Aunque el riesgo tecnico es bajo, el cambio
+afecta varias skills coordinadas y el criterio de escalacion del agente; vale
+la pena comparar alternativas para no introducir una regla torpe o demasiado
+agresiva.
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica (sin `PROGRESS.md`)]
+**Justificacion del modo de seguimiento:** La trazabilidad del ajuste queda
+adecuadamente capturada en `PLANS.md`; no se requiere bitacora separada.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [ ] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde:
+  [`N/A; no se esperan tests automatizados especificos si solo cambian skills/docs`].
+- [x] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual
+  reproducible documentada.
+- [x] (`Documentacion`) Exactitud tecnica verificada y comandos validados.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible
+  ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no
+  reporta severidad explicita.
+- [x] Documentacion actualizada en:
+  [`.agents/skills/olympiad-formalize/SKILL.md`,
+  `.agents/skills/lean-prove/SKILL.md`,
+  `.agents/skills/lean-verify/SKILL.md`,
+  `.agents/skills/mimate-proof-strategy/SKILL.md`,
+  `PLANS.md` y opcionalmente `AGENTS.md`/`README.md` si se necesita coherencia].
+- [x] Criterios de aceptacion funcional cumplidos:
+  - [CA-1] `olympiad-formalize` deja un checkpoint operativo explicito para
+    consultar `loogle` cuando el flujo Lean muestra estancamiento o bloqueo de
+    descubrimiento.
+  - [CA-2] `lean-prove` y `lean-verify` describen disparadores concretos para
+    usar `loogle` antes de seguir iterando por tanteo.
+  - [CA-3] El flujo sigue distinguiendo entre errores de sintaxis/implementacion
+    local y errores que ameritan busqueda de declaraciones.
+  - [CA-4] El fallback cuando `loogle` no aplica o no responde queda alineado
+    con `docs/mathlib-exploration.md`.
+- [ ] Rollback definido y validado (si aplica).
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o
+  checklist manual reproducible).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: convertir `loogle` en una obligacion mecanica incluso para errores
+  triviales de sintaxis o de nombres locales.
+  - Mitigacion: definir disparadores por tipo de bloqueo y por iteraciones sin
+    progreso, no por cualquier error Lean.
+- Riesgo: dejar reglas inconsistentes entre el coordinador y las skills
+  subordinadas.
+  - Mitigacion: tocar conjuntamente `olympiad-formalize`, `lean-prove`,
+    `lean-verify` y, si hace falta, `mimate-proof-strategy`.
+- Riesgo: duplicar instrucciones ya cubiertas por `docs/mathlib-exploration.md`
+  y generar divergencia futura.
+  - Mitigacion: referenciar esa doc como fuente operativa del fallback y dejar
+    en las skills solo el criterio de disparo.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto` (`Rubrica de
+  severidad para hallazgos`).
+- Si una herramienta no reporta severidad, clasificar cada hallazgo con esa
+  rubrica y registrar la clasificacion/evidencia en este plan.
+- Si existe duda entre dos severidades, usar la mas alta de forma preventiva.
+
+**Alternativas Evaluadas y Rubrica:**
+- Escala cuantitativa recomendada: `1..5` por criterio (`5` es mejor).
+- Pesos:
+  - Alcance (20%)
+  - Simplicidad (20%)
+  - Riesgo tecnico (25%)
+  - Testabilidad (20%)
+  - Mantenibilidad (15%)
+- Alternativa A: ajustar solo `olympiad-formalize` para que recuerde
+  consultar `loogle` antes de demasiadas iteraciones Lean.
+  - Score por criterio: [A=3 S=5 R=4 T=3 M=2]
+  - Puntaje total ponderado: [70/100]
+- Alternativa B: introducir un checkpoint coordinado en
+  `olympiad-formalize` y disparadores concretos en `lean-prove`/`lean-verify`,
+  con `mimate-proof-strategy` alineado como pre-pass.
+  - Score por criterio: [A=5 S=4 R=4 T=5 M=5]
+  - Puntaje total ponderado: [91/100]
+- Alternativa C: exigir `loogle` en toda iteracion Lean antes de cualquier
+  segundo intento.
+  - Score por criterio: [A=4 S=2 R=2 T=4 M=2]
+  - Puntaje total ponderado: [55/100]
+
+**Plan Seleccionado (resumen):**
+Elegir la alternativa B. El problema real no esta solo en el coordinador, sino
+en que el criterio de escalacion permanece implícito y demasiado facil de
+saltarse durante la iteracion. El mejor ajuste es un checkpoint visible en
+`olympiad-formalize` y reglas concretas aguas abajo para distinguir entre
+errores locales y bloqueos de descubrimiento donde `loogle` ya debe entrar.
+
+## Pasos del Plan
+
+- [x] STEP-01: Precisar y documentar los disparadores de `loogle` en el flujo
+  Lean.
+  - Evidencia/resultado esperado: existe una definicion operativa clara de
+    cuando usar `loogle` y cuando no usarlo.
+  - Validacion: `rg -n "loogle|iteration|stagn|discovery|blocker|fallback" .agents/skills docs`
+  - Artefacto esperado: diff coherente de skills/docs.
+- [x] STEP-02: Actualizar `olympiad-formalize` y las skills subordinadas para
+  reflejar ese checkpoint coordinado.
+  - Evidencia/resultado esperado: el coordinador explicita el checkpoint y las
+    skills Lean detallan la accion esperada y el fallback.
+  - Validacion: `git diff -U3 -- .agents/skills/olympiad-formalize/SKILL.md .agents/skills/lean-prove/SKILL.md .agents/skills/lean-verify/SKILL.md .agents/skills/mimate-proof-strategy/SKILL.md AGENTS.md README.md`
+  - Artefacto esperado: cambios puntuales y consistentes.
+- [x] STEP-03: Revisar el diff final y cerrar trazabilidad.
+  - Evidencia/resultado esperado: cambio sin contradicciones y con evidencia
+    reproducible de revision.
+  - Validacion: `git diff -U3` y checklist manual de coherencia.
+  - Artefacto esperado: `PLANS.md` actualizado a estado final.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: leer `olympiad-formalize` y verificar que ya no permite iterar
+  varias veces sin al menos evaluar el checkpoint de `loogle`.
+- Escenario 2: leer `lean-prove`/`lean-verify` y confirmar que distinguen entre
+  errores locales y bloqueos de descubrimiento que ameritan `loogle`.
+- Escenario 3: verificar que el fallback narrado sigue alineado con
+  `docs/mathlib-exploration.md`.
+- Evidencia capturada en:
+  [`git diff -U3`, `rg -n "loogle|fallback|iteration|blocker|discovery" .agents/skills docs AGENTS.md README.md`]
+
+**Plan de Rollback:**
+- Trigger: el nuevo criterio vuelve ambiguo el workflow, sobreusa `loogle` o
+  contradice la documentacion existente.
+- Acciones:
+  - revertir los cambios en skills/docs de esta tarea;
+  - restaurar el wording previo en el coordinador y skills subordinadas;
+  - dejar constancia del motivo en `PLANS.md`.
+- Verificacion posterior: revisar que `rg` ya no encuentre el nuevo checkpoint y
+  que la documentacion restante vuelva a ser consistente.
+
+**Comandos Relevantes:**
+- `rg -n "loogle|iteration|blocker|discovery|fallback" .agents/skills docs AGENTS.md README.md` - localizar y revisar todos los puntos del workflow.
+- `git diff -U3` - revisar consistencia del cambio antes de cerrar.
+- Fallback si faltan herramientas/skills: revision manual del diff y checklist
+  funcional del workflow documentado.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [No aplica]
+- Ultimo sync confirmado: [N/A]
+- Divergencias detectadas: [Ninguna]
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-19T02:07:41.000+0000]
+
+---
+## [PLAN-20260418-04] [Mejorar presentacion del bloque Problem en el PDF blueprint]
+
+**Plan ID:** [PLAN-20260418-04] (debe coincidir con el encabezado de la seccion)
+**Objetivo General:** Ajustar la presentacion del bloque `Problem` en el PDF
+generado por `olympiad-formalize` para que no quede pegado al primer titulo y
+se renderice como un bloque theorem-like, en una linea propia y con espaciado
+mas natural para un paper matematico.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-19]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-19T02:18:24.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [Conversacion actual: mensaje del usuario "Apruebo plan"]
+**Evidencia de /plan:** [N/A (solo riesgo Bajo)]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes,
+  impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: localizar el punto correcto del pipeline donde se define el bloque
+  `problemstatement`; contrastar el cambio con recomendaciones AMS/LaTeX para
+  papers matematicos; implementar el ajuste minimo en macros o builder; añadir
+  o ajustar tests si aplica; validar el resultado generado.
+- Excluye: redisenar todo el template `amsart`; cambiar la estructura de las
+  secciones `.tex`; tocar demostraciones Lean; alterar otros entornos teorema
+  sin necesidad.
+
+**Supuestos:**
+- El problema principal proviene de la definicion actual de
+  `problemstatement` como entorno inline manual en `blueprint/src/macros/common.tex`,
+  no del contenido matematico de cada seccion.
+- El mejor ajuste deberia vivir en una macro o punto comun del blueprint, no
+  en cada archivo individual bajo `blueprint/src/sections/`.
+- `Problem` encaja mejor como entorno theorem-like de estilo `definition`,
+  segun la guia de `amsthm` de la AMS.
+
+**Dependencias:**
+- Archivos del repo: `blueprint/src/macros/common.tex`,
+  `tools/blueprint_paper.py`, `tests/test_blueprint_paper.py`,
+  `tools/demo_library.py`, `tests/test_demo_library.py`.
+- Artefactos de referencia local: `blueprint/build/*/paper.tex`,
+  secciones bajo `blueprint/src/sections/`.
+- Referencias externas consultadas:
+  - AMS `amsthm` usage guide (`amsthdoc.pdf`): clasifica `Problem` en
+    `\theoremstyle{definition}` y documenta `\newtheorem*` para entornos
+    no numerados.
+  - AMS `amsthm` usage guide (`amsthdoc.pdf`): documenta
+    `\newtheoremstyle{break}` y el uso de `\newline` para romper la cabecera
+    del entorno y empezar el contenido en una nueva linea.
+  - Context7 `/latex3/latex2e`: ejemplos de definicion de entornos theorem-like
+    con `amsthm` y de entornos custom de LaTeX.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Bajo]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** Aunque el cambio esperado es pequeño, hay
+que decidir bien el nivel correcto del parche: macro comun, builder o template
+de secciones. Conviene dejar esa decision explicita para no degradar el estilo
+editorial del blueprint.
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica (sin `PROGRESS.md`)]
+**Justificacion del modo de seguimiento:** La trazabilidad de este ajuste de
+layout queda suficientemente cubierta en `PLANS.md`.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [ ] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde:
+  [`.venv/bin/pytest -q tests/test_blueprint_paper.py tests/test_demo_library.py` si se tocan tests; validacion del builder PDF si aplica].
+- [x] (`Codigo` o `Mixta`) Si no hay tests aplicables, validacion manual
+  reproducible documentada.
+- [x] (`Documentacion`) Exactitud tecnica verificada y comandos validados.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible
+  ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no
+  reporta severidad explicita.
+- [x] Documentacion actualizada en: [`PLANS.md`] y, solo si hace falta para
+  coherencia futura, archivos de scaffolding o docs tecnicas.
+- [x] Criterios de aceptacion funcional cumplidos:
+  - [CA-1] El bloque `Problem` deja de presentarse como etiqueta inline pegada
+    al primer titulo y pasa a un bloque con mejor separacion vertical.
+  - [CA-2] La solucion adoptada es coherente con `amsart`/`amsthm` y con el
+    estilo de papers matematicos consultado.
+  - [CA-3] El cambio se aplica en el punto comun correcto del proyecto y no
+    obliga a editar cada seccion individual.
+  - [CA-4] La salida generada sigue siendo estable para secciones existentes.
+- [ ] Rollback definido y validado (si aplica).
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o
+  checklist manual reproducible).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: forzar un estilo de theorem con numeracion no deseada o con enfasis
+  tipografico incorrecto.
+  - Mitigacion: usar `\newtheorem*` y `\theoremstyle{definition}` o una macro
+    equivalente alineada con `amsthm`.
+- Riesgo: cambiar el entorno comun y alterar mas bloques del blueprint de lo
+  necesario.
+  - Mitigacion: limitar el parche a `problemstatement` y revisar el diff del
+    builder/render final.
+- Riesgo: validar solo en texto y no en layout real.
+  - Mitigacion: revisar `paper.tex` generado y, si es viable, ejecutar el build
+    PDF del demo afectado para una comprobacion visual indirecta/reproducible.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto` (`Rubrica de
+  severidad para hallazgos`).
+- Si una herramienta no reporta severidad, clasificar cada hallazgo con esa
+  rubrica y registrar la clasificacion/evidencia en este plan.
+- Si existe duda entre dos severidades, usar la mas alta de forma preventiva.
+
+**Alternativas Evaluadas y Rubrica:**
+- Escala cuantitativa recomendada: `1..5` por criterio (`5` es mejor).
+- Pesos:
+  - Alcance (20%)
+  - Simplicidad (20%)
+  - Riesgo tecnico (25%)
+  - Testabilidad (20%)
+  - Mantenibilidad (15%)
+- Alternativa A: cambiar solo el entorno `problemstatement` en
+  `blueprint/src/macros/common.tex` para convertirlo en un bloque theorem-like
+  no numerado, idealmente con salto de linea tras la cabecera.
+  - Score por criterio: [A=5 S=5 R=4 T=4 M=5]
+  - Puntaje total ponderado: [91/100]
+- Alternativa B: reescribir el builder para insertar manualmente espaciado o
+  wrappers alrededor del primer `problemstatement` en `selected_content.tex`.
+  - Score por criterio: [A=3 S=2 R=3 T=3 M=2]
+  - Puntaje total ponderado: [52/100]
+- Alternativa C: editar cada seccion para insertar comandos de espacio antes o
+  despues del bloque `problemstatement`.
+  - Score por criterio: [A=2 S=3 R=4 T=2 M=1]
+  - Puntaje total ponderado: [45/100]
+
+**Plan Seleccionado (resumen):**
+Elegir la alternativa A. El problema nace en una definicion comun del entorno y
+ahi mismo debe resolverse. Eso mantiene el estilo consistente, minimiza
+duplicacion y encaja mejor con la recomendacion AMS de tratar `Problem` como un
+entorno theorem-like de estilo `definition`.
+
+## Pasos del Plan
+
+- [x] STEP-01: Confirmar el punto de cambio comun y el estilo theorem-like
+  recomendado para `Problem`.
+  - Evidencia/resultado esperado: criterio claro sobre si el parche debe vivir
+    en `common.tex` o en el builder.
+  - Validacion: inspeccion reproducible con `rg -n "problemstatement|newtheorem|theoremstyle" blueprint tools tests`
+  - Artefacto esperado: decision justificada en el diff/plan.
+- [x] STEP-02: Implementar el ajuste minimo en el entorno comun y, si hace
+  falta, actualizar tests o scaffolding relacionados.
+  - Evidencia/resultado esperado: `Problem` se renderiza como bloque separado,
+    en linea propia y con estilo consistente.
+  - Validacion: `git diff -U3 -- blueprint/src/macros/common.tex tools/blueprint_paper.py tests/test_blueprint_paper.py tools/demo_library.py tests/test_demo_library.py`
+  - Artefacto esperado: parche acotado.
+- [x] STEP-03: Ejecutar validacion relevante del builder/PDF y cerrar trazabilidad.
+  - Evidencia/resultado esperado: el cambio no rompe el pipeline y mejora la
+    salida generada.
+  - Validacion: `.venv/bin/pytest -q tests/test_blueprint_paper.py tests/test_demo_library.py` y/o `scripts/build_blueprint_pdf.sh --demo <stem>` si aplica.
+  - Artefacto esperado: `PLANS.md` actualizado a estado final.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: inspeccionar el `paper.tex` generado y verificar que el bloque
+  `Problem` ya no es una etiqueta inline sino un entorno con separacion propia.
+- Escenario 2: confirmar que la solucion adoptada mantiene el comportamiento
+  comun para secciones futuras sin editar los `.tex` individuales.
+- Escenario 3: revisar que el estilo elegido coincide con la recomendacion AMS
+  para `Problem` en `theoremstyle{definition}`.
+- Evidencia capturada en:
+  [`git diff -U3`, `rg -n "problemstatement|Problem|newtheorem|theoremstyle" blueprint tools tests`, `paper.tex` generado si se recompila]
+
+**Plan de Rollback:**
+- Trigger: el nuevo entorno rompe el layout, introduce numeracion no deseada o
+  afecta negativamente otros bloques del blueprint.
+- Acciones:
+  - revertir el cambio en la macro o builder tocado;
+  - restaurar tests/expectativas asociadas si cambiaron;
+  - dejar constancia del motivo en `PLANS.md`.
+- Verificacion posterior: revisar el diff revertido y confirmar que el builder
+  vuelve al comportamiento anterior.
+
+**Comandos Relevantes:**
+- `rg -n "problemstatement|newtheorem|theoremstyle|Problem" blueprint tools tests` - localizar el punto comun y revisar el impacto.
+- `.venv/bin/pytest -q tests/test_blueprint_paper.py tests/test_demo_library.py` - validar tests Python si cambian.
+- `scripts/build_blueprint_pdf.sh --demo <stem>` - validar render del PDF si se necesita evidencia del layout final.
+- Fallback si faltan herramientas/skills: revision manual del `paper.tex`
+  generado y checklist visual indirecto del layout.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [No aplica]
+- Ultimo sync confirmado: [N/A]
+- Divergencias detectadas: [Ninguna]
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-19T02:21:31.000+0000]
+
+---
