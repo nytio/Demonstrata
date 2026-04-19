@@ -1,0 +1,126 @@
+% title: Coprime-Detecting Function and Prime Support
+% short-title: Coprime-Detecting Function
+% abstract: We formalize IMO 2024 Shortlist N7. For a positive-integer-valued function satisfying the given coprimality-detecting identity, we prove that for every positive integer \(n\), the possible values of \(f(n)\) are exactly the positive integers with the same set of prime divisors as \(n\).
+% subjclass: 03B35
+% keywords: olympiad number theory, functional equation, prime support, Lean 4
+% author: Mario Hernández M.
+
+\subsection{Coprime-Detecting Function and Prime Support}
+
+\begin{problemstatement}
+Let \(\mathbb{Z}_{>0}\) denote the set of positive integers. Let
+\(f:\mathbb{Z}_{>0}\to\mathbb{Z}_{>0}\) be a function satisfying the following
+property: for \(m,n\in\mathbb{Z}_{>0}\), the equation
+\[
+  f(mn)^2 = f(m^2)\,f(f(n))\,f\bigl(mf(n)\bigr)
+\]
+holds if and only if \(m\) and \(n\) are coprime. For each positive integer
+\(n\), determine all the possible values of \(f(n)\).
+\end{problemstatement}
+
+We formalize the defining predicate
+\lean{Biblioteca.Demonstrations.CoprimeDetectingFunction} and prove the
+classification theorem
+\lean{Biblioteca.Demonstrations.imo2024_sl_n7_values}.
+
+\begin{theorem}
+Fix \(n\in \mathbb{Z}_{>0}\). A positive integer \(k\) can occur as \(f(n)\) for
+some function \(f\) satisfying the hypothesis if and only if \(k\) and \(n\)
+have exactly the same prime divisors.
+\end{theorem}
+
+\begin{proof}
+We first extract the basic algebraic consequences of the defining identity.
+Substituting \(m=n=1\) gives \(f(1)=1\). Then the specializations
+\((m,n)=(1,n)\) and \((m,n)=(n,1)\) imply
+\[
+  f(f(n))=f(n), \qquad f(n^2)=f(n).
+\]
+In Lean these reductions are
+\lean{Biblioteca.Demonstrations.coprimeDetecting_one_eq_one},
+\lean{Biblioteca.Demonstrations.coprimeDetecting_idem}, and
+\lean{Biblioteca.Demonstrations.coprimeDetecting_sq}. After simplifying the
+original hypothesis with these identities, we obtain the equivalent form
+\[
+  f(mn)^2 = f(m)\,f(n)\,f\bigl(mf(n)\bigr)
+  \iff \gcd(m,n)=1,
+\]
+formalized as \lean{Biblioteca.Demonstrations.coprimeDetecting_Q}, together
+with the derived criterion
+\[
+  f\bigl(mf(n)\bigr)=f(m)f(n)
+  \iff \gcd\bigl(m,f(n)\bigr)=1,
+\]
+formalized as \lean{Biblioteca.Demonstrations.coprimeDetecting_R}.
+
+The first structural step is that every prime divisor of \(n\) also divides
+\(f(n)\). Indeed, if a prime \(p\) divides \(n\), write \(n=p^v t\) with
+\(v\ge 1\) and \(p\nmid t\). Then \(p^v\) is not coprime to \(f(p^v)\), so
+\(p\mid f(p^v)\). Applying the coprime case of the simplified relation to the
+pair \((p^v,t)\) yields \(p\mid f(n)\). This is the lemma
+\lean{Biblioteca.Demonstrations.coprimeDetecting_prime_dvd_image}.
+
+The key restriction is that for a prime \(p\), the image \(f(p)\) has no prime
+divisors other than \(p\). Suppose, toward a contradiction, that a distinct
+prime \(q\) divides \(f(p)\). Using the symmetry of the coprimality-transfer
+statement
+\lean{Biblioteca.Demonstrations.coprimeDetecting_coprime_image_transfer},
+formalized further in
+\lean{Biblioteca.Demonstrations.coprimeDetecting_prime_dvd_iff_not_coprime_prime_image},
+one proves that whenever an integer \(x\) is not coprime to \(pq\), then
+\(p\mid f(x)\). Choose \(X\) minimizing the \(p\)-adic valuation of \(f(X)\)
+among all such \(x\). Writing
+\[
+  f(X)=p^m u \qquad (p\nmid u),
+\]
+one checks that \(q\mid u\), so \(u\) is again not coprime to \(pq\). Applying
+the coprime identity to \((p^m,u)\) forces the right-hand side to be divisible
+by \(p^{3m}\), while the left-hand side is \(f(X)^2\), whose \(p\)-adic
+valuation is exactly \(2m\), a contradiction. The formal contradiction is
+\lean{Biblioteca.Demonstrations.coprimeDetecting_prime_image_unique}.
+
+Now let \(r\) be a prime divisor of \(f(n)\). If \(r\nmid n\), then the
+criterion
+\lean{Biblioteca.Demonstrations.coprimeDetecting_prime_dvd_iff_not_coprime_prime_image}
+shows that \(n\) is not coprime to \(f(r)\). But every prime divisor of
+\(f(r)\) must equal \(r\), contrary to \(r\nmid n\). Hence every prime divisor
+of \(f(n)\) already divides \(n\). Combined with the previous inclusion, this
+gives equality of prime supports:
+\[
+  \operatorname{PrimeDiv}(f(n))=\operatorname{PrimeDiv}(n).
+\]
+This is the theorem
+\lean{Biblioteca.Demonstrations.coprimeDetecting_primeFactors_image}.
+
+For the converse, fix a positive integer \(k\) with the same prime divisors as
+\(n\). Define
+\[
+  g_k(m)=\prod_{p\mid m} p^{e_p},
+  \qquad
+  e_p=
+  \begin{cases}
+    v_p(k), & p\mid k,\\
+    1, & p\nmid k.
+  \end{cases}
+\]
+In Lean this family is
+\lean{Biblioteca.Demonstrations.primeSupportModel}. Its prime divisors are
+exactly those of the input, and the product identity over prime-factor sets
+shows that
+\[
+  g_k(mn)=g_k(m)\,g_k(n)
+  \iff \gcd(m,n)=1.
+\]
+After also observing that \(g_k(g_k(n))=g_k(n)\) and \(g_k(n^2)=g_k(n)\), one
+checks directly that \(g_k\) satisfies the original condition; this is
+\lean{Biblioteca.Demonstrations.primeSupportModel_isSolution}. Finally, if
+\(k\) and \(n\) have the same prime support, then by construction
+\[
+  g_k(n)=k,
+\]
+formalized as
+\lean{Biblioteca.Demonstrations.primeSupportModel_eq_of_primeFactors_eq}.
+
+Therefore the possible values of \(f(n)\) are precisely the positive integers
+having the same set of prime divisors as \(n\).
+\end{proof}
