@@ -1,0 +1,79 @@
+% title: Race Rating Score Maximum
+% short-title: Race Rating Score Maximum
+% abstract: We prove that the maximum possible sum of the final scores in the race-rating problem is n(n-1)/2. The proof uses a per-student averaging bound: a student with score s has average rank at most n-s. Summing this over all students and all races gives the upper bound, and a fixed ordering in every race attains equality.
+% subjclass: 05A05, 05A20
+% keywords: rankings, double counting, extremal combinatorics, Lean 4
+% author: Mario Hernández M.
+
+\subsection{Race Rating Score Maximum}
+
+\begin{problemstatement}
+Let \(n\) be a positive integer. A class of \(n\) students run \(n\) races, in
+each of which they are ranked with no draws. A student is eligible for a rating
+\((a, b)\) for positive integers \(a\) and \(b\) if they come in the top \(b\)
+places in at least \(a\) of the races. Their final score is the maximum possible
+value of \(a-b\) across all ratings for which they are eligible. Find the
+maximum possible sum of all the scores of the \(n\) students.
+\end{problemstatement}
+
+\begin{theorem}
+The maximum possible sum of the final scores is
+\[
+  \frac{n(n-1)}{2}.
+\]
+\end{theorem}
+
+\begin{proof}
+For a fixed student, let \(c_b\) be the number of races in which that student
+finishes in one of the top \(b\) places. The best score of the student is
+\[
+  s=\max_{1\le b\le n}(c_b-b),
+\]
+since for a fixed \(b\) the largest eligible \(a\) is \(c_b\).
+
+Choose a value of \(b\) for which \(s=c_b-b\). Then the student has at least
+\(b+s\) races with rank at most \(b\). If ranks are written as
+\(0,1,\ldots,n-1\), this means that at least \(b+s\) of the zero-based ranks
+are at most \(b-1\), while all remaining ranks are at most \(n-1\). Therefore
+the student's total zero-based rank sum is at most
+\[
+  (b+s)(b-1)+(n-b-s)(n-1)\le n(n-1)-ns.
+\]
+Equivalently,
+\[
+  ns+\text{(student's zero-based rank sum)}\le n(n-1).
+\]
+
+Summing this inequality over all students gives
+\[
+  n\sum s_i+\sum_i\sum_{\text{races}} r_{i,\text{race}}
+  \le n^2(n-1).
+\]
+In each race the zero-based ranks are exactly \(0,1,\ldots,n-1\), so the total
+rank sum over all \(n\) races is
+\[
+  n\cdot\frac{n(n-1)}2.
+\]
+Consequently
+\[
+  n\sum s_i\le n\cdot\frac{n(n-1)}2,
+\]
+and, since \(n>0\),
+\[
+  \sum s_i\le \frac{n(n-1)}2.
+\]
+This upper-bound step is the formal content of
+\lean{Biblioteca.Demonstrations.raceRatingScoreSum_le_maximum}.
+
+The bound is sharp. Let every race have the same finishing order. Then the
+student who is always in position \(j\), with \(j=1,\ldots,n\), has score
+\(n-j\): choosing \(b=j\) gives \(a=n\), hence \(a-b=n-j\), and no larger score
+is possible. Thus the scores are
+\[
+  n-1,n-2,\ldots,1,0,
+\]
+whose sum is \(\frac{n(n-1)}2\). In Lean this fixed-order sum is recorded as
+\lean{Biblioteca.Demonstrations.fixedOrderRaceScores_sum}, and the combined
+existence and upper-bound statement is
+\lean{Biblioteca.Demonstrations.raceRatingMaximum_value}.
+\end{proof}
