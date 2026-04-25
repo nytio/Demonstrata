@@ -2,10 +2,15 @@
 
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 personality = "pragmatic"
 default_permissions = "local_loopback"
 
 project_doc_fallback_filenames = ["AGENTS.md"]
+
+[features]
+multi_agent = false
 
 [shell_environment_policy.set]
 LEANSEARCHCLIENT_LOOGLE_API_URL = "http://localhost:8088/json"

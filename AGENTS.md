@@ -18,6 +18,21 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 - For OpenAI products or Codex behavior, consult official OpenAI docs first.
 - For third-party libraries or frameworks, consult Context7 first.
 
+## Codex model and agent policy
+
+- Use `gpt-5.5` as the repo-local Codex model.
+- Prefer `model_reasoning_effort = "high"` for this repository because Lean
+  proof work benefits from deeper planning, debugging, and multi-step tradeoffs.
+- Do not use multi-agent or subagent execution for this repo unless the user
+  explicitly revises this policy. The repo-local Codex configuration disables
+  multi-agent features; prefer one agent with high reasoning instead.
+- With Codex CLI 0.125.0 or newer, keep using repo-local permission profiles
+  and prefer `/status` or `/debug-config` to confirm that the project config was
+  loaded. For non-interactive planning evidence, `codex exec --json` can expose
+  reasoning-token usage, but it must not be used to spawn multiple agents here.
+- If a future Codex release changes model or reasoning configuration keys,
+  consult official OpenAI Codex documentation before updating `.codex/config.toml`.
+
 ## Mandatory repo rules
 
 - Never leave `sorry` in committed or final Lean code.

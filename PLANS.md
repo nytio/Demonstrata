@@ -2254,3 +2254,169 @@ entorno theorem-like de estilo `definition`.
 **Ultima Actualizacion:** [2026-04-19T02:21:31.000+0000]
 
 ---
+
+## [PLAN-20260424-01] [Actualizar Codex a gpt-5.5 con un solo agente]
+
+**Plan ID:** [PLAN-20260424-01] (debe coincidir con el encabezado de la seccion)
+**Objetivo General:** Adaptar la configuracion y documentacion repo-local de
+Codex para usar `gpt-5.5` con alto razonamiento, manteniendo la restriccion de
+no usar multiples agentes.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-25]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-25T05:02:33.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [Conversacion actual: mensaje del usuario "Apruebo el plan"]
+**Evidencia de /plan:** [N/A (riesgo Bajo)]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: revisar documentacion oficial de OpenAI para `gpt-5.5`, razonamiento
+  y Codex; actualizar `.codex/config.toml`; documentar la politica en
+  `AGENTS.md` y `README.md`; registrar la decision en `DECISIONS.md`.
+- Excluye: instalar o actualizar Codex CLI globalmente; modificar proofs Lean;
+  habilitar subagentes o ejecucion multi-agente.
+
+**Supuestos:**
+- El proyecto esta o estara marcado como trusted para cargar `.codex/config.toml`.
+- `gpt-5.5` esta disponible para la superficie/cuenta que ejecute Codex.
+- La restriccion de usuario favorece un unico agente con razonamiento alto.
+
+**Dependencias:**
+- Documentacion oficial OpenAI consultada mediante MCP:
+  `codex/config-reference`, `codex/learn/best-practices`,
+  `codex/subagents`, `codex/cli/slash-commands` y
+  `api/docs/guides/deployment-checklist#set-up-reasoningeffort`.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Bajo]
+**Modo de planificacion:** [Simplificado no-pequeno (1 alternativa + 1 descartada)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** El cambio impacta configuracion y
+documentacion, pero no altera codigo de ejecucion ni proofs Lean.
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica]
+**Justificacion del modo de seguimiento:** La trazabilidad en `PLANS.md` y
+`DECISIONS.md` es suficiente para un cambio bajo y acotado.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Documentacion`) Exactitud tecnica verificada y enlaces/comandos validados.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no reporta severidad explicita.
+- [x] Documentacion actualizada en: `.codex/config.toml`, `AGENTS.md`, `README.md`, `DECISIONS.md`, `PLANS.md`.
+- [x] Criterios de aceptacion funcional cumplidos:
+  - [CA-1] `.codex/config.toml` fija `model = "gpt-5.5"`.
+  - [CA-2] `.codex/config.toml` fija `model_reasoning_effort = "high"`.
+  - [CA-3] `.codex/config.toml` deshabilita multi-agente.
+  - [CA-4] La documentacion menciona `gpt-5.5` y la politica de un solo agente.
+- [x] Rollback definido y validado (si aplica).
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o commit).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: que `gpt-5.5` o `xhigh/high` no esten disponibles en alguna cuenta o
+  superficie de Codex.
+  - Mitigacion: usar claves oficiales de configuracion, documentar el supuesto y
+    validar en una nueva sesion con `/status` o `/debug-config`.
+- Riesgo: que Codex 0.125.0 habilite por defecto capacidades multi-agente no
+  deseadas.
+  - Mitigacion: declarar `features.multi_agent = false` en la configuracion
+    repo-local.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto` (`Rubrica de severidad para hallazgos`).
+- Si una herramienta no reporta severidad, clasificar cada hallazgo con esa rubrica
+  y registrar la clasificacion/evidencia en este plan.
+- Si existe duda entre dos severidades, usar la mas alta de forma preventiva.
+
+**Alternativas Evaluadas y Rubrica:**
+- Escala cuantitativa recomendada: `1..5` por criterio (`5` es mejor).
+- Pesos:
+  - Alcance (20%)
+  - Simplicidad (20%)
+  - Riesgo tecnico (25%)
+  - Testabilidad (20%)
+  - Mantenibilidad (15%)
+- Alternativa A: configurar `gpt-5.5` con razonamiento alto y deshabilitar
+  multi-agente.
+  - Score por criterio: [A=5 S=5 R=4 T=4 M=5]
+  - Puntaje total ponderado: [91/100]
+- Alternativa B: actualizar solo documentacion y dejar modelo/razonamiento a
+  criterio de cada sesion.
+  - Score por criterio: [A=3 S=5 R=3 T=3 M=3]
+  - Puntaje total ponderado: [67/100]
+- Alternativa C: habilitar subagentes y limitar concurrencia a un hilo.
+  - Score por criterio: [A=3 S=3 R=2 T=3 M=2]
+  - Puntaje total ponderado: [52/100]
+
+**Plan Seleccionado (resumen):**
+Elegir la alternativa A. Cumple directamente la solicitud, usa claves oficiales
+de configuracion de Codex y minimiza coordinacion al mantener una sola sesion de
+agente con razonamiento alto.
+
+## Pasos del Plan
+
+- [x] STEP-01: Registrar plan aprobado y validar gate de aprobacion.
+  - Evidencia/resultado esperado: `PLANS.md` contiene la seccion aprobada.
+  - Validacion: `validate-plan-approval.sh PLANS.md PLAN-20260424-01`.
+  - Artefacto esperado: `PLANS.md`.
+- [x] STEP-02: Actualizar configuracion y documentacion.
+  - Evidencia/resultado esperado: `.codex/config.toml`, `AGENTS.md`,
+    `README.md` y `DECISIONS.md` reflejan `gpt-5.5`, razonamiento alto y
+    multi-agente deshabilitado.
+  - Validacion: `rg -n "gpt-5.5|model_reasoning_effort|multi_agent|subagentes|subagent" .codex AGENTS.md README.md DECISIONS.md`.
+  - Artefacto esperado: config y docs actualizadas.
+- [x] STEP-03: Revisar diff y ejecutar validaciones relevantes.
+  - Evidencia/resultado esperado: diff acotado y sin hallazgos bloqueantes.
+  - Validacion: `git diff -U3 HEAD`, `.venv/bin/pytest -q`.
+  - Artefacto esperado: evidencia de comandos en este plan.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: confirmar que `.codex/config.toml` contiene `model = "gpt-5.5"`.
+- Escenario 2: confirmar que la documentacion describe un solo agente con
+  razonamiento alto.
+- Evidencia capturada en: comandos de validacion y diff.
+
+**Plan de Rollback:**
+- Trigger: `gpt-5.5` no esta disponible o la version local de Codex no acepta
+  alguna clave de configuracion.
+- Acciones: revertir las lineas agregadas en `.codex/config.toml` y ajustar
+  `AGENTS.md`/`README.md` para indicar el modelo alternativo aprobado.
+- Verificacion posterior: `git diff -U3 HEAD` y `/debug-config` en una nueva
+  sesion de Codex CLI.
+
+**Comandos Relevantes:**
+- `/home/mario/.codex/skills/orquestador-proyecto/scripts/validate-plan-approval.sh PLANS.md PLAN-20260424-01` - validar gate del plan.
+- `rg -n "gpt-5.5|model_reasoning_effort|multi_agent" .codex AGENTS.md README.md DECISIONS.md` - validar referencias.
+- `.venv/bin/pytest -q` - validar automatizacion Python del repo.
+- Fallback si faltan herramientas/skills: `git diff -U3 HEAD` + checklist manual.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [DEC-20260424-01]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [No aplica]
+- Ultimo sync confirmado: [N/A]
+- Divergencias detectadas: [Ninguna]
+
+**Evidencia de cierre:**
+- Gate de aprobacion: `/home/mario/.codex/skills/orquestador-proyecto/scripts/validate-plan-approval.sh PLANS.md PLAN-20260424-01` -> valido.
+- Configuracion: `.venv/bin/python -c "import tomllib; tomllib.load(open('.codex/config.toml','rb')); print('config toml ok')"` -> `config toml ok`.
+- Version local Codex: `codex --version` -> `codex-cli 0.125.0`.
+- Referencias: `rg -n "gpt-5.5|model_reasoning_effort|multi_agent|Codex CLI 0.125.0|codex-cli 0.125.0|subagentes|subagent|razonamiento alto|alto razonamiento" .codex AGENTS.md README.md DECISIONS.md PLANS.md` -> referencias esperadas encontradas.
+- Tests: `.venv/bin/pytest -q` -> `36 passed`.
+- Revision: `git diff -U3 HEAD -- .codex/config.toml AGENTS.md README.md DECISIONS.md PLANS.md` + checklist manual `code-review-checklist` -> sin hallazgos `Critico`/`Alto`; no se detectaron secretos, permisos destructivos ni regresiones funcionales.
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-25T05:09:25.000+0000]
+
+---

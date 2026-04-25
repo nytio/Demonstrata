@@ -18,6 +18,24 @@ de Codex CLI para construir una biblioteca viva de demostraciones. La idea centr
 es simple: el asistente puede proponer estrategias y borradores, pero la última
 palabra siempre la tiene el verificador formal.
 
+## Configuración recomendada de Codex
+
+El repositorio incluye una configuración local en `.codex/config.toml` para usar
+`gpt-5.5` con `model_reasoning_effort = "high"`. Esta combinación prioriza una
+sola sesión de Codex con razonamiento alto para tareas de demostración formal,
+diagnóstico de Lean y planificación multi-paso.
+
+La ejecución multi-agente queda deshabilitada en la configuración del proyecto.
+Aunque Codex soporta subagentes en versiones actuales, este repositorio prefiere
+un único agente con razonamiento alto para reducir coordinación, consumo extra de
+tokens y divergencia entre intentos de prueba.
+
+Con Codex CLI 0.125.0 o posterior, el proyecto aprovecha de forma conservadora
+los perfiles de permisos repo-locales y recomienda verificar la configuración
+cargada con `/status` o `/debug-config`. Para ejecuciones no interactivas,
+`codex exec --json` puede aportar telemetría de tokens de razonamiento, pero no
+cambia la política de un solo agente.
+
 ## Por qué vale la pena probarlo
 
 - Formaliza resultados en un entorno donde cada prueba se valida
