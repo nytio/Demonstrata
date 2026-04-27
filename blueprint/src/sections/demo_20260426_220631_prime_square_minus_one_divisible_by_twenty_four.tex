@@ -1,0 +1,39 @@
+% title: Prime Square Minus One Divisible By Twenty Four
+% short-title: Prime Square Divisibility
+% abstract: We prove the standard divisibility fact that if \(p\) is a prime greater than 3, then 24 divides \(p^2-1\). The proof combines the congruence of odd squares modulo 8 with the congruence of nonmultiples of 3 modulo 3.
+% subjclass: 11A07, 11A41
+% keywords: prime numbers, divisibility, congruences, Lean 4
+% author: Mario Hernández M.
+
+\subsection{Prime Square Divisibility}
+
+\begin{problemstatement}
+Prove that for any prime \(p > 3\), \(p^2-1\) is divisible by 24.
+\end{problemstatement}
+
+\begin{theorem}
+If \(p\) is prime and \(p>3\), then
+\[
+  24 \mid p^2-1.
+\]
+\end{theorem}
+
+\begin{proof}
+Since \(p>3\), the prime \(p\) is neither \(2\) nor \(3\). In particular
+\(p\) is odd. Every odd number has the form \(2k+1\), and then
+\[
+  (2k+1)^2-1=4k(k+1).
+\]
+The product \(k(k+1)\) of two consecutive integers is even, so this difference
+is divisible by \(8\). This is formalized as
+\lean{Biblioteca.Demonstrations.eight_dvd_square_sub_one_of_odd}.
+
+Also \(3\nmid p\). A number not divisible by \(3\) is congruent to either
+\(1\) or \(2\) modulo \(3\), and in both cases its square is congruent to
+\(1\) modulo \(3\). Hence \(3\mid p^2-1\). This auxiliary congruence is
+\lean{Biblioteca.Demonstrations.three_dvd_square_sub_one_of_not_dvd}.
+
+Finally, \(8\) and \(3\) are coprime, so a number divisible by both is divisible
+by \(8\cdot 3=24\). Applying this to \(p^2-1\) proves the theorem, recorded in
+Lean as \lean{Biblioteca.Demonstrations.prime_square_sub_one_dvd_twenty_four}.
+\end{proof}
