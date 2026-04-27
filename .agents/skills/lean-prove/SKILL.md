@@ -27,6 +27,14 @@ description: Draft or refine a Lean theorem in this repository and iterate until
    relevant sigla. If the user also supplied the original problem statement,
    copy that LaTeX into the blueprint section's `problemstatement` block.
 4. Import the smallest Mathlib modules that support the proof.
+   - If the strategy handoff says `Loogle preflight required`, or if you say you
+     will use Loogle, you must actually run `scripts/check_loogle_local.sh --start`
+     before authoring or revising the proof. This starts/verifies the local
+     Loogle server and reuses the persisted Mathlib index instead of rebuilding it.
+   - After that, run at least one targeted Loogle query for each missing lemma
+     shape before changing to a different mathematical route. Use the persisted
+     index path explicitly for Mathlib when invoking the CLI:
+     `scripts/loogle_local.sh --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib '<query>'`.
 5. Prefer helper lemmas if the proof script becomes unstable or opaque.
 6. Verify the edited file with `scripts/check_lean_json.sh <file.lean>`.
 7. Classify the blocker before the next proof iteration.
@@ -80,6 +88,10 @@ description: Draft or refine a Lean theorem in this repository and iterate until
 - Search in `Mathlib` or `Biblioteca` only to find ingredients, not as a
   substitute for authoring the requested result.
 - If a proof depends on a missing lemma, search Mathlib before re-proving infrastructure.
+- If the proof depends on missing Mathlib declarations and Loogle is available,
+  do not abandon the selected proof strategy until you have performed the
+  Loogle preflight (`scripts/check_loogle_local.sh --start`) and at least one
+  targeted query for the missing theorem shape.
 - When the exact theorem does not already exist in the repo, create a new
   demonstration and prove it under LLM guidance rather than stopping at a list
   of possibly relevant lemmas.
@@ -88,6 +100,10 @@ description: Draft or refine a Lean theorem in this repository and iterate until
   before escalating to external search tools.
 - Do not keep guessing once the same declaration-shaped blocker survives one or
   two local proof edits. At that point, make an explicit `loogle` decision.
+- An explicit `loogle` decision means either running Loogle or explaining why
+  the blocker is genuinely local. If you decide to use Loogle, running it is
+  mandatory; mentioning it without executing the server check and queries is not
+  sufficient.
 - Use NDJSON export or a semantic index only when normal `Mathlib` navigation
   stops being efficient.
 - Prefer local `loogle` before NDJSON export or LeanExplore when the blocker is

@@ -2420,3 +2420,150 @@ agente con razonamiento alto.
 **Ultima Actualizacion:** [2026-04-25T05:09:25.000+0000]
 
 ---
+
+## [PLAN-20260426-01] [Gate Loogle obligatorio para ingredientes Mathlib]
+
+**Plan ID:** [PLAN-20260426-01] (debe coincidir con el encabezado de la seccion)
+**Objetivo General:** Corregir el metodo de formalizacion para que, cuando una
+estrategia olimpica ya dependa de lemas concretos de Mathlib, el agente arranque
+y use Loogle local antes de cambiar a una prueba menos directa.
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-04-27]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-04-27T03:54:43.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [Conversacion actual: mensaje del usuario "Sí, ya vez que funciona y no tarda mucho. Asegura que si va usar loogle lo realice."]
+**Evidencia de /plan:** [N/A (riesgo Bajo)]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena (pasos dependientes, impacto multi-modulo/componente critico, validacion no trivial).
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: actualizar las skills repo-locales de estrategia, autoria Lean y
+  coordinacion olimpica; documentar que `scripts/check_loogle_local.sh --start`
+  es el gate operativo para arrancar/verificar el servidor local usando el
+  indice persistido de Mathlib; validar el servidor con una consulta real.
+- Excluye: regenerar el indice de Mathlib, cambiar la prueba ya aceptada,
+  instalar herramientas nuevas o modificar la arquitectura del servidor Loogle.
+
+**Supuestos:**
+- El indice persistido `.local-tools/loogle-indexes/Mathlib.extra` ya existe.
+- El servidor local debe arrancarse solo cuando no esta corriendo.
+- Para busquedas puntuales, el CLI con `--read-index` sigue siendo un fallback
+  valido, pero el flujo normal debe dejar disponible el servicio para `#loogle`.
+
+**Dependencias:**
+- `scripts/check_loogle_local.sh --start`.
+- `scripts/loogle_local.sh --read-index ... --module Mathlib '<query>'`.
+- `.codex/config.toml` ya expone `LEANSEARCHCLIENT_LOOGLE_API_URL`.
+
+**Tipo de tarea:** [Documentacion]
+**Nivel de riesgo/complejidad:** [Bajo]
+**Modo de planificacion:** [Simplificado no-pequeno (1 alternativa + 1 descartada)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** La correccion es metodologica y documental;
+no cambia codigo ejecutable critico, pero si toca varias instrucciones que
+afectan el comportamiento futuro del agente.
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica]
+**Justificacion del modo de seguimiento:** La trazabilidad en este plan basta;
+no hay fases largas ni despliegue.
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Documentacion`) Exactitud tecnica verificada y enlaces/comandos validados.
+- [x] (`Configuracion/DevEx` u `Operacion/Infra`) Validacion reproducible ejecutada y documentada.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no reporta severidad explicita.
+- [x] Documentacion actualizada en: `.agents/skills/mimate-proof-strategy/SKILL.md`, `.agents/skills/lean-prove/SKILL.md`, `.agents/skills/olympiad-formalize/SKILL.md`, `docs/mathlib-exploration.md`.
+- [x] Criterios de aceptacion funcional cumplidos:
+  - [x] [CA-1] Las skills ordenan arrancar/verificar Loogle con `scripts/check_loogle_local.sh --start` cuando se vaya a usar.
+  - [x] [CA-2] Las skills exigen consultas Loogle concretas antes de abandonar una estrategia por falta de nombres Mathlib.
+  - [x] [CA-3] La documentacion distingue servidor local de indice persistido.
+- [x] Rollback definido y validado (si aplica).
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos (funcionales, seguridad o tests).
+- [x] Los checks DoD aplicables estan marcados como cumplidos.
+- [x] Existe evidencia verificable de validacion (comandos, logs, diff o commit).
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: convertir Loogle en una dependencia pesada incluso cuando no hace falta.
+  - Mitigacion: exigirlo solo cuando la estrategia elegida depende de ingredientes
+    Mathlib desconocidos o cuando se declare que se usara Loogle.
+- Riesgo: confundir indice persistido con servidor local.
+  - Mitigacion: documentar explicitamente que `--start` arranca/verifica el
+    servicio sin regenerar el indice.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto` (`Rubrica de severidad para hallazgos`).
+- Si una herramienta no reporta severidad, clasificar cada hallazgo con esa rubrica
+  y registrar la clasificacion/evidencia en este plan.
+
+**Alternativas Evaluadas y Rubrica:**
+- Alternativa A: actualizar el protocolo de skills y documentacion para exigir
+  `scripts/check_loogle_local.sh --start` y consultas Loogle concretas cuando
+  la ruta formal dependa de lemas Mathlib.
+  - Score por criterio: [A=5 S=5 R=4 T=4 M=5]
+  - Puntaje total ponderado: [91/100]
+- Alternativa B: crear nueva herramienta obligatoria que envuelva todas las
+  busquedas Mathlib.
+  - Score por criterio: [A=4 S=3 R=3 T=4 M=3]
+  - Puntaje total ponderado: [67/100]
+
+**Plan Seleccionado (resumen):**
+Elegir la alternativa A. Usa tooling existente, evita regenerar indices y corrige
+la decision fallida del flujo: si el metodo dice que Loogle es necesario, debe
+arrancarse y consultarse antes de cambiar de tecnica.
+
+## Pasos del Plan
+
+- [x] STEP-01: Actualizar las skills repo-locales con el gate Loogle obligatorio.
+  - Evidencia/resultado esperado: las skills mencionan `scripts/check_loogle_local.sh --start` y consultas Loogle concretas.
+  - Validacion: `rg -n "check_loogle_local.sh --start|Loogle preflight|consulta Loogle" .agents/skills`.
+  - Artefacto esperado: cambios en `.agents/skills/*/SKILL.md`.
+- [x] STEP-02: Actualizar documentacion operacional de Mathlib/Loogle.
+  - Evidencia/resultado esperado: `docs/mathlib-exploration.md` distingue indice persistido y servidor local.
+  - Validacion: `rg -n "check_loogle_local.sh --start|indice persistido|servidor local" docs/mathlib-exploration.md`.
+  - Artefacto esperado: docs actualizadas.
+- [x] STEP-03: Validar servidor Loogle y revisar diff.
+  - Evidencia/resultado esperado: servidor sano y diff acotado.
+  - Validacion: `scripts/check_loogle_local.sh --start`, consultas Loogle de muestra, `git diff -U3`.
+  - Artefacto esperado: evidencia de comandos en este plan.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Escenario 1: si el servidor local no corre, `scripts/check_loogle_local.sh --start` lo arranca y confirma salud.
+- Escenario 2: una consulta Loogle de Mathlib devuelve declaraciones relevantes desde el indice persistido.
+- Evidencia capturada en: salida de comandos y seccion de cierre de este plan.
+
+**Plan de Rollback:**
+- Trigger: las instrucciones vuelven demasiado rigido el flujo o generan falsos bloqueos.
+- Acciones: revertir los cambios en las tres skills y en `docs/mathlib-exploration.md`.
+- Verificacion posterior: `git diff -U3` confirma rollback de esos archivos.
+
+**Comandos Relevantes:**
+- `scripts/check_loogle_local.sh --start` - arrancar/verificar servidor Loogle sin regenerar indice.
+- `scripts/loogle_local.sh --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib '<query>'` - fallback CLI con indice persistido.
+- `git diff -U3` - revisar cambios.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [No aplica]
+- Ultimo sync confirmado: [N/A]
+- Divergencias detectadas: [Ninguna]
+
+**Evidencia de cierre:**
+- Gate de aprobacion: `/home/mario/.codex/skills/orquestador-proyecto/scripts/validate-plan-approval.sh /home/mario/code/mimate/PLANS.md PLAN-20260426-01` -> valido.
+- Referencias: `rg -n "check_loogle_local\.sh --start|Loogle preflight|consulta Loogle|targeted Loogle|usar Loogle" .agents/skills docs/mathlib-exploration.md` -> referencias esperadas encontradas.
+- Servidor Loogle: `scripts/check_loogle_local.sh --start` -> `Local loogle server is healthy at http://127.0.0.1:8088`.
+- Consulta Mathlib: `scripts/loogle_local.sh --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib "Nat.Coprime ?a (?b * ?c)"` -> encontro `Nat.Coprime.mul_right` y lemas relacionados.
+- Revision: `git diff -U3 -- .agents/skills/mimate-proof-strategy/SKILL.md .agents/skills/lean-prove/SKILL.md .agents/skills/olympiad-formalize/SKILL.md docs/mathlib-exploration.md PLANS.md` + checklist manual -> sin hallazgos `Critico`/`Alto`; cambios acotados a instrucciones y trazabilidad.
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-04-27T03:57:30.000+0000]
+
+---

@@ -278,6 +278,38 @@ es:
 El objetivo del fallback no es forzar siempre la reconstruccion del indice,
 sino aprovechar indices repo-locales ya preparados cuando existan.
 
+### Gate operativo antes de usar `loogle`
+
+Cuando una skill decida usar `loogle`, primero debe ejecutar:
+
+```bash
+scripts/check_loogle_local.sh --start
+```
+
+Este comando es el preflight operativo del repo. Si el servidor local ya esta
+corriendo, lo verifica; si no esta corriendo, lo arranca en segundo plano y
+comprueba una consulta JSON real. Si el indice persistido de Mathlib ya existe,
+el servidor lo reutiliza. Este gate no significa regenerar el indice.
+
+La ruta canonica del indice persistido de Mathlib es:
+
+```text
+/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra
+```
+
+Por tanto, para busquedas CLI sensibles a sandbox, la forma explicita sigue
+siendo:
+
+```bash
+scripts/loogle_local.sh \
+  --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra \
+  --module Mathlib \
+  '<query>'
+```
+
+Si el flujo dice "usar Loogle", debe haber evidencia de dos cosas: el preflight
+del servidor local y al menos una consulta dirigida a la forma del lema que falta.
+
 ### Servidor local compatible con `LeanSearchClient`
 
 El servidor JSON queda en `http://127.0.0.1:8088/json` por defecto. Para hacer

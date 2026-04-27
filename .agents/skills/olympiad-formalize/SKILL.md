@@ -47,6 +47,11 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
 
 4. Hand off proof authoring to `lean-prove`.
    - Once the mathematical route is selected, use `lean-prove`.
+   - If the selected olympiad route depends on formal ingredients whose Mathlib
+     names are not known, require a Loogle preflight before Lean authoring:
+     `scripts/check_loogle_local.sh --start`, followed by targeted Loogle
+     queries for the missing lemma shapes. The server start/check reuses the
+     existing persisted Mathlib index and is not an instruction to rebuild it.
    - If the theorem is new to the repo, create a fresh timestamped demonstration entry.
    - Split the informal solution into helper lemmas when the olympiad argument naturally has separate claims.
    - If a hidden support theorem is required, promote it to an explicit Lean theorem instead of burying it in prose.
@@ -94,6 +99,9 @@ description: Start-to-finish workflow for olympiad-style math problems in this r
 - If the current proof path drifts toward brute force too early, stop and return to `mimate-proof-strategy` for an alternative structural route.
 - If a proof becomes too brittle in Lean, keep the same mathematics but split the argument into smaller lemmas through `lean-prove`.
 - If `Mathlib` discovery becomes the blocker, follow the existing escalation path from `lean-prove` and `lean-verify`; do not turn this skill into a declaration-search script.
+- If this workflow says it will use Loogle, it must actually start/check the
+  local server with `scripts/check_loogle_local.sh --start` and run the targeted
+  queries before trying an alternate formal route.
 - Treat repeated no-progress Lean fixes as evidence, not noise. After two
   iterations that still point to a missing rewrite, missing theorem shape, or
   unknown declaration name, require an explicit `loogle` decision: either use

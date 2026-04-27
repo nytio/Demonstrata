@@ -78,6 +78,15 @@ Use this section when the task is a mathematical problem, especially olympiad-st
 
 **5. Search for nearby formal ingredients**
 - Check whether the repo already contains a similar theorem or lemma pattern.
+- If the selected mathematical route depends on named Mathlib ingredients whose
+  Lean names are not already known, perform a **Loogle preflight** before handing
+  off to `lean-prove`:
+  - run `scripts/check_loogle_local.sh --start` first. This starts the local
+    Loogle server if needed and reuses the persisted Mathlib index; it must not
+    trigger index regeneration when the index already exists;
+  - run targeted `scripts/loogle_local.sh --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib '<query>'`
+    queries for the missing lemma shapes;
+  - record the useful declaration names in the handoff-ready proof plan.
 - For Mathlib exploration, first use local search and diagnostics:
   - `#check`, `#find`, `exact?`, `apply?`, `rw?`;
   - `rg` and direct declaration inspection;
@@ -102,6 +111,9 @@ Use this section when the task is a mathematical problem, especially olympiad-st
 **6. Produce a handoff-ready proof plan**
 - State the recommended proof strategy in a short paragraph.
 - List the helper lemmas or case splits likely needed.
+- Include a `Formal ingredients` list when Mathlib declarations were searched
+  for or are likely needed. Each item should connect the informal need, the
+  Loogle query that was run, and the declaration found.
 - Flag whether declaration discovery already looks like a likely blocker, so the
   downstream Lean workflow knows whether an early `loogle` checkpoint is
   expected.
