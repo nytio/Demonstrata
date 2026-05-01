@@ -17,7 +17,9 @@ blueprint/.current_demo
 !blueprint/library/pdf/*.pdf
 
 # Artefactos de planificación y documentación interna no publicables.
-PLANS.md
-PROGRESS.md
-DECISIONS.md
-docs/
+/PLANS.md
+/PROGRESS.md
+/DECISIONS.md
+
+# PDFs de referencia locales; los PDFs publicables viven en blueprint/library/pdf/.
+/docs/*.pdf
