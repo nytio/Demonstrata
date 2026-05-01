@@ -179,9 +179,9 @@ From this input, Demonstrata generates a reproducible proof dossier:
 Example output:
 [blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf](blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf)
 
-## How `olympiad-formalize` Works
+## How `$olympiad-formalize` Works
 
-`olympiad-formalize` coordinates the full path from an informal olympiad-style
+`$olympiad-formalize` coordinates the full path from an informal olympiad-style
 statement to a verified note:
 
 1. It normalizes the problem statement.
