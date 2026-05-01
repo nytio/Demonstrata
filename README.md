@@ -158,7 +158,7 @@ scripts/init.sh "Your Codex query"
 Ask Codex CLI for a complete olympiad-style flow:
 
 ```text
-/olympiad-formalize solve this problem:
+$olympiad-formalize solve this problem:
  Let \(p\) be a prime number. Prove that there exist integers
  \(x,y,z,t\), not all divisible by \(p\), such that
 
