@@ -23,4 +23,7 @@ glob_scan_max_depth = 3
 enabled = true
 mode = "limited"
 allow_local_binding = true
-domains = { "localhost" = "allow", "127.0.0.1" = "allow" }
+
+[permissions.local_loopback.network.domains]
+"localhost" = "allow"
+"127.0.0.1" = "allow"
