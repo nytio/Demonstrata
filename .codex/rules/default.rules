@@ -4,7 +4,7 @@ prefix_rule(
     justification = "Lean verification commands are safe defaults for this repo.",
     match = [
         "lake build --wfail",
-        "lake lean Mimate/Basic.lean -- --json",
+        "lake lean Biblioteca.lean -- --json",
         "lake exe cache get",
     ],
 )

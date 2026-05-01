@@ -1,9 +1,9 @@
 ---
 name: mimate-proof-strategy
-description: "Repo-specific strategy pre-pass for nontrivial changes in mimate. Use to choose a proof route, decomposition, or implementation approach before handing off to olympiad-formalize, lean-prove, or lean-verify when no narrower skill already determines the path."
+description: "Repo-specific strategy pre-pass for nontrivial changes in Demonstrata. Use to choose a proof route, decomposition, or implementation approach before handing off to olympiad-formalize, lean-prove, or lean-verify when no narrower skill already determines the path."
 ---
 
-# Mimate Proof Strategy
+# Demonstrata Proof Strategy
 
 ## When to Use
 

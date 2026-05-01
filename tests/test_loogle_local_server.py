@@ -117,7 +117,7 @@ def test_request_handler_ignores_broken_pipe(
     handler.path = "/json?q=Nat.add_comm"
     handler.wfile = BrokenWriter()
 
-    with caplog.at_level("INFO", logger="mimate.loogle_local_server"):
+    with caplog.at_level("INFO", logger="demonstrata.loogle_local_server"):
         handler._write_body(b'{"hits":[]}')
 
     assert "client disconnected before response body was fully written" in caplog.text

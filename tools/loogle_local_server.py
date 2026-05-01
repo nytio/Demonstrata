@@ -12,7 +12,7 @@ import threading
 from urllib.parse import parse_qs, urlparse
 
 
-LOGGER = logging.getLogger("mimate.loogle_local_server")
+LOGGER = logging.getLogger("demonstrata.loogle_local_server")
 
 
 @dataclass(frozen=True)
@@ -137,7 +137,7 @@ class LoogleProcess:
 
 
 class LoogleRequestHandler(BaseHTTPRequestHandler):
-    server_version = "MimateLoogle/1.0"
+    server_version = "DemonstrataLoogle/1.0"
 
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)

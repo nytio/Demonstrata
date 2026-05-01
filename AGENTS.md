@@ -2,8 +2,9 @@
 
 ## Purpose
 
-This repository is a local workspace for formal proofs in Lean 4 with Codex CLI
-on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
+Demonstrata is a local workspace for turning theorem statements into
+Lean-verified mathematical notes with Codex CLI on Ubuntu. Codex proposes
+proofs; Lean and mathlib are the source of truth.
 
 ## Environment
 
@@ -63,8 +64,8 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
   - `scripts/build_strict.sh`
   - `scripts/check_lean_json.sh <file.lean>`
   - `scripts/get_mathlib_cache.sh`
-- Treat `Biblioteca/` as the Lean namespace root; do not remove it just because it
-  looks like an extra folder.
+- Demonstrata is the public project name. Treat `Biblioteca/` as the Lean
+  namespace root; do not remove it just because it looks like an extra folder.
 - When the theorem to formalize is genuinely new to this repo, create a fresh
   timestamped module with `scripts/new_demo.sh "<title>"` instead of proving it
   in scratch files or stopping after a `Mathlib` search.
@@ -78,6 +79,7 @@ on Ubuntu. Codex proposes proofs; Lean and mathlib are the source of truth.
 
 ## Repository map
 
+- Demonstrata is the public project/workflow name.
 - `Biblioteca/` is the Lean library root for the `Biblioteca.*` namespace.
 - `Biblioteca/Demonstrations/` stores timestamped Lean demonstration modules.
 - `blueprint/` contains the local LaTeX blueprint sources and generated PDF artifacts.

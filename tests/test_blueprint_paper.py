@@ -561,7 +561,7 @@ def test_render_lean_reproducibility_includes_metadata_and_captured_outputs(
                 revision="8a178386ffc0f5fef0b77738bb5449d50efeea95",
                 input_revision="v4.29.0",
             ),
-            config_files=("lakefile.lean", "lake-manifest.json"),
+            config_files=("lakefile.toml", "lake-manifest.json"),
             verification_output_path=verification_output,
             axiom_probe_path=axiom_probe,
             axiom_output_path=axiom_output,
@@ -594,7 +594,7 @@ def test_render_lean_reproducibility_includes_metadata_and_captured_outputs(
     assert "Axiom audit command" in text
     assert r"\noindent\textbf{Manifest input revision:} \texttt{v4.29.0}\par" in text
     assert not (build_dir / "lean_reproducibility" / "mathlib_commit.tex").exists()
-    assert r"\nolinkurl{lakefile.lean}" in text
+    assert r"\nolinkurl{lakefile.toml}" in text
     assert r"\nolinkurl{lake-manifest.json}" in text
     assert "prime\\_\\hspace{0pt}dvd" in text
     assert r"\input{lean_reproducibility/mathlib_commit.tex}" not in text

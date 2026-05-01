@@ -17,7 +17,7 @@ from tools.demonstration_names import infer_lean_stem_from_section_stem, title_s
 STATE_FILE = Path("blueprint/.current_demo")
 DEFAULT_AUTHOR = "Mario Hernández M."
 DEFAULT_SUBJCLASS = "03B35"
-DEFAULT_KEYWORDS = "Lean 4, formalized mathematics, theorem proving"
+DEFAULT_KEYWORDS = "Lean 4, formalized mathematics, reproducibility, theorem proving"
 
 META_PATTERN = re.compile(r"^%\s*([A-Za-z0-9_-]+)\s*:\s*(.*)$")
 INPUT_PATTERN = re.compile(r"\\input\{sections/([^}]+)\}")
@@ -97,11 +97,11 @@ def default_metadata_for_stem(stem: str) -> PaperMetadata:
     title_words = title_slug_from_stem(stem).split("_")
     title = " ".join(word.capitalize() for word in title_words if word)
     return PaperMetadata(
-        title=title or "Lean Demonstration",
-        short_title=title or "Lean Demonstration",
+        title=title or "Demonstrata Note",
+        short_title=title or "Demonstrata Note",
         abstract=(
-            "This note records a Lean 4 formalization from the Biblioteca "
-            "demonstrations library."
+            "This note records a Lean 4 formalization produced with the "
+            "Demonstrata workflow."
         ),
         subjclass=DEFAULT_SUBJCLASS,
         keywords=DEFAULT_KEYWORDS,
@@ -230,11 +230,11 @@ def build_selected_metadata(
         base = sections[0].metadata
     else:
         base = PaperMetadata(
-            title="Collected Lean Demonstrations",
-            short_title="Lean Demonstrations",
+            title="Collected Demonstrata Notes",
+            short_title="Demonstrata Notes",
             abstract=(
-                f"This paper collects {len(sections)} formalized demonstrations "
-                "from the Biblioteca Lean library."
+                f"This paper collects {len(sections)} Lean-verified mathematical "
+                "notes produced with Demonstrata."
             ),
             subjclass=DEFAULT_SUBJCLASS,
             keywords=DEFAULT_KEYWORDS,
@@ -677,7 +677,7 @@ def build_lean_reproducibility_info(
     return LeanReproducibilityInfo(
         lean_version=read_lean_toolchain(repo_root),
         mathlib=read_mathlib_manifest_info(repo_root),
-        config_files=("lakefile.lean", "lake-manifest.json"),
+        config_files=("lakefile.toml", "lake-manifest.json"),
         verification_output_path=verification_output_path,
         axiom_probe_path=axiom_probe_path,
         axiom_output_path=axiom_output_path,

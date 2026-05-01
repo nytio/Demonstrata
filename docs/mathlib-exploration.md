@@ -1,6 +1,6 @@
-# Exploracion Profunda de Mathlib
+# Exploracion Profunda de Mathlib en Demonstrata
 
-Este proyecto usa `Mathlib` como base principal para demostraciones formales.
+Demonstrata usa `Mathlib` como base principal para demostraciones formales.
 La verificacion sigue dependiendo de Lean, pero para exploracion mas profunda
 conviene distinguir tres capas adicionales:
 
@@ -12,7 +12,7 @@ La incorporacion recomendada es escalonada: usar primero las primitives de Lean
 y del repo, despues `loogle` local, luego NDJSON como flujo opcional, y dejar
 el indice semantico como capa avanzada, no como requisito del bootstrap base.
 
-Estas herramientas de exploracion no cambian el objetivo central del repo:
+Estas herramientas de exploracion no cambian el objetivo central de Demonstrata:
 servir como soporte para que el LLM escriba demostraciones nuevas en
 `Biblioteca/Demonstrations/`. Buscar o indexar declaraciones no sustituye la
 sintesis de una prueba nueva cuando el usuario pide formalizar un resultado.

@@ -56,6 +56,71 @@ de configuracion global:
 
 ---
 
+## [DEC-20260501-01] [2026-05-01] [Separar marca Demonstrata del namespace Biblioteca]
+
+**Estado:** [Aprobada]
+**Owner:** [Codex]
+**Fecha efectiva:** [2026-05-01]
+**Proxima fecha de revision:** [N/A]
+**Estado de implementacion:** [Completa]
+**Reemplaza:** [Ninguna]
+**Reemplazada por:** [N/A]
+
+**Contexto:**
+El proyecto adopta `Demonstrata` como nombre publico y frase de identidad,
+pero el codigo Lean existente usa `Biblioteca/` y `Biblioteca.*` como raiz de
+libreria, imports y declaraciones referenciadas por el blueprint.
+
+**Decision:**
+Usar `Demonstrata` como nombre publico del proyecto, README, metadatos de
+paquete Lake y textos generados orientados al lector, manteniendo `Biblioteca`
+como namespace tecnico de Lean y directorio de fuentes. Esta separacion evita
+una migracion grande de imports y referencias formales que no es necesaria para
+dar identidad publica al proyecto.
+
+**Drivers de decision:**
+- Driver 1: entregar una identidad publica coherente sin romper artefactos Lean.
+- Driver 2: preservar estabilidad de imports, tests, referencias `\lean{...}` y
+  archivos timestamped existentes.
+- Driver 3: mantener abierta una futura migracion completa solo si se aprueba
+  como fase separada.
+
+**Componentes afectados:**
+- `README.md`
+- `lakefile.toml`
+- `lake-manifest.json`
+- `tools/blueprint_paper.py`
+- `tools/loogle_local_server.py`
+- `AGENTS.md`
+- `docs/`
+- `.agents/skills/`
+- `.codex/rules/default.rules`
+
+**Alternativas consideradas:**
+- Opcion A: cambiar solo el README y dejar tooling/metadatos con el nombre viejo.
+- Opcion B: cambiar marca publica y metadatos/tooling orientados al lector,
+  preservando el namespace Lean.
+- Opcion C: migrar completamente `Biblioteca.*` a `Demonstrata.*`.
+
+**Impacto:**
+- Tecnico: el paquete Lake se llama `Demonstrata`, mientras la lean lib y target
+  principal siguen siendo `Biblioteca`.
+- Riesgos: algunos lectores podrian confundir marca y namespace; README y
+  AGENTS explican explicitamente la separacion.
+- Seguimiento: si se decide migrar namespace, planificarlo como cambio separado
+  con actualizacion de imports, tests y PDFs.
+- Criterios de reversion: volver `lakefile.toml`, manifiesto, docs y textos
+  generados al nombre anterior si la separacion causa friccion operativa.
+- Efecto esperado en pruebas/operacion: sin cambio en declaraciones Lean; build
+  estricto y suite Python deben seguir pasando.
+
+**Referencias:**
+- Plan: `PLANS.md` ([PLAN-20260501-06 / STEP-02 y STEP-03])
+- Commit/PR: [N/A]
+- Issue/Ticket: [N/A]
+
+---
+
 ## [DEC-20260424-01] [2026-04-25] [Usar gpt-5.5 con un solo agente de alto razonamiento]
 
 **Estado:** [Aprobada]

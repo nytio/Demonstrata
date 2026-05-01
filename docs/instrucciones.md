@@ -1,8 +1,8 @@
-# Demostraciones formales en Lean con Codex CLI en Ubuntu
+# Demonstrata: demostraciones formales en Lean con Codex CLI en Ubuntu
 
 ## Objetivo y arquitectura de verificación
 
-El flujo que buscas separa claramente dos roles: **un LLM (Codex) redacta la demostración en el lenguaje formal de Lean** y **Lean (el kernel/verificador) decide si esa demostración es válida** al compilar el archivo. En la práctica, el criterio operativo es: *la prueba es aceptable cuando el proyecto compila sin errores* (y conviene endurecerlo para que también “falle” con advertencias, por ejemplo cuando aparece `sorry`).
+Demonstrata separa claramente dos roles: **un LLM (Codex) redacta la demostración en el lenguaje formal de Lean** y **Lean (el kernel/verificador) decide si esa demostración es válida** al compilar el archivo. En la práctica, el criterio operativo es: *la prueba es aceptable cuando el proyecto compila sin errores* (y conviene endurecerlo para que también “falle” con advertencias, por ejemplo cuando aparece `sorry`).
 
 El valor añadido del LLM no es “calcular” sino **inventar la estrategia de prueba** y traducirla a construcciones compatibles con la biblioteca formal disponible. En teoría de números, esa biblioteca base casi siempre es **mathlib** (la biblioteca comunitaria de Lean), porque ya contiene definiciones, lemas, infraestructura algebraica y tácticas que reducen drásticamente el trabajo de formalización.
 
@@ -21,7 +21,7 @@ Codex CLI es de entity["company","OpenAI","ai research company"] y est�
 
 La vía estándar en Linux para manejar Lean es **elan**, un gestor de toolchains que coloca `lean` y `lake` en tu `PATH` y selecciona automáticamente la versión indicada por el archivo `lean-toolchain` del proyecto. La instalación típica en Linux/macOS es ejecutar el instalador `elan-init.sh` (con `curl … | sh`).
 
-Un punto importante para proyectos con dependencias: `lake` descarga dependencias vía Git, así que **`git` es un prerrequisito real** cuando trabajas con Lake.
+Un punto importante para Demonstrata y otros proyectos con dependencias: `lake` descarga dependencias vía Git, así que **`git` es un prerrequisito real** cuando trabajas con Lake.
 
 ## Configuración de Lean y mathlib para teoría de números
 

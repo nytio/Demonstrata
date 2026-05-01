@@ -1,4 +1,29 @@
-# Biblioteca
+<p align="center">
+  <img src="assets/demonstrata-cover.png" alt="Demonstrata cover image" width="720">
+</p>
+
+# Demonstrata
+
+<p align="center">
+  <strong>Demonstrata: from theorem statements to Lean-verified mathematical notes.</strong>
+</p>
+
+<p align="center">
+  Demonstrata — mathematics, proved and reproduced.
+</p>
+
+Demonstrata is an open-source theorem proving workflow for Codex and Lean 4.
+It takes an informal mathematical problem or theorem statement and produces:
+
+- a human-readable LaTeX proof,
+- a Lean 4 formalization,
+- reproducibility artifacts,
+- axiom audit output,
+- and a final PDF note.
+
+The working principle is simple: Codex can propose proof strategies and drafts,
+but Lean and mathlib are the source of truth. A note is publishable only when the
+formal development compiles and its reproducibility evidence can be regenerated.
 
 <p align="center">
   <img alt="Lean 4" src="https://img.shields.io/badge/Lean-4.29.0-0f5cbd?style=for-the-badge">
@@ -7,94 +32,60 @@
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-111111?style=for-the-badge">
 </p>
 
-<p align="center">
-  Un entorno de trabajo para convertir problemas matemáticos en demostraciones
-  formales verificadas por Lean 4, documentadas en LaTeX y listas para
-  publicar.
-</p>
+## Codex Setup
 
-`Biblioteca` combina Lean 4, Mathlib4, automatización en Python y skills locales
-de Codex CLI para construir una biblioteca viva de demostraciones. La idea central
-es simple: el asistente puede proponer estrategias y borradores, pero la última
-palabra siempre la tiene el verificador formal.
+The repository includes local Codex configuration in `.codex/config.toml` for
+`gpt-5.5` with `model_reasoning_effort = "high"`. Demonstrata deliberately uses
+one high-reasoning Codex session for formal proof work, Lean diagnostics and
+multi-step planning.
 
-## Configuración recomendada de Codex
+Multi-agent execution is disabled in the project configuration. With Codex CLI
+0.125.0 or newer, use `/status` or `/debug-config` to confirm that the
+repo-local configuration is loaded. For non-interactive evidence, `codex exec
+--json` can expose planning or reasoning-token telemetry, but it should not be
+used here to spawn multiple agents.
 
-El repositorio incluye una configuración local en `.codex/config.toml` para usar
-`gpt-5.5` con `model_reasoning_effort = "high"`. Esta combinación prioriza una
-sola sesión de Codex con razonamiento alto para tareas de demostración formal,
-diagnóstico de Lean y planificación multi-paso.
+## Why It Is Useful
 
-La ejecución multi-agente queda deshabilitada en la configuración del proyecto.
-Aunque Codex soporta subagentes en versiones actuales, este repositorio prefiere
-un único agente con razonamiento alto para reducir coordinación, consumo extra de
-tokens y divergencia entre intentos de prueba.
+- It turns mathematical statements into artifacts that are checked by a formal
+  kernel, not only by informal plausibility.
+- It keeps the human-readable proof, Lean source and final PDF coordinated.
+- It records reproducibility evidence, including the Lean version, mathlib
+  revision, build output and axiom audit output.
+- It uses `mathlib4` as the formal mathematical base without reducing the
+  project to theorem search.
+- It treats the repository as a growing library of verified notes rather than a
+  scratch directory.
 
-Con Codex CLI 0.125.0 o posterior, el proyecto aprovecha de forma conservadora
-los perfiles de permisos repo-locales y recomienda verificar la configuración
-cargada con `/status` o `/debug-config`. Para ejecuciones no interactivas,
-`codex exec --json` puede aportar telemetría de tokens de razonamiento, pero no
-cambia la política de un solo agente.
+## Project Layout
 
-## Por qué vale la pena probarlo
-
-- Formaliza resultados en un entorno donde cada prueba se valida
-  computacionalmente, no solo por intuición.
-- Convierte un problema matemático en tres artefactos coordinados: archivo Lean,
-  sección LaTeX y PDF final.
-- Mantiene un flujo reproducible con scripts concretos para compilar, depurar y
-  publicar resultados.
-- Aprovecha `mathlib4` como base de conocimiento matemática sin convertir el
-  proyecto en una simple búsqueda de teoremas existentes.
-- Deja listo el repositorio para crecer como biblioteca de demostraciones, no
-  como una carpeta de experimentos aislados.
-
-## Qué ofrece el proyecto
-
-| Componente | Función |
+| Component | Role |
 | --- | --- |
-| `Biblioteca/` | Biblioteca Lean del proyecto y espacio de nombres raíz `Biblioteca.*`. |
-| `Biblioteca/Demonstrations/` | Demostraciones nuevas en archivos con marca temporal. |
-| `blueprint/src/sections/` | Versión en LaTeX de cada demostración. |
-| `blueprint/library/pdf/` | PDFs archivados y publicables. |
-| `scripts/` | Puntos de entrada reproducibles para compilar, verificar y generar artefactos. |
-| `tools/` | Soporte Python para nombres de demos, blueprint y diagnósticos JSON. |
-| `.agents/skills/` | Skills locales del repo para estrategia, formalización y verificación. |
-| `.github/workflows/` | Automatización de CI de Lean, actualización de dependencias y releases. |
+| `Biblioteca/` | Lean library root and technical namespace `Biblioteca.*`. |
+| `Biblioteca/Demonstrations/` | Timestamped Lean demonstration modules. |
+| `blueprint/src/sections/` | LaTeX sections paired with Lean demonstrations. |
+| `blueprint/library/pdf/` | Archived, publishable PDF notes. |
+| `scripts/` | Reproducible entrypoints for verification and artifact generation. |
+| `tools/` | Python support for demo naming, blueprint rendering and diagnostics. |
+| `.agents/skills/` | Repo-local Codex workflows for strategy, proving and verification. |
+| `.github/workflows/` | CI, dependency update and release automation. |
 
-## Lean 4 y su potencial para las demostraciones matemáticas
+`Demonstrata` is the public project name. `Biblioteca` remains the Lean namespace
+and directory name for this iteration, so existing imports and theorem
+references stay stable.
 
-Lean 4 es un asistente de pruebas y un lenguaje de programación funcional con
-un sistema de tipos lo bastante expresivo como para formalizar definiciones,
-teoremas y argumentos completos. En la práctica, eso significa que una
-demostración no se acepta porque "parece correcta", sino porque el kernel de
-Lean puede verificar cada paso.
+## Requirements
 
-Ese modelo tiene mucho potencial para las matemáticas:
+Install the local workflow dependencies:
 
-- ayuda a detectar huecos lógicos que en una prueba informal pueden pasar
-  desapercibidos;
-- obliga a explicitar hipótesis, cuantificadores y dependencias;
-- permite reutilizar resultados ya formalizados en `mathlib4`;
-- facilita generar documentos técnicos donde el texto matemático y el código
-  Lean están alineados.
+1. `git` for the repository and Lake dependencies.
+2. `python3` and `venv` for local automation.
+3. `elan` for the Lean 4 toolchain.
+4. `lean` and `lake`, installed through `elan`.
+5. `latexmk` and `xelatex` for blueprint PDFs.
+6. `node` and `npm` if you install or update Codex CLI locally.
 
-En este repositorio, Lean no reemplaza la intuición matemática: la disciplina y
-la vuelve verificable. La estrategia puede ser humana o asistida por LLM,
-pero el cierre es formal y reproducible.
-
-## Programas que conviene instalar
-
-Para trabajar localmente con el flujo completo del repositorio:
-
-1. `git` para clonar el repo y resolver dependencias de Lake.
-2. `python3` y `venv` para la capa de automatización.
-3. `elan` para gestionar el toolchain de Lean 4.
-4. `lean` y `lake`, instalados a través de `elan`.
-5. `latexmk` y `xelatex` para generar los PDFs del blueprint.
-6. `node` y `npm` si quieres instalar o actualizar Codex CLI localmente.
-
-Después, dentro del repo:
+Then, inside the repository:
 
 ```bash
 .venv/bin/python -m pip install -r requirements.txt
@@ -102,34 +93,7 @@ scripts/get_mathlib_cache.sh
 scripts/build_strict.sh
 ```
 
-## Librerías y ecosistema utilizado
-
-### Python
-
-- `pytest`: pruebas de la automatización local.
-- `sympy`: apoyo para exploración matemática previa a la formalización.
-
-### Lean y matemáticas formales
-
-- `Lean 4 v4.29.0`: lenguaje y kernel de verificación.
-- `mathlib v4.29.0`: biblioteca matemática principal del proyecto.
-- `Lake`: gestor de paquetes y compilaciones del ecosistema Lean.
-
-El archivo `lake-manifest.json` también refleja dependencias transitivas del
-ecosistema Lean, entre ellas `aesop`, `batteries`, `proofwidgets`,
-`LeanSearchClient`, `importGraph`, `Cli`, `quote4`, `Qq` y `plausible`.
-
-## Instalación rápida
-
-```bash
-git clone <tu-fork-o-repo> mimate
-cd mimate
-.venv/bin/python -m pip install -r requirements.txt
-scripts/get_mathlib_cache.sh
-scripts/build_strict.sh
-```
-
-Si no tienes el entorno Python creado todavía, puedes crearlo antes:
+If the Python environment does not exist yet:
 
 ```bash
 python3 -m venv .venv
@@ -137,166 +101,166 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
 
-## Comandos más útiles
+## Ecosystem
+
+### Python
+
+- `pytest`: tests for the local automation.
+- `sympy`: support for mathematical exploration before formalization.
+
+### Lean and Formal Mathematics
+
+- `Lean 4 v4.29.0`: proof assistant, language and verification kernel.
+- `mathlib v4.29.0`: the main formal mathematics dependency.
+- `Lake`: Lean's package and build manager.
+
+`lake-manifest.json` also records transitive Lean dependencies such as `aesop`,
+`batteries`, `proofwidgets`, `LeanSearchClient`, `importGraph`, `Cli`, `quote4`,
+`Qq` and `plausible`.
+
+## Useful Commands
 
 ```bash
-# Compilación estricta del proyecto Lean
+# Strict Lean build
 scripts/build_strict.sh
 
-# Diagnósticos JSON de un archivo Lean concreto
+# JSON diagnostics for one Lean file
 scripts/check_lean_json.sh Biblioteca/Demonstrations/Demo_20260402_155130_sum_first_odds.lean
 
-# Resumen legible de diagnósticos JSON
+# Human-readable summary of JSON diagnostics
 .venv/bin/python scripts/summarize_lean_json.py diagnostics.jsonl
 
-# Crear una demostración nueva
+# Create a new demonstration
 scripts/new_demo.sh "odd numbers sum"
 scripts/new_demo.sh --prefix IMO "least norwegian number"
 
-# Validar referencias Lean desde el blueprint
+# Check Lean references from the blueprint
 scripts/check_blueprint_decls.sh
 
-# Generar el PDF del trabajo actual
+# Build the current PDF note
 scripts/build_blueprint_pdf.sh
 
-# Ejecutar pruebas Python
+# Run Python tests
 .venv/bin/pytest -q
 
-# Persistir el indice local de loogle para evitar esperas en frio
+# Build the local loogle index to avoid cold-start waits
 scripts/build_loogle_index.sh
 
-# Consultar Mathlib usando explicitamente el indice persistido canonico
+# Query Mathlib through the canonical persisted local index
 scripts/loogle_local.sh --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib 'Fintype.card_subtype'
 
-# Verificar que el servicio local de loogle responde y devuelve JSON
+# Check that the local loogle service answers JSON
 scripts/check_loogle_local.sh
 
-# Levantar loogle, compilar, correr tests y abrir Codex con una consulta inicial
-scripts/init.sh "Tu consulta para Codex"
+# Start loogle, build, test and open Codex with an initial query
+scripts/init.sh "Your Codex query"
 ```
 
-## Ejemplo de uso
+## Example Workflow
 
-Simplemente pedir a Codex CLI un flujo olímpico completo:
+Ask Codex CLI for a complete olympiad-style flow:
 
 ```text
-/olympiad-formalize resuelve este problema:
-Halla todos los enteros positivos $n$ con la siguiente propiedad:
-para todo divisor positivo $d$ de $n$, se cumple que $d+1 \mid n$ o bien $d+1$ es primo.
+/olympiad-formalize solve this problem:
+Find all positive integers n with the following property:
+for every positive divisor d of n, either d+1 divides n or d+1 is prime.
 ```
 
-Ver solución en: [blueprint/library/pdf/IMO_20260402_213030_divisors_plus_one_divisor_or_prime.pdf](blueprint/library/pdf/IMO_20260402_213030_divisors_plus_one_divisor_or_prime.pdf)
+Example output:
+[blueprint/library/pdf/IMO_20260402_213030_divisors_plus_one_divisor_or_prime.pdf](blueprint/library/pdf/IMO_20260402_213030_divisors_plus_one_divisor_or_prime.pdf)
 
-## Cómo funciona el skill `olympiad-formalize`
+## How `olympiad-formalize` Works
 
-`olympiad-formalize` es el skill coordinador para problemas de estilo
-olimpiada de matemáticas. No se limita a buscar algo en Mathlib, organiza una secuencia
-completa para pasar de un enunciado informal a una demostración formal y a un
-PDF final.
+`olympiad-formalize` coordinates the full path from an informal olympiad-style
+statement to a verified note:
 
-La dinámica real del skill es la siguiente:
+1. It normalizes the problem statement.
+2. It invokes `mimate-proof-strategy` to compare proof approaches.
+3. It chooses a structural proof route before writing Lean.
+4. It uses `lean-prove` to create the formal development and helper lemmas.
+5. It uses `lean-verify` to run file-level diagnostics and then the strict build.
+6. After Lean accepts the proof, it revises only the paired LaTeX section so the
+   exposition matches the accepted formal argument.
+7. It builds the final blueprint PDF.
 
-1. Normaliza el problema y lo reformula con precisión matemática.
-2. Invoca `mimate-proof-strategy` para comparar 2-3 enfoques de prueba.
-3. Elige una ruta estructural de estilo olímpico antes de escribir Lean.
-4. Pasa a `lean-prove` para crear la demostración nueva y dividirla en lemas si
-   hace falta.
-5. Usa `lean-verify` para correr primero `scripts/check_lean_json.sh` sobre el
-   demo Lean y, solo si pasa, cerrar la verificación formal con
-   `scripts/build_strict.sh`.
-6. Cuando Lean acepta el desarrollo, revisa la sección LaTeX emparejada para
-   que la exposición argumental coincida con la demostración aceptada en Lean;
-   en ese paso no se modifica el archivo Lean.
-7. Después activa el flujo del blueprint para producir el PDF final.
+The goal is a readable mathematical argument backed by Lean, not brute-force
+case enumeration or theorem lookup alone.
 
-El objetivo es privilegiar argumentos matemáticos comprensibles y no una
-enumeración ciega de casos o una búsqueda exhaustiva.
+## Generated Artifacts
 
-## Qué archivos genera `olympiad-formalize`
+For a new demonstration, the workflow creates or updates:
 
-Cuando el resultado es nuevo para el repositorio, el flujo genera o actualiza
-artefactos concretos:
-
-- `Biblioteca/Demonstrations/<Prefijo>_<YYYYMMDD_HHMMSS>_<slug>.lean`
-  Archivo Lean nuevo con la demostración formal.
+- `Biblioteca/Demonstrations/<Prefix>_<YYYYMMDD_HHMMSS>_<slug>.lean`
+  with the formal Lean proof.
 - `blueprint/src/sections/<stem>.tex`
-  Sección LaTeX correspondiente a la misma demostración.
+  with the matching LaTeX exposition.
 - `Biblioteca/Demonstrations.lean`
-  Se actualiza para importar la nueva demostración.
+  with the aggregate import.
 - `blueprint/src/content.tex`
-  Se actualiza para incluir la nueva sección en el blueprint.
+  with the blueprint section entry.
 - `blueprint/.current_demo`
-  Marca la demostración activa para el generador de PDF.
+  with the active demonstration marker.
 - `blueprint/build/<timestamp>_<stem>/`
-  Directorio temporal de compilación del PDF.
+  with temporary PDF build files.
 - `blueprint/library/pdf/<stem>.pdf`
-  PDF archivado y publicable.
+  with the archived publishable note.
 
-Además, el generador crea dentro de `blueprint/build/` archivos auxiliares como
-`paper.tex`, `lean_glossary.tex`, `lean_appendix.tex`, `selected_content.tex` y
-el PDF compilado. Esos artefactos temporales no se versionan; el PDF archivado
-sí.
+The PDF builder creates temporary files such as `paper.tex`,
+`lean_glossary.tex`, `lean_reproducibility.tex`, `lean_appendix.tex` and
+`selected_content.tex`. Temporary build directories are not versioned; archived
+PDF notes are.
 
-## Flujo interno de trabajo
+## Internal Authoring Loop
 
-1. Crear una demostración nueva con `scripts/new_demo.sh`.
-2. Escribir o refinar el argumento matemático apoyándote en los skills del
-   repo.
-3. Ejecutar `scripts/check_lean_json.sh <demo.lean>` hasta que el archivo del
-   demo quede limpio.
-4. Si el chequeo por archivo pasa, ejecutar `scripts/build_strict.sh` para
-   cerrar la validación formal completa.
-5. Revisar la sección LaTeX emparejada para que la exposición de estilo
-   olimpiada sea consistente con la demostración aceptada en Lean; ese paso
-   solo ajusta el `.tex`.
-6. Comprobar referencias del blueprint con `scripts/check_blueprint_decls.sh`.
-7. Generar el PDF con `scripts/build_blueprint_pdf.sh`.
-8. Conservar el `.lean`, el `.tex` y el PDF archivado como salida publicable.
+1. Create a demonstration with `scripts/new_demo.sh`.
+2. Write or refine the mathematical argument with the repo-local skills.
+3. Run `scripts/check_lean_json.sh <demo.lean>` until the file is clean.
+4. Run `scripts/build_strict.sh` after file-level diagnostics pass.
+5. Review the paired LaTeX section for consistency with the accepted Lean proof.
+6. Run `scripts/check_blueprint_decls.sh`.
+7. Build the PDF with `scripts/build_blueprint_pdf.sh`.
+8. Keep the `.lean`, `.tex` and archived PDF as the publishable output.
 
-## PDF blueprint y artefactos finales
+## PDF Notes
 
-El blueprint usa `amsart` y referencias `\lean{...}` para conectar el texto del
-paper con las declaraciones Lean. El resultado final incluye:
+The blueprint uses `amsart` and `\lean{...}` references to connect prose with
+Lean declarations. Each generated note includes:
 
-- nombres cortos de declaraciones en el cuerpo del texto;
-- un glosario Lean construido automáticamente;
-- un `Anexo` con el código Lean completo de la demostración seleccionada.
+- short Lean declaration names in the body;
+- an automatically generated Lean glossary;
+- reproducibility evidence for the selected formalization;
+- an `Anexo` containing the full Lean source.
 
-Por defecto, `scripts/build_blueprint_pdf.sh` trabaja sobre la demostración
-actual. Si se requier una colección usar:
+By default, `scripts/build_blueprint_pdf.sh` builds the current demonstration.
+For a collection, use repeated `--demo` flags or `--all`:
 
 ```bash
 scripts/build_blueprint_pdf.sh --demo demo_20260402_155831_cubic_increment_sum --demo IMO_20260403_085959_finite_sets_with_divisibility_b_plus_two_c
 scripts/build_blueprint_pdf.sh --all
 ```
 
-## Exploración avanzada
+## Advanced Mathlib Exploration
 
-Para una navegación más profunda de `Mathlib4`, el repo documenta el orden de
-uso recomendado y tres capas opcionales en `docs/mathlib-exploration.md`:
+For deeper `Mathlib4` navigation, see `docs/mathlib-exploration.md`. The
+recommended order is:
 
-- primero, built-ins de Lean como `#check`, `#find`, `exact?`, `apply?`, `rw?`,
-  junto con `rg`;
-- después, búsqueda local con `loogle` mediante:
-  `scripts/build_loogle_local.sh`,
-  `scripts/build_loogle_index.sh`,
-  `scripts/check_loogle_local.sh`,
-  `scripts/loogle_local.sh`,
-  `scripts/start_loogle_local_server.sh`;
-- luego, exportación NDJSON con `lean4export`;
-- y por último, exploración semántica con LeanExplore.
+1. Lean built-ins such as `#check`, `#find`, `exact?`, `apply?`, `rw?`, plus
+   direct `rg` searches.
+2. Local `loogle` through `scripts/build_loogle_local.sh`,
+   `scripts/build_loogle_index.sh`, `scripts/check_loogle_local.sh`,
+   `scripts/loogle_local.sh` and `scripts/start_loogle_local_server.sh`.
+3. NDJSON export with `lean4export`.
+4. Semantic exploration with LeanExplore.
 
-Para un clon limpio, `scripts/build_loogle_local.sh` asume que ya existe el
-source upstream de `loogle` en `.local-tools/loogle`. La búsqueda sobre
-`Biblioteca` sigue siendo por módulo (`--module`), no como agregado global.
-Para `Mathlib`, la ruta canónica del índice persistido en este workspace es
-`/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra` y se
-reutiliza con `--read-index`; solo se regenera cuando cambia `Mathlib`.
+For this workspace, the canonical persisted Mathlib index is:
 
-No son requisitos de la puesta en marcha base. Son aceleradores opcionales
-cuando la exploración de resultados en `mathlib` se vuelve un cuello de botella
-real.
+```text
+/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra
+```
 
-## Licencia
+Search over `Biblioteca` is intentionally module-scoped today; the aggregate
+`Biblioteca` import is not treated as a stable global loogle index.
 
-Este proyecto se distribuye bajo licencia MIT. Consulta [LICENSE](LICENSE).
+## License
+
+This project is distributed under the MIT license. See [LICENSE](LICENSE).

@@ -224,6 +224,148 @@ el bootstrap con `mathlib` reduce el riesgo de una configuracion Lean incompleta
 
 ---
 
+## [PLAN-20260501-06] Identidad publica Demonstrata
+
+**Plan ID:** [PLAN-20260501-06]
+**Objetivo General:** [Dar al proyecto la identidad publica `Demonstrata`, con la descripcion corta `Demonstrata: from theorem statements to Lean-verified mathematical notes.` y la frase de identidad `Demonstrata — mathematics, proved and reproduced.`, sin romper el namespace Lean existente.]
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-05-01]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-05-01T21:42:46.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [mensaje del usuario: "Apruebo PLAN-20260501-06"]
+**Evidencia de /plan:** [planificacion no interactiva registrada por Codex en este chat el 2026-05-01T21:36:51.000+0000; sin slash commands disponibles en esta sesion; no se usa `codex exec --json` porque la politica repo-local prohibe subagentes/multi-agente]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena: pasos tecnicos dependientes, impacto en 2+ archivos/modulos y validacion no trivial.
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: reescribir la identidad principal del README como `Demonstrata`; incorporar la descripcion corta y la frase de identidad dadas por el usuario; actualizar metadatos publicos del paquete Lake cuando no cambien el namespace Lean; actualizar textos generados por el blueprint PDF que presentan la biblioteca/proyecto; ajustar documentacion operativa (`AGENTS.md` y docs relevantes) para nombrar el proyecto como Demonstrata; mantener referencias tecnicas a `Biblioteca/` y `Biblioteca.*` cuando describan el namespace Lean real.
+- Excluye: renombrar directorios Lean, migrar imports `Biblioteca.*`, renombrar skills repo-locales como `mimate-proof-strategy`, cambiar rutas absolutas locales bajo `/home/mario/code/mimate`, publicar repositorio remoto o crear logos/branding visual.
+
+**Supuestos:**
+- `Demonstrata` es el nombre publico del proyecto/producto.
+- `Biblioteca` sigue siendo el namespace tecnico de Lean por esta iteracion para evitar una migracion grande y riesgosa.
+- El README puede pasar a una presentacion predominantemente en ingles porque el texto base y la frase de identidad provistos estan en ingles.
+
+**Dependencias:**
+- Scripts del repo disponibles para validar tooling, blueprint y build Lean.
+- No se requiere consultar documentacion externa porque el cambio es de identidad local y no de uso de APIs/librerias.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Medio]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** [El cambio cruza documentacion, configuracion Lake y textos generados por tooling; una sustitucion global podria romper namespaces o instrucciones operativas.]
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica]
+**Justificacion del modo de seguimiento:** [La tarea es acotada a una fase y la trazabilidad en este plan es suficiente.]
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] (`Codigo` o `Mixta`) Suites relevantes ejecutadas en verde: `.venv/bin/pytest -q`, `scripts/build_strict.sh`.
+- [x] (`Documentacion`) Exactitud tecnica verificada: `Demonstrata` aparece como identidad publica y `Biblioteca` queda solo donde describe namespace/rutas Lean reales.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Hallazgos clasificados con rubrica de severidad cuando la herramienta no reporta severidad explicita.
+- [x] Documentacion actualizada en: `README.md`, `AGENTS.md`, docs relevantes.
+- [x] Criterios de aceptacion funcional cumplidos: la descripcion corta y frase de identidad estan presentes; no quedan usos publicos obsoletos de `Biblioteca` como nombre de proyecto.
+- [x] Rollback definido y validado conceptualmente.
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos.
+- [x] Los checks DoD aplicables estan cumplidos.
+- [x] Existe evidencia verificable de validacion en comandos ejecutados y archivos modificados.
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: Una sustitucion global de `Biblioteca` romperia imports, rutas, declaraciones Lean y tests.
+  - Mitigacion: cambiar solo identidad publica; preservar `Biblioteca/` y `Biblioteca.*` como namespace tecnico.
+- Riesgo: Cambiar el nombre del paquete Lake podria afectar scripts de build.
+  - Mitigacion: mantener `[[lean_lib]] name = "Biblioteca"` y `defaultTargets = ["Biblioteca"]`; validar con `scripts/build_strict.sh`.
+- Riesgo: Dejar menciones antiguas en textos generados por el PDF causaria una identidad inconsistente.
+  - Mitigacion: buscar menciones publicas con `rg` y actualizar tests del generador cuando aplique.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto`.
+- Si una herramienta no reporta severidad, clasificar manualmente cualquier hallazgo antes de cerrar.
+
+**Alternativas Evaluadas y Rubrica:**
+- Pesos: Alcance 20%, Simplicidad 20%, Riesgo tecnico 25%, Testabilidad 20%, Mantenibilidad 15%.
+- Alternativa A: Renombrar solo README y textos publicos, preservando namespace Lean y estructura.
+  - Score por criterio: [A=4 S=5 R=5 T=4 M=4]
+  - Puntaje total ponderado: [88/100]
+- Alternativa B: Renombrar proyecto publico y metadatos/tooling de salida, preservando namespace Lean.
+  - Score por criterio: [A=5 S=4 R=4 T=4 M=5]
+  - Puntaje total ponderado: [88/100]
+- Alternativa C: Migrar completamente de `Biblioteca.*` a `Demonstrata.*` en Lean, scripts, tests y docs.
+  - Score por criterio: [A=5 S=1 R=1 T=3 M=3]
+  - Puntaje total ponderado: [49/100]
+
+**Plan Seleccionado (resumen):**
+Se elige la Alternativa B. Da nombre consistente al proyecto y a los artefactos publicables, pero evita una migracion de namespace Lean que no fue solicitada explicitamente y que multiplicaria el riesgo. La Alternativa A es demasiado limitada porque dejaria metadatos/tooling generando textos viejos; la C es mas completa nominalmente, pero cambia contratos internos y archivos Lean sin necesidad.
+
+## Pasos del Plan
+
+- [x] STEP-01: Actualizar identidad publica y README.
+  - Evidencia/resultado esperado: README encabezado por `# Demonstrata`, descripcion corta y frase de identidad presentes, texto base del usuario integrado.
+  - Validacion: `rg -n "Demonstrata|# Biblioteca|from theorem statements|mathematics, proved and reproduced" README.md` -> encabezado, descripcion corta y frase de identidad presentes.
+  - Artefacto esperado: `README.md`.
+- [x] STEP-02: Actualizar metadatos y textos generados del proyecto sin migrar namespace Lean.
+  - Evidencia/resultado esperado: `lakefile.toml` usa `Demonstrata` como nombre de paquete si el build lo permite; el blueprint ya no describe el producto como "Biblioteca" en metadatos publicos.
+  - Validacion: `.venv/bin/pytest tests/test_blueprint_paper.py -q` -> `20 passed`; `.venv/bin/pytest tests/test_blueprint_paper.py tests/test_loogle_local_server.py -q` -> `27 passed`.
+  - Artefacto esperado: `lakefile.toml`, `tools/blueprint_paper.py`, tests asociados.
+- [x] STEP-03: Actualizar documentacion operativa y referencias de identidad.
+  - Evidencia/resultado esperado: `AGENTS.md` y docs relevantes nombran Demonstrata como proyecto, manteniendo `Biblioteca` para rutas/namespaces reales.
+  - Validacion: `rg -n "Biblioteca|mimate|Demonstrata" README.md AGENTS.md docs .agents/skills .codex lakefile.toml tools tests` -> `mimate` queda solo en rutas locales y nombre de skill `mimate-proof-strategy`; `Biblioteca` queda en rutas/namespaces tecnicos.
+  - Artefacto esperado: `AGENTS.md`, docs relevantes.
+- [x] STEP-04: Validar build, revisar diff y cerrar.
+  - Evidencia/resultado esperado: tests/build en verde y sin hallazgos bloqueantes.
+  - Validacion: `.venv/bin/pytest -q` -> `40 passed`; `scripts/build_strict.sh` -> `Build completed successfully (3307 jobs)`; `scripts/check_blueprint_decls.sh` -> `Checked 4 Lean declaration reference(s) from blueprint/src`; `scripts/build_blueprint_pdf.sh` -> PDF archivado; `git diff --check` en verde; revision manual con `review-changes`/`code-review-checklist` sin hallazgos `Critico`/`Alto`.
+  - Artefacto esperado: `PLANS.md` actualizado a completado.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Confirmar con `rg` que la identidad publica `Demonstrata` esta en README y textos generados.
+- Confirmar con `rg` que las menciones restantes de `Biblioteca` son tecnicas: namespace, ruta Lean o declaracion formal.
+
+**Plan de Rollback:**
+- Trigger: build Lean o tests fallan por el cambio de metadatos/nombre de paquete, o la revision detecta ambiguedad de identidad.
+- Acciones: revertir cambios en `lakefile.toml`, `tools/blueprint_paper.py`, tests y documentos editados en esta fase.
+- Verificacion posterior: repetir `.venv/bin/pytest -q` y `scripts/build_strict.sh`.
+
+**Comandos Relevantes:**
+- `rg -n "Biblioteca|mimate|Demonstrata" README.md AGENTS.md docs .agents/skills .codex lakefile.toml tools tests` - auditoria de identidad.
+- `.venv/bin/pytest tests/test_blueprint_paper.py -q` - tests del generador PDF si se tocan textos del blueprint.
+- `.venv/bin/pytest -q` - suite Python completa.
+- `scripts/build_strict.sh` - verificacion Lean del paquete tras metadatos Lake.
+- `git diff --check` - revision basica de whitespace.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [DEC-20260501-01]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [No aplica]
+- Ultimo sync confirmado: [N/A]
+- Divergencias detectadas: [Ninguna]
+
+**Evidencia de cierre:**
+- Gate de aprobacion: `/home/mario/.codex/skills/orquestador-proyecto/scripts/validate-plan-approval.sh PLANS.md PLAN-20260501-06` -> valido.
+- README: `rg -n "Demonstrata|# Biblioteca|from theorem statements|mathematics, proved and reproduced" README.md` -> identidad publica presente y sin encabezado `# Biblioteca`.
+- Tests focalizados: `.venv/bin/pytest tests/test_blueprint_paper.py -q` -> `20 passed`; `.venv/bin/pytest tests/test_blueprint_paper.py tests/test_loogle_local_server.py -q` -> `27 passed`.
+- Tests completos: `.venv/bin/pytest -q` -> `40 passed`.
+- Lean estricto: `scripts/build_strict.sh` -> `Build completed successfully (3307 jobs)`.
+- Blueprint declarations: `scripts/check_blueprint_decls.sh` -> `Checked 4 Lean declaration reference(s) from blueprint/src.`
+- PDF final: `scripts/build_blueprint_pdf.sh` -> archivado en `blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf`; queda el overfull pequeno ya conocido en el anexo Lean completo.
+- Texto generado: `blueprint/build/20260501_154950_Demo_20260430_221302_diagonal_quartic_modulo_prime/lean_reproducibility.tex` usa `\nolinkurl{lakefile.toml}`.
+- Auditoria de identidad: `rg -n "Biblioteca|mimate|Demonstrata" README.md AGENTS.md docs .agents/skills .codex lakefile.toml tools tests lake-manifest.json` -> menciones restantes de `Biblioteca` son tecnicas; menciones restantes de `mimate` son rutas locales o el skill `mimate-proof-strategy`.
+- Decision registrada: `DECISIONS.md` contiene `DEC-20260501-01`.
+- Revision: `git diff --check` en verde; `git diff -U3 HEAD` revisado manualmente con `review-changes`/`code-review-checklist`; sin hallazgos `Critico`/`Alto`.
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-05-01T21:51:56.000+0000]
+
+---
+
 ## [PLAN-20260501-05] Presentacion de bloques Lean
 
 **Plan ID:** [PLAN-20260501-05]
