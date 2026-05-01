@@ -159,13 +159,12 @@ Ask Codex CLI for a complete olympiad-style flow:
 
 ```text
 /olympiad-formalize solve this problem:
-> Let \(p\) be a prime number. Prove that there exist integers
-> \(x,y,z,t\), not all divisible by \(p\), such that
->
-> \[
-> p \mid x^4 - 2y^4 + 3z^4 + 4t^4.
-> \]
+ Let \(p\) be a prime number. Prove that there exist integers
+ \(x,y,z,t\), not all divisible by \(p\), such that
 
+ \[
+ p \mid x^4 - 2y^4 + 3z^4 + 4t^4.
+ \]
 ```
 
 From this input, Demonstrata generates a reproducible proof dossier:
@@ -179,7 +178,6 @@ From this input, Demonstrata generates a reproducible proof dossier:
 
 Example output:
 [blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf](blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf)
-
 
 ## How `olympiad-formalize` Works
 
