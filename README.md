@@ -5,11 +5,8 @@
 # Demonstrata
 
 <p align="center">
-  <strong>Demonstrata: from theorem statements to Lean-verified mathematical notes.</strong>
-</p>
-
-<p align="center">
-  Demonstrata — mathematics, proved and reproduced.
+  <strong>Demonstrata: from theorem statements to Lean-verified mathematical notes.
+  Mathematics, proved and reproduced. </strong>
 </p>
 
 Demonstrata is an open-source theorem proving workflow for Codex and Lean 4.
@@ -162,12 +159,27 @@ Ask Codex CLI for a complete olympiad-style flow:
 
 ```text
 /olympiad-formalize solve this problem:
-Find all positive integers n with the following property:
-for every positive divisor d of n, either d+1 divides n or d+1 is prime.
+> Let \(p\) be a prime number. Prove that there exist integers
+> \(x,y,z,t\), not all divisible by \(p\), such that
+>
+> \[
+> p \mid x^4 - 2y^4 + 3z^4 + 4t^4.
+> \]
+
 ```
 
+From this input, Demonstrata generates a reproducible proof dossier:
+
+- a human-readable mathematical proof;
+- a Lean 4 formalization;
+- LaTeX sources;
+- reproducibility logs;
+- axiom-audit output;
+- and a final PDF note.
+
 Example output:
-[blueprint/library/pdf/IMO_20260402_213030_divisors_plus_one_divisor_or_prime.pdf](blueprint/library/pdf/IMO_20260402_213030_divisors_plus_one_divisor_or_prime.pdf)
+[blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf](blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf)
+
 
 ## How `olympiad-formalize` Works
 
