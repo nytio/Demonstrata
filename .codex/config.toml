@@ -13,10 +13,14 @@ project_doc_fallback_filenames = ["AGENTS.md"]
 multi_agent = false
 
 [shell_environment_policy.set]
-LEANSEARCHCLIENT_LOOGLE_API_URL = "http://localhost:8088/json"
+LEANSEARCHCLIENT_LOOGLE_API_URL = "http://127.0.0.1:8088/json"
+
+[permissions.local_loopback.filesystem]
+glob_scan_max_depth = 3
+":project_roots" = { "." = "write", "**/.env" = "none", "**/*.env" = "none", "**/.env.*" = "none", "**/secrets.*" = "none" }
 
 [permissions.local_loopback.network]
 enabled = true
 mode = "limited"
 allow_local_binding = true
-domains = { "localhost" = "allow" }
+domains = { "localhost" = "allow", "127.0.0.1" = "allow" }
