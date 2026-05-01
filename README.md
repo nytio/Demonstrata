@@ -5,8 +5,8 @@
 # Demonstrata
 
 <p align="center">
-  <strong>Demonstrata: from theorem statements to Lean-verified mathematical notes.
-  Mathematics, proved and reproduced. </strong>
+  <strong>Demonstrata: from theorem statements to Lean-verified mathematical notes.</strong></br>
+  <em>Mathematics, proved and reproduced.</em>
 </p>
 
 Demonstrata is an open-source theorem proving workflow for Codex and Lean 4.
