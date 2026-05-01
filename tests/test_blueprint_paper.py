@@ -5,20 +5,26 @@ from pathlib import Path
 from tools.blueprint_paper import (
     archive_stem,
     available_pygments_aliases,
+    build_lean_reproducibility_info,
     build_selected_metadata,
     build_glossary_entries,
     build_source_entries,
+    build_axiom_probe,
     latest_section_stem,
     LeanGlossaryEntry,
+    LeanReproducibilityInfo,
     MintedConfig,
+    MathlibManifestInfo,
     LeanSourceEntry,
     PaperMetadata,
     parse_section_metadata,
     render_lean_appendix,
     render_lean_glossary,
     render_lean_refs,
+    render_lean_reproducibility,
     render_paper_tex,
     remove_legacy_archive_pdfs,
+    read_mathlib_manifest_info,
     resolve_minted_config,
     resolve_selected_sections,
     SectionRecord,
@@ -231,8 +237,10 @@ def test_render_lean_support_files_include_short_names_and_glossary(tmp_path: Pa
 
     assert "leanref@Biblioteca.Demonstrations.example_one" in refs_text
     assert r"\leaninline{example\_\hspace{0pt}one}" in refs_text
-    assert r"\section*{Lean Glossary}" in glossary_text
+    assert r"\subsection{Glossary}" in glossary_text
+    assert r"\mbox{}\par\nobreak\smallskip" in glossary_text
     assert r"\leanname{example\_\hspace{0pt}one}" in glossary_text
+    assert r"\leanname{example\_\hspace{0pt}one}}\par\nobreak\smallskip" in glossary_text
     assert (
         r"\leaninputfile{lean4}{\detokenize{lean_glossary/example-one.lean}}"
         in glossary_text
@@ -417,6 +425,184 @@ def test_render_lean_appendix_uses_inputminted_with_relative_path(tmp_path: Path
     assert r"\leaninputfile{lean4}{\detokenize{../Demo_example.lean}}" in appendix_text
 
 
+def test_read_mathlib_manifest_info_extracts_revision(tmp_path: Path) -> None:
+    (tmp_path / "lake-manifest.json").write_text(
+        "\n".join(
+            [
+                "{",
+                '  "packages": [',
+                '    {"name": "other", "rev": "ignore"},',
+                '    {"name": "mathlib", "rev": "abc123", "inputRev": "v4.29.0"}',
+                "  ]",
+                "}",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    info = read_mathlib_manifest_info(tmp_path)
+
+    assert info == MathlibManifestInfo(revision="abc123", input_revision="v4.29.0")
+
+
+def test_build_axiom_probe_imports_sources_and_queries_declarations(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    repro_dir = tmp_path / "build" / "lean_reproducibility"
+    repro_dir.mkdir(parents=True)
+    lean_path = repo_root / "Biblioteca" / "Demonstrations" / "Demo_example.lean"
+    lean_path.parent.mkdir(parents=True)
+    lean_path.write_text("theorem example : True := by trivial\n", encoding="utf-8")
+
+    probe_path, declarations = build_axiom_probe(
+        repo_root,
+        repro_dir,
+        [LeanSourceEntry(path=lean_path, title="Biblioteca/Demonstrations/Demo_example.lean")],
+        [
+            LeanGlossaryEntry(
+                declaration="Biblioteca.Demonstrations.example",
+                short_name="example",
+                label="lean-glossary:example",
+                signature="theorem example : True",
+            )
+        ],
+    )
+
+    assert declarations == ("Biblioteca.Demonstrations.example",)
+    assert probe_path is not None
+    assert probe_path.read_text(encoding="utf-8") == "\n".join(
+        [
+            "import Biblioteca.Demonstrations.Demo_example",
+            "",
+            "#print axioms Biblioteca.Demonstrations.example",
+            "",
+        ]
+    )
+
+
+def test_build_lean_reproducibility_info_captures_build_and_axioms(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo_root = tmp_path
+    build_dir = tmp_path / "build"
+    build_dir.mkdir()
+    (repo_root / "lean-toolchain").write_text("leanprover/lean4:v4.29.0\n", encoding="utf-8")
+    (repo_root / "lake-manifest.json").write_text(
+        '{"packages": [{"name": "mathlib", "rev": "abc123", "inputRev": "v4.29.0"}]}',
+        encoding="utf-8",
+    )
+    lean_path = repo_root / "Biblioteca" / "Demonstrations" / "Demo_example.lean"
+    lean_path.parent.mkdir(parents=True)
+    lean_path.write_text("theorem example : True := by trivial\n", encoding="utf-8")
+
+    calls: list[list[str]] = []
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        return __import__("subprocess").CompletedProcess(
+            args=command,
+            returncode=0,
+            stdout="ok\n",
+            stderr="",
+        )
+
+    monkeypatch.setattr("tools.blueprint_paper.lake_executable", lambda: "lake")
+    monkeypatch.setattr("tools.blueprint_paper.subprocess.run", fake_run)
+
+    info = build_lean_reproducibility_info(
+        repo_root,
+        build_dir,
+        [LeanSourceEntry(path=lean_path, title="Biblioteca/Demonstrations/Demo_example.lean")],
+        [
+            LeanGlossaryEntry(
+                declaration="Biblioteca.Demonstrations.example",
+                short_name="example",
+                label="lean-glossary:example",
+                signature="theorem example : True",
+            )
+        ],
+    )
+
+    assert calls == [
+        ["lake", "build"],
+        ["lake", "env", "lean", "build/lean_reproducibility/print_axioms.lean"],
+    ]
+    assert info.lean_version == "leanprover/lean4:v4.29.0"
+    assert info.mathlib.revision == "abc123"
+    assert "$ lake build" in info.verification_output_path.read_text(encoding="utf-8")
+    assert (
+        "$ lake env lean build/lean_reproducibility/print_axioms.lean"
+        in info.axiom_output_path.read_text(encoding="utf-8")
+    )
+
+
+def test_render_lean_reproducibility_includes_metadata_and_captured_outputs(
+    tmp_path: Path,
+) -> None:
+    build_dir = tmp_path / "build"
+    repro_dir = build_dir / "lean_reproducibility"
+    repro_dir.mkdir(parents=True)
+    verification_output = repro_dir / "lake_build.out"
+    axiom_probe = repro_dir / "print_axioms.lean"
+    axiom_output = repro_dir / "print_axioms.out"
+    verification_output.write_text("$ lake build\nexit code: 0\n", encoding="utf-8")
+    axiom_probe.write_text(
+        "#print axioms Biblioteca.Demonstrations.prime_dvd_diagonal_quartic_exists\n",
+        encoding="utf-8",
+    )
+    axiom_output.write_text("depends on axioms: []\n", encoding="utf-8")
+
+    path = render_lean_reproducibility(
+        build_dir,
+        LeanReproducibilityInfo(
+            lean_version="leanprover/lean4:v4.29.0",
+            mathlib=MathlibManifestInfo(
+                revision="8a178386ffc0f5fef0b77738bb5449d50efeea95",
+                input_revision="v4.29.0",
+            ),
+            config_files=("lakefile.lean", "lake-manifest.json"),
+            verification_output_path=verification_output,
+            axiom_probe_path=axiom_probe,
+            axiom_output_path=axiom_output,
+            axiom_declarations=(
+                "Biblioteca.Demonstrations.prime_dvd_diagonal_quartic_exists",
+            ),
+        ),
+        lexer_name="lean4",
+    )
+
+    text = path.read_text(encoding="utf-8")
+
+    assert r"\subsection{Reproducibility}" in text
+    assert r"\begin{tabular}{@{}ll@{}}" in text
+    assert r"\begin{itemize}" not in text
+    assert r"\begin{description}" not in text
+    assert "version::" not in text
+    assert "commit::" not in text
+    assert "command::" not in text
+    assert "leanprov" in text
+    assert "lean4:v4" in text
+    assert "Mathlib commit" in text
+    assert (
+        r"\noindent\textbf{Mathlib commit:}\par"
+        r"\noindent\texttt{"
+        r"8a178386ffc0f5fef0b77738bb5449d50efeea95}."
+    ) not in text
+    assert r"\noindent\textbf{Mathlib commit:}\par" in text
+    assert r"\noindent\texttt{8a178386ffc0f5fef0b77738bb5449d50efeea95}\par" in text
+    assert "Axiom audit command" in text
+    assert r"\noindent\textbf{Manifest input revision:} \texttt{v4.29.0}\par" in text
+    assert not (build_dir / "lean_reproducibility" / "mathlib_commit.tex").exists()
+    assert r"\nolinkurl{lakefile.lean}" in text
+    assert r"\nolinkurl{lake-manifest.json}" in text
+    assert "prime\\_\\hspace{0pt}dvd" in text
+    assert r"\input{lean_reproducibility/mathlib_commit.tex}" not in text
+    assert r"\leaninputfile{text}{\detokenize{lean_reproducibility/lake_build.out}}" in text
+    assert r"\leaninputfile{lean4}{\detokenize{lean_reproducibility/print_axioms.lean}}" in text
+    assert r"\leaninputfile{text}{\detokenize{lean_reproducibility/print_axioms.out}}" in text
+
+
 def test_render_paper_tex_sanitizes_text_mode_math_commands_in_metadata(tmp_path: Path) -> None:
     build_dir = tmp_path / "build"
     build_dir.mkdir()
@@ -441,3 +627,8 @@ def test_render_paper_tex_sanitizes_text_mode_math_commands_in_metadata(tmp_path
         in paper_text
     )
     assert r"\keywords{cases n \ensuremath{\ge} 3}" in paper_text
+    assert r"\section{Lean formalization}" in paper_text
+    assert paper_text.index(r"\input{lean_reproducibility.tex}") < paper_text.index(
+        r"\input{lean_glossary.tex}"
+    )
+    assert r"\input{lean_reproducibility.tex}" in paper_text

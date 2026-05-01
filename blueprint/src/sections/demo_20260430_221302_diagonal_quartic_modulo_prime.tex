@@ -1,0 +1,62 @@
+% title: Diagonal Quartic Modulo Prime
+% short-title: Diagonal Quartic
+% abstract: We prove that a four-variable diagonal quartic form has a non-trivial zero modulo every prime.
+% subjclass: 11A07, 11T06
+% keywords: prime modulus, fourth powers, cyclic groups, Lean 4
+% author: Mario Hernández M.
+
+\section{Proof of the theorem}
+
+\begin{theorem}
+Let \(p\) be a prime number. Then there exist integers \(x,y,z,t\), not all divisible by \(p\), such that
+\[
+p \mid x^4 - 2y^4 + 3z^4 + 4t^4.
+\]
+\end{theorem}
+
+\begin{proof}
+The formal statement is \lean{Biblioteca.Demonstrations.prime_dvd_diagonal_quartic_exists}.  We first prove the finite-field version
+\lean{Biblioteca.Demonstrations.exists_zmod_diagonalQuarticForm_zero} for \(\mathbb F_p\), and then lift the representatives of
+\(\mathbb Z/p\mathbb Z\) back to integers.
+
+The cases \(p=2\) and \(p=3\) are immediate: respectively \((0,0,0,1)\) and \((0,0,1,0)\) are zeros.  Assume now
+\(p>3\).  Work in the cyclic group \(\mathbb F_p^\times\) and quotient by the subgroup of fourth powers.  This quotient
+has at most four elements, because the fourth-power map on a cyclic group has image of index
+\(\gcd(4,p-1)\).
+
+In this quotient write
+\[
+a=[2],\qquad r=[-1].
+\]
+Since \(r^2=1\), the following elementary intersection holds in every cyclic group of order at most four:
+\[
+\{1,a^2\}\cap \{a,ra^2,ra\}\ne\varnothing.
+\]
+Indeed, if \(a^2=1\), then either \(a=1\) or \(a\) is the unique non-trivial involution.  If \(a=1\), then
+\(1=a\) belongs to both sets.  If \(a\ne 1\), then \(a\) is the unique non-trivial involution; since \(r^2=1\),
+we have \(r=1\) or \(r=a\), and hence either \(1=ra^2\) or \(1=ra\).  Thus the two sets intersect.  If
+\(a^2\ne 1\) and \(a\) has order \(3\), then the group has no non-trivial involution, so \(r=1\), and \(a^2\)
+lies in both sets.  If \(a\) has order \(4\), then \(r=1\) or \(r=a^2\); in the first case \(a^2\) lies in both
+sets, and in the second case \(ra^2=a^4=1\).  The Lean proof packages this reduced intersection as
+\lean{Biblioteca.Demonstrations.cyclic_small_intersect}.
+
+The two classes on the left are represented by the base values
+\[
+1=1^4+3\cdot0^4,\qquad
+4=1^4+3\cdot1^4,
+\]
+while the three classes on the right are represented by
+\[
+2=2\cdot1^4-4\cdot0^4,\qquad
+-4=2\cdot0^4-4\cdot1^4,\qquad
+-2=2\cdot1^4-4\cdot1^4.
+\]
+If the two matching classes are \(L\) and \(R\), then \(R/L\) is a fourth power, say \(w^4\).  Multiplying the
+corresponding left-hand representation by \(w^4\) gives
+\[
+(wx_0)^4+3(wz_0)^4=2y_0^4-4t_0^4,
+\]
+hence \( (wx_0)^4-2y_0^4+3(wz_0)^4+4t_0^4=0\) in \(\mathbb F_p\).  Because the right-hand base representation
+always has \(y_0\) or \(t_0\) nonzero, the resulting quadruple is non-trivial.  This scaling step is formalized as
+\lean{Biblioteca.Demonstrations.solutionOfClassEq}.
+\end{proof}

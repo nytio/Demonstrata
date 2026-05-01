@@ -224,6 +224,228 @@ el bootstrap con `mathlib` reduce el riesgo de una configuracion Lean incompleta
 
 ---
 
+## [PLAN-20260501-05] Presentacion de bloques Lean
+
+**Plan ID:** [PLAN-20260501-05]
+**Objetivo General:** [Mejorar la presentacion del material Lean en el PDF: invertir el orden de Reproducibility/Glossary, separar visualmente los bloques de codigo Lean y reemplazar bullets por una presentacion mas limpia.]
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-05-01]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-05-01T20:58:49.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [mensaje del usuario: "$orquestador-proyecto revisa la siguiente observación, si es pertinente aplica los cambios necesarios al proyecto en donde sea necesario"]
+**Evidencia de /plan:** [N/A (riesgo Bajo)]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena: modifica el generador del PDF y tests, y requiere regeneracion/validacion del artefacto final.
+- [x] No es tarea trivial de un solo paso bajo este flujo, porque afecta layout, tests y PDF archivado.
+
+**Alcance y Entregables:**
+- Incluye: poner `Reproducibility` antes que `Glossary`; cambiar la metadata reproducible de bullets a una tabla compacta; separar los nombres del glossary de los bloques Lean con espacio vertical; actualizar tests; regenerar PDF.
+- Excluye: cambiar la prueba Lean, el contenido matematico, la salida de `lake build` o el anexo Lean completo.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Bajo]
+**Modo de planificacion:** [Simplificado no-pequeno (1 alternativa + 1 descartada)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** [El cambio es editorial y localizado al generador, pero debe comprobarse con tests y render final.]
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica]
+**Justificacion del modo de seguimiento:** [La trazabilidad en `PLANS.md` es suficiente.]
+
+**Definicion de Hecho (DoD):**
+- [x] La subseccion `2.1` es `Reproducibility` y `2.2` es `Glossary`.
+- [x] Reproducibility ya no usa bullets para la metadata principal.
+- [x] El glossary separa visualmente cada nombre de declaracion del bloque Lean.
+- [x] Tests del generador en verde.
+- [x] PDF regenerado e inspeccionado.
+- [x] Revision de diff sin hallazgos bloqueantes.
+
+**Alternativas Evaluadas y Rubrica:**
+- Alternativa A: reordenar inputs en `paper.tex`, renderizar metadata reproducible como `tabular`, y agregar `\medskip` antes/despues de snippets Lean.
+  - Puntaje total ponderado: [90/100]
+- Alternativa B: mantener orden actual y solo agregar espacios alrededor de snippets.
+  - Puntaje total ponderado: [55/100]
+
+**Plan Seleccionado (resumen):**
+Se elige la Alternativa A porque atiende todas las observaciones con cambios localizados y conserva `minted` para los bloques Lean ya existentes.
+
+## Pasos del Plan
+
+- [x] STEP-01: Ajustar render de `Reproducibility`, `Glossary` y orden de inclusion.
+  - Validacion: `.venv/bin/pytest tests/test_blueprint_paper.py -q` -> `20 passed`.
+- [x] STEP-02: Regenerar PDF e inspeccionar estructura/texto.
+  - Validacion: `scripts/build_blueprint_pdf.sh`; `pdftotext blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf -`; `scripts/check_blueprint_decls.sh`.
+- [x] STEP-03: Cerrar plan con evidencia de revision.
+  - Validacion: `git diff --check` en verde y revision manual.
+
+**Plan de Rollback:**
+- Revertir los cambios en `tools/blueprint_paper.py` y `tests/test_blueprint_paper.py`; regenerar el PDF si fuera necesario.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Evidencia de cierre:**
+- Gate de aprobacion: `/home/mario/.codex/skills/orquestador-proyecto/scripts/validate-plan-approval.sh /home/mario/code/mimate/PLANS.md PLAN-20260501-05` -> valido.
+- Tests del generador: `.venv/bin/pytest tests/test_blueprint_paper.py -q` -> `20 passed`.
+- Blueprint declarations: `scripts/check_blueprint_decls.sh` -> `Checked 4 Lean declaration reference(s) from blueprint/src.`
+- PDF final: `scripts/build_blueprint_pdf.sh` -> archivado en `blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf`.
+- Inspeccion de PDF: `pdftotext` muestra `2.1. Reproducibility` antes de `2.2. Glossary`, sin bullets en la metadata principal, y el primer identificador del glossary en una linea separada despues del subtitulo.
+- Log LaTeX: el overfull restante pertenece solo al anexo Lean completo, no a `lean_reproducibility.tex` ni a `lean_glossary.tex`.
+- Revision: `git diff --check` en verde; revision manual sin hallazgos `Critico`/`Alto`.
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-05-01T21:01:15.000+0000]
+
+---
+
+## [PLAN-20260501-04] Tipografia de Lean formalization
+
+**Plan ID:** [PLAN-20260501-04]
+**Objetivo General:** [Corregir detalles tipograficos del bloque Lean del PDF: evitar cortes ambiguos del hash de Mathlib y organizar Glossary/Reproducibility como subsecciones numeradas.]
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-05-01]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-05-01T20:37:04.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [mensaje del usuario: "$orquestador-proyecto revisa la siguiente observación, si es pertinente aplica los cambios necesarios al proyecto en donde sea necesario"]
+**Evidencia de /plan:** [N/A (riesgo Bajo)]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena: impacta el generador del PDF, tests y producto PDF; requiere validacion de tests/build.
+- [x] No es tarea trivial de un solo paso bajo este flujo, porque modifica tooling, pruebas y artefacto final.
+
+**Alcance y Entregables:**
+- Incluye: cambiar la estructura Lean final a `\section{Lean formalization}` con `\subsection{Glossary}` y `\subsection{Reproducibility}`; renderizar el hash de Mathlib en `\texttt{...}` sin cortes internos; actualizar tests; regenerar el PDF.
+- Excluye: cambiar la prueba Lean, la matematica demostrada o el contenido de los anexos de codigo.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Bajo]
+**Modo de planificacion:** [Simplificado no-pequeno (1 alternativa + 1 descartada)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** [El cambio es localizado al generador del PDF, pero debe verificarse con tests y render final.]
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica]
+**Justificacion del modo de seguimiento:** [La trazabilidad en `PLANS.md` es suficiente.]
+
+**Definicion de Hecho (DoD):**
+- [x] El PDF ya no muestra el hash de Mathlib con un corte ambiguo.
+- [x] `Lean Glossary` y `Lean Reproducibility` quedan como subsecciones numeradas bajo `Lean formalization`.
+- [x] Tests del generador en verde.
+- [x] PDF regenerado con `scripts/build_blueprint_pdf.sh`.
+- [x] Revision de diff sin hallazgos bloqueantes.
+
+**Alternativas Evaluadas y Rubrica:**
+- Alternativa A: introducir `\section{Lean formalization}` en el paper y cambiar los renders existentes a subsecciones numeradas; mostrar el hash en `\texttt{...}`.
+  - Puntaje total ponderado: [90/100]
+- Alternativa B: conservar secciones no numeradas y solo cambiar el hash a bloque verbatim.
+  - Puntaje total ponderado: [65/100]
+
+**Plan Seleccionado (resumen):**
+Se elige la Alternativa A porque resuelve ambos detalles tipograficos en el generador compartido y alinea el PDF con una estructura AMS mas clara.
+
+## Pasos del Plan
+
+- [x] STEP-01: Ajustar el render del generador y sus tests.
+  - Validacion: `.venv/bin/pytest tests/test_blueprint_paper.py -q` -> `20 passed`.
+- [x] STEP-02: Regenerar PDF e inspeccionar la salida renderizada.
+  - Validacion: `scripts/build_blueprint_pdf.sh`; `pdftotext blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf -`.
+- [x] STEP-03: Cerrar plan con evidencia de revision.
+  - Validacion: `git diff --check` en verde y revision manual.
+
+**Plan de Rollback:**
+- Revertir los cambios en `tools/blueprint_paper.py` y `tests/test_blueprint_paper.py`; regenerar el PDF anterior si fuera necesario.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Evidencia de cierre:**
+- Gate de aprobacion: `/home/mario/.codex/skills/orquestador-proyecto/scripts/validate-plan-approval.sh /home/mario/code/mimate/PLANS.md PLAN-20260501-04` -> valido.
+- Tests del generador: `.venv/bin/pytest tests/test_blueprint_paper.py -q` -> `20 passed`.
+- PDF final: `scripts/build_blueprint_pdf.sh` -> archivado en `blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf`.
+- Inspeccion de PDF: `pdftotext` muestra `2. Lean formalization`, `2.1. Glossary`, `2.2. Reproducibility` y el hash completo `8a178386ffc0f5fef0b77738bb5449d50efeea95` en su propia linea.
+- Log LaTeX: el overfull restante pertenece solo al anexo Lean completo, no a `lean_reproducibility.tex`.
+- Revision: `git diff --check` en verde; revision manual sin hallazgos `Critico`/`Alto`.
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-05-01T20:41:53.000+0000]
+
+---
+
+## [PLAN-20260501-03] Estructura AMS del manuscrito principal
+
+**Plan ID:** [PLAN-20260501-03]
+**Objetivo General:** [Corregir la estructura editorial del manuscrito para que no empiece en `0.1` y para que el resultado aparezca como teorema con prueba.]
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-05-01]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-05-01T15:42:46.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [mensaje del usuario: "$orquestador-proyecto Revisa esta observación y evalua su pertinencia, si aplica modifica el proyecto donde sea necesario"]
+**Evidencia de /plan:** [N/A (riesgo Bajo)]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena: afecta el producto PDF y requiere validacion del build.
+- [x] No es tarea trivial de un solo paso bajo este flujo, porque modifica fuente LaTeX, producto PDF y trazabilidad.
+
+**Alcance y Entregables:**
+- Incluye: reemplazar la subseccion inicial por una seccion de nivel correcto; cambiar `Problem` por `theorem`; envolver la argumentacion en `proof`; regenerar el PDF.
+- Excluye: cambiar la prueba Lean, cambiar la matematica o reestructurar todo el paper en varias secciones nuevas.
+
+**Tipo de tarea:** [Documentacion]
+**Nivel de riesgo/complejidad:** [Bajo]
+**Modo de planificacion:** [Simplificado no-pequeno (1 alternativa + 1 descartada)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** [El cambio es editorial y localizado, pero debe verificarse en el PDF final.]
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica]
+**Justificacion del modo de seguimiento:** [La trazabilidad en `PLANS.md` es suficiente.]
+
+**Definicion de Hecho (DoD):**
+- [x] La seccion principal ya no produce numeracion `0.1`.
+- [x] El enunciado aparece como `theorem`, no como `Problem`.
+- [x] PDF regenerado con `scripts/build_blueprint_pdf.sh`.
+- [x] Referencias Lean del blueprint verificadas.
+- [x] Revision de diff sin hallazgos bloqueantes.
+
+**Alternativas Evaluadas y Rubrica:**
+- Alternativa A: cambio minimo a `\section{Proof of the theorem}` + `theorem` + `proof`.
+  - Puntaje total ponderado: [90/100]
+- Alternativa B: reestructurar en `Introduction`, `Proof`, `Lean formalization`.
+  - Puntaje total ponderado: [70/100]
+
+**Plan Seleccionado (resumen):**
+Se elige la Alternativa A. Corrige los dos problemas detectados con el menor cambio y mantiene el resto de secciones automaticas (`Lean Glossary`, `Lean Reproducibility`, `Anexo`) sin duplicar estructura.
+
+## Pasos del Plan
+
+- [x] STEP-01: Ajustar la seccion LaTeX principal.
+  - Validacion: inspeccion directa del `.tex`; `\subsection` reemplazado por `\section{Proof of the theorem}`, `problemstatement` reemplazado por `theorem` y `proof`.
+- [x] STEP-02: Validar referencias y regenerar PDF.
+  - Validacion: `scripts/check_blueprint_decls.sh` -> `Checked 4 Lean declaration reference(s) from blueprint/src.`; `scripts/build_blueprint_pdf.sh` -> PDF archivado.
+- [x] STEP-03: Cerrar plan con evidencia de revision.
+  - Validacion: `git diff --check` en verde y revision manual.
+
+**Plan de Rollback:**
+- Revertir el cambio en `blueprint/src/sections/demo_20260430_221302_diagonal_quartic_modulo_prime.tex` y regenerar el PDF.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Evidencia de cierre:**
+- Gate de aprobacion: `/home/mario/.codex/skills/orquestador-proyecto/scripts/validate-plan-approval.sh /home/mario/code/mimate/PLANS.md PLAN-20260501-03` -> valido.
+- PDF final: `scripts/build_blueprint_pdf.sh` -> archivado en `blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf`.
+- Inspeccion de PDF: `pdftotext blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf -` muestra `1. Proof of the theorem`, `Theorem 1.1` y `Proof.`.
+- Revision: `git diff --check` en verde; revision manual sin hallazgos `Critico`/`Alto`.
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-05-01T15:50:20.000+0000]
+
+---
+
 ## [PLAN-20260403-01] [Publicacion GitHub con licencia MIT y README orientado a usuario]
 
 **Plan ID:** [PLAN-20260403-01] (debe coincidir con el encabezado de la seccion)
@@ -2565,5 +2787,221 @@ arrancarse y consultarse antes de cambiar de tecnica.
 
 **Estado Actual:** [Completado]
 **Ultima Actualizacion:** [2026-04-27T03:57:30.000+0000]
+
+---
+
+## [PLAN-20260501-01] Reproducibilidad Lean en PDF de demostraciones
+
+**Plan ID:** [PLAN-20260501-01]
+**Objetivo General:** [Agregar al producto final informacion reproducible minima para la verificacion Lean, incluyendo version de Lean, commit de Mathlib, archivos de configuracion, comando de verificacion, salida relevante de build y resultado de #print axioms para la demostracion principal.]
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-05-01]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-05-01T14:46:48.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [mensaje del usuario: "Apruebo PLAN-20260501-01"]
+**Evidencia de /plan:** [planificacion no interactiva registrada por Codex en este chat el 2026-05-01T14:44:48.000+0000; sin slash commands disponibles en esta sesion]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena: pasos tecnicos dependientes, impacto en componente critico del PDF y validacion no trivial.
+- [x] No es tarea trivial de un solo paso.
+
+**Alcance y Entregables:**
+- Incluye: extender el generador del blueprint PDF para incorporar una seccion/anexo de reproducibilidad Lean; incluir version exacta de Lean desde `lean-toolchain`; incluir revision exacta de Mathlib desde `lake-manifest.json`; mencionar `lakefile.lean` y `lake-manifest.json`; incluir el comando reproducible de verificacion; capturar o renderizar el resultado de `#print axioms prime_dvd_diagonal_quartic_exists`; actualizar tests de tooling; revisar y retirar o justificar las opciones de linter indicadas en el archivo Lean; regenerar el PDF de la demostracion actual.
+- Excluye: cambiar la matematica demostrada, reestructurar el repositorio, publicar un repositorio remoto o subir artefactos fuera del workspace.
+
+**Supuestos:**
+- La demostracion objetivo es `prime_dvd_diagonal_quartic_exists` en la demostracion timestamped actual.
+- El flujo publicable del repositorio sigue siendo el blueprint PDF generado por `scripts/build_blueprint_pdf.sh`.
+- La evidencia reproducible debe quedar visible en el PDF, no solo en logs locales.
+
+**Dependencias:**
+- Lean/lake y mathlib ya instalados via toolchain local.
+- `lake-manifest.json`, `lean-toolchain`, `lakefile.lean` y scripts del repo disponibles.
+- Compilacion de la demostracion actual en verde antes de cerrar.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Medio]
+**Modo de planificacion:** [Completo (2-3 alternativas)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** [El cambio cruza generacion de PDF, metadatos reproducibles, ejecucion Lean y limpieza del archivo formal.]
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica]
+**Justificacion del modo de seguimiento:** [La tarea es acotada a una fase; la trazabilidad en este plan y la evidencia de comandos finales son suficientes.]
+
+**Definicion de Hecho (DoD) - marcar solo criterios aplicables al tipo de tarea:**
+- [x] Tipo de tarea declarado y consistente con el alcance.
+- [x] Suites relevantes ejecutadas en verde: `scripts/check_lean_json.sh Biblioteca/Demonstrations/Demo_20260430_221302_diagonal_quartic_modulo_prime.lean`, `scripts/build_strict.sh`, `.venv/bin/pytest tests/test_blueprint_paper.py -q`, `scripts/check_blueprint_decls.sh`, `scripts/build_blueprint_pdf.sh`.
+- [x] Exactitud tecnica verificada: version Lean, revision Mathlib, comando de build y salida de `#print axioms` corresponden al workspace actual.
+- [x] Revision de cambios cerrada sin hallazgos bloqueantes (`Critico`/`Alto`).
+- [x] Documentacion/producto actualizado en el PDF generado y, si aplica, en la seccion LaTeX correspondiente.
+- [x] Criterios de aceptacion funcional cumplidos: el PDF final contiene informacion reproducible suficiente; el archivo Lean no conserva opciones de linter injustificadas.
+- [x] Rollback definido y validado conceptualmente.
+
+**Criterios minimos de salida (para estado `Completado`):**
+- [x] No hay bloqueantes abiertos.
+- [x] Los checks DoD aplicables estan cumplidos.
+- [x] Existe evidencia verificable de validacion en comandos ejecutados y archivos modificados.
+
+**Riesgos Identificados y Mitigaciones:**
+- Riesgo: Ejecutar Lean desde el generador del PDF puede hacer mas lento o fragil el build.
+  - Mitigacion: limitar la captura de axiomas a declaraciones referenciadas o a la declaracion principal cuando sea detectable; fallar de forma explicita si la evidencia no se puede generar.
+- Riesgo: Los metadatos reproducibles quedan desactualizados si se copian manualmente.
+  - Mitigacion: derivarlos automaticamente de `lean-toolchain` y `lake-manifest.json`.
+- Riesgo: Retirar opciones de linter puede romper la verificacion por warnings tratados como errores.
+  - Mitigacion: probar primero sin las opciones; si una opcion queda, justificarla y localizarla al bloque minimo.
+
+**Rubrica de severidad de hallazgos (fuente de verdad):**
+- Canonica en: `SKILL.md` de la skill `orquestador-proyecto`.
+- Si una herramienta no reporta severidad, clasificar manualmente cualquier hallazgo antes de cerrar.
+
+**Alternativas Evaluadas y Rubrica:**
+- Pesos: Alcance 20%, Simplicidad 20%, Riesgo tecnico 25%, Testabilidad 20%, Mantenibilidad 15%.
+- Alternativa A: Agregar manualmente un parrafo de reproducibilidad solo en la seccion LaTeX de esta demostracion.
+  - Score por criterio: [A=3 S=5 R=4 T=2 M=1]
+  - Puntaje total ponderado: [61/100]
+- Alternativa B: Extender el generador del blueprint para producir automaticamente un bloque/anexo de reproducibilidad Lean por demostracion seleccionada.
+  - Score por criterio: [A=5 S=3 R=3 T=4 M=5]
+  - Puntaje total ponderado: [78/100]
+- Alternativa C: Emitir un archivo externo de reproducibilidad junto al PDF, sin integrarlo en el documento.
+  - Score por criterio: [A=3 S=4 R=4 T=4 M=3]
+  - Puntaje total ponderado: [72/100]
+
+**Plan Seleccionado (resumen):**
+Se elige la Alternativa B. Integra la evidencia donde la necesita el lector, evita copiar metadatos volatiles a mano y deja tests sobre el comportamiento del generador. La Alternativa A es rapida pero no escala y se puede desactualizar; la C mejora trazabilidad local pero no resuelve completamente la deficiencia del producto final.
+
+## Pasos del Plan
+
+- [x] STEP-01: Inspeccionar el generador del PDF, los tests existentes y la demostracion Lean actual.
+  - Evidencia/resultado esperado: ubicacion exacta del render del anexo, origen de metadatos y opciones de linter identificadas.
+  - Validacion: inspeccion de `tools/blueprint_paper.py`, `tests/test_blueprint_paper.py`, `lake-manifest.json`, `lean-toolchain` y la demostracion Lean.
+  - Artefacto esperado: el render actual concentra el anexo en `render_lean_appendix`; el manifiesto contiene Mathlib `8a178386ffc0f5fef0b77738bb5449d50efeea95`; el toolchain es `leanprover/lean4:v4.29.0`; las opciones de linter estan globales en la cabecera Lean.
+- [x] STEP-02: Implementar metadatos reproducibles automaticos en el blueprint.
+  - Evidencia/resultado esperado: el PDF renderiza version Lean, Mathlib commit, `lakefile.lean`, `lake-manifest.json`, comando de verificacion y salida de axiomas.
+  - Validacion: `.venv/bin/pytest tests/test_blueprint_paper.py -q` en verde, 20 tests.
+  - Artefacto esperado: cambios en `tools/blueprint_paper.py` y `tests/test_blueprint_paper.py`.
+- [x] STEP-03: Revisar el archivo Lean y retirar o justificar opciones de linter.
+  - Evidencia/resultado esperado: las opciones indicadas no quedan globales sin explicacion.
+  - Validacion: `scripts/check_lean_json.sh Biblioteca/Demonstrations/Demo_20260430_221302_diagonal_quartic_modulo_prime.lean` en verde.
+  - Artefacto esperado: `linter.unusedVariables`, `linter.unnecessarySimpa`, `linter.style.nativeDecide` y `native_decide` retirados; el lema finito usa `decide`.
+- [x] STEP-04: Verificar el flujo completo y regenerar el PDF.
+  - Evidencia/resultado esperado: build estricto y PDF actualizado en `blueprint/library/pdf/`.
+  - Validacion: `scripts/build_strict.sh`, `scripts/check_blueprint_decls.sh`, `scripts/build_blueprint_pdf.sh` en verde.
+  - Artefacto esperado: PDF final con seccion `Lean Reproducibility`; salida final de `#print axioms prime_dvd_diagonal_quartic_exists` depende solo de `[propext, Classical.choice, Quot.sound]`.
+- [x] STEP-05: Revisar diff y cerrar el plan.
+  - Evidencia/resultado esperado: sin hallazgos bloqueantes y DoD actualizado.
+  - Validacion: `git diff --check`, `git diff -U3 HEAD -- tools/blueprint_paper.py tests/test_blueprint_paper.py PLANS.md`, revision manual con checklist `review-changes`/`code-review-checklist`.
+  - Artefacto esperado: `PLANS.md` actualizado a completado.
+
+**Validacion Manual (solo si no hay tests automatizados):**
+- Confirmar en el `.tex` generado o PDF que aparece el bloque de reproducibilidad.
+- Confirmar que la salida de axiomas menciona la declaracion `prime_dvd_diagonal_quartic_exists`.
+
+**Plan de Rollback:**
+- Trigger: el generador del PDF se vuelve fragil o falla en builds reproducibles.
+- Acciones: revertir los cambios de `tools/blueprint_paper.py`, tests asociados y cualquier ajuste de PDF; conservar la limpieza Lean solo si compila.
+- Verificacion posterior: repetir `scripts/build_blueprint_pdf.sh` y `scripts/build_strict.sh`.
+
+**Comandos Relevantes:**
+- `scripts/check_lean_json.sh Biblioteca/Demonstrations/Demo_20260430_221302_diagonal_quartic_modulo_prime.lean` - verificacion file-level Lean.
+- `scripts/build_strict.sh` - build estricto del proyecto.
+- `.venv/bin/pytest tests/test_blueprint_paper.py` - tests del generador del paper.
+- `scripts/check_blueprint_decls.sh` - consistencia de referencias Lean en blueprint.
+- `scripts/build_blueprint_pdf.sh` - generacion del PDF final.
+- `git diff --check` - revision basica de whitespace.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Sincronizacion con PROGRESS.md (si existe):**
+- Modo de seguimiento activo: [No aplica]
+- Ultimo sync confirmado: [N/A]
+- Divergencias detectadas: [Ninguna]
+
+**Evidencia de cierre:**
+- Gate de aprobacion: `/home/mario/.codex/skills/orquestador-proyecto/scripts/validate-plan-approval.sh /home/mario/code/mimate/PLANS.md PLAN-20260501-01` -> valido.
+- Tests del generador: `.venv/bin/pytest tests/test_blueprint_paper.py -q` -> `20 passed`.
+- Lean file-level: `scripts/check_lean_json.sh Biblioteca/Demonstrations/Demo_20260430_221302_diagonal_quartic_modulo_prime.lean` -> sin diagnosticos.
+- Lean estricto: `scripts/build_strict.sh` -> `Build completed successfully (3307 jobs).`
+- Blueprint declarations: `scripts/check_blueprint_decls.sh` -> `Checked 4 Lean declaration reference(s) from blueprint/src.`
+- PDF final: `scripts/build_blueprint_pdf.sh` -> archivado en `blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf`; queda un overfull pequeno ya existente en el anexo Lean completo.
+- Reproducibilidad capturada: `leanprover/lean4:v4.29.0`; Mathlib `8a178386ffc0f5fef0b77738bb5449d50efeea95 (input revision v4.29.0)`; `lake build` exit code 0; `#print axioms Biblioteca.Demonstrations.prime_dvd_diagonal_quartic_exists` -> `[propext, Classical.choice, Quot.sound]`.
+- Revision: `git diff --check` en verde; diff revisado manualmente con `review-changes`/`code-review-checklist`; sin hallazgos `Critico`/`Alto`.
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-05-01T15:06:47.000+0000]
+
+---
+
+## [PLAN-20260501-02] Ajuste tipografico de Lean Reproducibility
+
+**Plan ID:** [PLAN-20260501-02]
+**Objetivo General:** [Corregir la tipografia del bloque `Lean Reproducibility` para evitar dobles dos puntos y presentar los metadatos reproducibles en una lista clara.]
+**Owner:** [Codex]
+**Fecha de inicio:** [2026-05-01]
+**Estado de aprobacion:** [Aprobado]
+**Aprobado por:** [Usuario (chat)]
+**Timestamp de aprobacion:** [2026-05-01T15:31:42.000+0000]
+**Evidencia de aprobacion (chat/referencia):** [mensaje del usuario: "$orquestador-proyecto Evalua esta revisión y aplica si es pertinente"]
+**Evidencia de /plan:** [N/A (riesgo Bajo)]
+
+**Aplicabilidad de esta skill (no pequena):**
+- [x] Cumple al menos 2 criterios de no-pequena: impacta un componente critico del PDF y requiere validacion de tests/build.
+- [x] No es tarea trivial de un solo paso bajo este flujo, porque modifica generador, tests y artefacto PDF.
+
+**Alcance y Entregables:**
+- Incluye: cambiar el render de `Lean Reproducibility` para usar una lista tipograficamente limpia; mostrar version Lean, commit Mathlib, archivos de proyecto, comando `lake build` y comando de auditoria de axiomas; mantener las salidas capturadas.
+- Excluye: cambiar la prueba Lean o el contenido matematico.
+
+**Tipo de tarea:** [Mixta]
+**Nivel de riesgo/complejidad:** [Bajo]
+**Modo de planificacion:** [Simplificado no-pequeno (1 alternativa + 1 descartada)]
+**Origen de alternativas:** [Analisis manual en PLANS.md]
+**Justificacion del modo elegido:** [El cambio es pequeno y localizado, pero afecta el producto PDF y tiene tests asociados.]
+**Modo de seguimiento en `PROGRESS.md`:** [No aplica]
+**Justificacion del modo de seguimiento:** [La trazabilidad en `PLANS.md` es suficiente.]
+
+**Definicion de Hecho (DoD):**
+- [x] Tests del generador en verde: `.venv/bin/pytest tests/test_blueprint_paper.py -q`.
+- [x] PDF regenerado con `scripts/build_blueprint_pdf.sh`.
+- [x] La seccion no contiene dobles `::`.
+- [x] Revision de diff sin hallazgos bloqueantes.
+
+**Alternativas Evaluadas y Rubrica:**
+- Alternativa A: sustituir `description` por `itemize` con etiquetas manuales y mantener bloques capturados debajo.
+  - Puntaje total ponderado: [90/100]
+- Alternativa B: conservar `description` y quitar `:` de los labels.
+  - Puntaje total ponderado: [70/100]
+
+**Plan Seleccionado (resumen):**
+Se elige la Alternativa A porque coincide con la revision propuesta, evita el doble signo de puntuacion y mejora la lectura sin alterar la evidencia reproducible.
+
+## Pasos del Plan
+
+- [x] STEP-01: Ajustar el render y los tests de `Lean Reproducibility`.
+  - Validacion: `.venv/bin/pytest tests/test_blueprint_paper.py -q` -> `20 passed`.
+- [x] STEP-02: Regenerar PDF y confirmar el bloque resultante.
+  - Validacion: `scripts/build_blueprint_pdf.sh`; inspeccion de `blueprint/build/20260501_093401_Demo_20260430_221302_diagonal_quartic_modulo_prime/lean_reproducibility.tex`; `rg -n "::|Lean version|Mathlib commit|Axiom audit command" ...`.
+- [x] STEP-03: Cerrar plan con evidencia de revision.
+  - Validacion: `git diff --check` y revision manual.
+
+**Plan de Rollback:**
+- Revertir los cambios en `tools/blueprint_paper.py` y `tests/test_blueprint_paper.py`; regenerar el PDF si fuera necesario.
+
+**Trazabilidad (links):**
+- Issue/Ticket: [N/A]
+- PR/Commit: [N/A]
+- Decision(es) relacionada(s): [N/A]
+
+**Evidencia de cierre:**
+- Gate de aprobacion: `/home/mario/.codex/skills/orquestador-proyecto/scripts/validate-plan-approval.sh /home/mario/code/mimate/PLANS.md PLAN-20260501-02` -> valido.
+- Tests del generador: `.venv/bin/pytest tests/test_blueprint_paper.py -q` -> `20 passed`.
+- PDF: `scripts/build_blueprint_pdf.sh` -> archivado en `blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf`.
+- Inspeccion tipografica: `lean_reproducibility.tex` generado usa `itemize` y contiene `Lean version:`, `Mathlib commit:`, `Verification command:` y `Axiom audit command:` sin coincidencias `::`.
+- Revision: `git diff --check` en verde; revision manual del diff sin hallazgos `Critico`/`Alto`.
+
+**Estado Actual:** [Completado]
+**Ultima Actualizacion:** [2026-05-01T15:34:38.000+0000]
 
 ---

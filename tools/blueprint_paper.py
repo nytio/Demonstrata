@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import os
 import subprocess
 from dataclasses import dataclass
@@ -59,6 +60,23 @@ class LeanGlossaryEntry:
 class LeanSourceEntry:
     path: Path
     title: str
+
+
+@dataclass(frozen=True)
+class MathlibManifestInfo:
+    revision: str
+    input_revision: str | None
+
+
+@dataclass(frozen=True)
+class LeanReproducibilityInfo:
+    lean_version: str
+    mathlib: MathlibManifestInfo
+    config_files: tuple[str, ...]
+    verification_output_path: Path
+    axiom_probe_path: Path | None
+    axiom_output_path: Path | None
+    axiom_declarations: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -312,6 +330,7 @@ def sanitize_latex_text(text: str) -> str:
 def latex_breakable_mono(text: str) -> str:
     rendered: list[str] = []
     previous: str | None = None
+    alnum_run = 0
     for char in text:
         if previous is not None and char.isupper() and (previous.islower() or previous.isdigit()):
             rendered.append(r"\hspace{0pt}")
@@ -319,6 +338,14 @@ def latex_breakable_mono(text: str) -> str:
         rendered.append(latex_escape(char))
         if char in {"_", ".", "/"}:
             rendered.append(r"\hspace{0pt}")
+            alnum_run = 0
+        elif char.isalnum():
+            alnum_run += 1
+            if alnum_run >= 8:
+                rendered.append(r"\hspace{0pt}")
+                alnum_run = 0
+        else:
+            alnum_run = 0
         previous = char
 
     return "".join(rendered)
@@ -467,8 +494,8 @@ def render_lean_glossary(
         glossary_dir.mkdir(parents=True, exist_ok=True)
         lines.extend(
             [
-                r"\section*{Lean Glossary}",
-                r"\addcontentsline{toc}{section}{Lean Glossary}",
+                r"\subsection{Glossary}",
+                r"\mbox{}\par\nobreak\smallskip",
                 r"\begingroup",
                 r"\small",
             ]
@@ -482,10 +509,11 @@ def render_lean_glossary(
                     + entry.label
                     + r"}{\leanname{"
                     + latex_breakable_mono(entry.short_name)
-                    + r"}}\par",
+                    + r"}}\par\nobreak\smallskip",
                     r"\leaninputfile{" + lexer_name + r"}{"
                     + latex_detokenize(relative_tex_path(build_dir, snippet_path))
                     + r"}",
+                    r"\medskip",
                 ]
             )
         lines.append(r"\endgroup")
@@ -496,6 +524,165 @@ def render_lean_glossary(
 
 def latex_detokenize(text: str) -> str:
     return r"\detokenize{" + text + r"}"
+
+
+def read_lean_toolchain(repo_root: Path) -> str:
+    path = repo_root / "lean-toolchain"
+    return path.read_text(encoding="utf-8").strip()
+
+
+def read_mathlib_manifest_info(repo_root: Path) -> MathlibManifestInfo:
+    manifest_path = repo_root / "lake-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    for package in manifest.get("packages", []):
+        if package.get("name") == "mathlib":
+            revision = package.get("rev")
+            if not isinstance(revision, str) or not revision:
+                break
+            input_revision = package.get("inputRev")
+            return MathlibManifestInfo(
+                revision=revision,
+                input_revision=input_revision if isinstance(input_revision, str) else None,
+            )
+    raise RuntimeError("Could not find the mathlib revision in lake-manifest.json.")
+
+
+def lake_executable() -> str:
+    elan_lake = Path.home() / ".elan" / "bin" / "lake"
+    if elan_lake.is_file():
+        return str(elan_lake)
+    return shutil.which("lake") or "lake"
+
+
+def write_command_output(
+    path: Path,
+    *,
+    display_command: str,
+    completed: subprocess.CompletedProcess[str],
+) -> None:
+    output_parts = [
+        f"$ {display_command}",
+        f"exit code: {completed.returncode}",
+    ]
+    stdout = completed.stdout.strip()
+    stderr = completed.stderr.strip()
+    if stdout:
+        output_parts.extend(["", "stdout:", stdout])
+    if stderr:
+        output_parts.extend(["", "stderr:", stderr])
+    if not stdout and not stderr:
+        output_parts.extend(["", "(no output)"])
+    path.write_text("\n".join(output_parts) + "\n", encoding="utf-8")
+
+
+def capture_checked_command(
+    repo_root: Path,
+    output_path: Path,
+    *,
+    command: list[str],
+    display_command: str,
+) -> None:
+    completed = subprocess.run(
+        command,
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+    )
+    write_command_output(
+        output_path,
+        display_command=display_command,
+        completed=completed,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(
+            f"Command failed while collecting Lean reproducibility evidence: "
+            f"{display_command}"
+        )
+
+
+def lean_module_name(repo_root: Path, lean_path: Path) -> str:
+    relative = lean_path.relative_to(repo_root).with_suffix("")
+    return ".".join(relative.parts)
+
+
+def build_axiom_probe(
+    repo_root: Path,
+    repro_dir: Path,
+    source_entries: list[LeanSourceEntry],
+    glossary_entries: list[LeanGlossaryEntry],
+) -> tuple[Path | None, tuple[str, ...]]:
+    declarations: list[str] = []
+    seen_declarations: set[str] = set()
+    for entry in glossary_entries:
+        if entry.declaration in seen_declarations:
+            continue
+        seen_declarations.add(entry.declaration)
+        declarations.append(entry.declaration)
+
+    if not declarations:
+        return None, ()
+
+    modules = sorted(
+        {
+            lean_module_name(repo_root, source_entry.path)
+            for source_entry in source_entries
+            if source_entry.path.is_relative_to(repo_root)
+        }
+    )
+    if not modules:
+        modules = ["Biblioteca"]
+    lines = [f"import {module}" for module in modules]
+    lines.append("")
+    lines.extend(f"#print axioms {declaration}" for declaration in declarations)
+    probe_path = repro_dir / "print_axioms.lean"
+    probe_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return probe_path, tuple(declarations)
+
+
+def build_lean_reproducibility_info(
+    repo_root: Path,
+    build_dir: Path,
+    source_entries: list[LeanSourceEntry],
+    glossary_entries: list[LeanGlossaryEntry],
+) -> LeanReproducibilityInfo:
+    repro_dir = build_dir / "lean_reproducibility"
+    repro_dir.mkdir(parents=True, exist_ok=True)
+    lake = lake_executable()
+
+    verification_output_path = repro_dir / "lake_build.out"
+    capture_checked_command(
+        repo_root,
+        verification_output_path,
+        command=[lake, "build"],
+        display_command="lake build",
+    )
+
+    axiom_probe_path, axiom_declarations = build_axiom_probe(
+        repo_root,
+        repro_dir,
+        source_entries,
+        glossary_entries,
+    )
+    axiom_output_path: Path | None = None
+    if axiom_probe_path is not None:
+        axiom_output_path = repro_dir / "print_axioms.out"
+        probe_arg = relative_tex_path(repo_root, axiom_probe_path)
+        capture_checked_command(
+            repo_root,
+            axiom_output_path,
+            command=[lake, "env", "lean", probe_arg],
+            display_command=f"lake env lean {probe_arg}",
+        )
+
+    return LeanReproducibilityInfo(
+        lean_version=read_lean_toolchain(repo_root),
+        mathlib=read_mathlib_manifest_info(repo_root),
+        config_files=("lakefile.lean", "lake-manifest.json"),
+        verification_output_path=verification_output_path,
+        axiom_probe_path=axiom_probe_path,
+        axiom_output_path=axiom_output_path,
+        axiom_declarations=axiom_declarations,
+    )
 
 
 def available_pygments_aliases(pygmentize_path: Path) -> set[str]:
@@ -535,6 +722,84 @@ def resolve_minted_config(repo_root: Path) -> MintedConfig:
     raise RuntimeError(
         "The available Pygments installation does not provide a Lean lexer."
     )
+
+
+def render_lean_reproducibility(
+    build_dir: Path,
+    info: LeanReproducibilityInfo,
+    *,
+    lexer_name: str,
+) -> Path:
+    repro_dir = build_dir / "lean_reproducibility"
+    repro_dir.mkdir(parents=True, exist_ok=True)
+
+    lines = [
+        r"\subsection{Reproducibility}",
+        r"\mbox{}\par\nobreak\smallskip",
+        r"\begingroup",
+        r"\small",
+        r"\noindent\begin{tabular}{@{}ll@{}}",
+        r"\textbf{Lean version:} & \leaninline{"
+        + latex_breakable_mono(info.lean_version)
+        + r"} \\",
+        r"\textbf{Project files:} & "
+        + ", ".join(r"\nolinkurl{" + path + r"}" for path in info.config_files)
+        + r" \\",
+        r"\textbf{Verification command:} & \leaninline{lake\hspace{0pt} build} \\",
+        r"\textbf{Axiom audit command:} & \leaninline{\#print\hspace{0pt} axioms}",
+        r"\end{tabular}\par\smallskip",
+        r"\noindent\textbf{Mathlib commit:}\par",
+        r"\noindent\texttt{"
+        + latex_escape(info.mathlib.revision)
+        + r"}\par",
+    ]
+    if info.mathlib.input_revision is not None:
+        lines.append(
+            r"\noindent\textbf{Manifest input revision:} \texttt{"
+            + latex_escape(info.mathlib.input_revision)
+            + r"}\par"
+        )
+    lines.extend(
+        [
+            r"\medskip",
+            r"\noindent\textbf{Captured output of \leaninline{lake\hspace{0pt} build}.}\par",
+            r"\leaninputfile{text}{"
+            + latex_detokenize(relative_tex_path(build_dir, info.verification_output_path))
+            + r"}",
+        ]
+    )
+
+    if info.axiom_probe_path is not None and info.axiom_output_path is not None:
+        declarations = ", ".join(
+            r"\leaninline{" + latex_breakable_mono(declaration_short_name(declaration)) + r"}"
+            for declaration in info.axiom_declarations
+        )
+        lines.extend(
+            [
+                r"\noindent\textbf{Axiom queries.} "
+                + declarations
+                + r"\par",
+                r"\leaninputfile{"
+                + lexer_name
+                + r"}{"
+                + latex_detokenize(relative_tex_path(build_dir, info.axiom_probe_path))
+                + r"}",
+                r"\noindent\textbf{Captured output of the axiom queries.}\par",
+                r"\leaninputfile{text}{"
+                + latex_detokenize(relative_tex_path(build_dir, info.axiom_output_path))
+                + r"}",
+            ]
+        )
+    else:
+        lines.append(
+            r"\noindent No \leaninline{\#print\hspace{0pt} axioms} query was generated, "
+            r"because no Lean declaration was referenced by the selected section.\par"
+        )
+
+    lines.append(r"\endgroup")
+    path = build_dir / "lean_reproducibility.tex"
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
 
 
 def render_lean_appendix(
@@ -599,6 +864,8 @@ def render_paper_tex(
             r"\maketitle",
             r"\tableofcontents" if include_toc else "",
             r"\input{selected_content.tex}",
+            r"\section{Lean formalization}",
+            r"\input{lean_reproducibility.tex}",
             r"\input{lean_glossary.tex}",
             r"\input{lean_appendix.tex}",
             r"\end{document}",
@@ -680,9 +947,20 @@ def main(argv: list[str] | None = None) -> int:
     minted_config = resolve_minted_config(repo_root)
     glossary_entries = build_glossary_entries(repo_root, sections)
     source_entries = build_source_entries(repo_root, sections)
+    reproducibility_info = build_lean_reproducibility_info(
+        repo_root,
+        build_dir,
+        source_entries,
+        glossary_entries,
+    )
     render_selected_content(build_dir, sections)
     render_lean_refs(build_dir, glossary_entries)
     render_lean_glossary(build_dir, glossary_entries, lexer_name=minted_config.lexer_name)
+    render_lean_reproducibility(
+        build_dir,
+        reproducibility_info,
+        lexer_name=minted_config.lexer_name,
+    )
     render_lean_appendix(build_dir, source_entries, lexer_name=minted_config.lexer_name)
     render_paper_tex(build_dir, metadata, include_toc=len(sections) > 1)
     run_latexmk(build_dir, minted_config=minted_config)
