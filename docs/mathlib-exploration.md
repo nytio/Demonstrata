@@ -196,7 +196,7 @@ Si ya existe un indice persistido para `Mathlib`, el wrapper lo reutiliza
 automaticamente con `--read-index` desde:
 
 ```text
-/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra
+.local-tools/loogle-indexes/Mathlib.extra
 ```
 
 Para construirlo explicitamente:
@@ -209,7 +209,7 @@ La forma recomendada para forzar ese indice precalculado en este repo es:
 
 ```bash
 scripts/loogle_local.sh \
-  --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra \
+  --read-index .local-tools/loogle-indexes/Mathlib.extra \
   --module Mathlib \
   'Fintype.card_subtype'
 ```
@@ -264,7 +264,7 @@ es:
 
    ```bash
    scripts/loogle_local.sh \
-     --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra \
+     --read-index .local-tools/loogle-indexes/Mathlib.extra \
      --module Mathlib \
      '<query>'
    ```
@@ -294,7 +294,7 @@ el servidor lo reutiliza. Este gate no significa regenerar el indice.
 La ruta canonica del indice persistido de Mathlib es:
 
 ```text
-/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra
+.local-tools/loogle-indexes/Mathlib.extra
 ```
 
 Por tanto, para busquedas CLI sensibles a sandbox, la forma explicita sigue
@@ -302,7 +302,7 @@ siendo:
 
 ```bash
 scripts/loogle_local.sh \
-  --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra \
+  --read-index .local-tools/loogle-indexes/Mathlib.extra \
   --module Mathlib \
   '<query>'
 ```
@@ -336,21 +336,21 @@ scripts/check_loogle_local.sh
 Forma recomendada, en primer plano:
 
 ```bash
-cd /home/mario/code/mimate
+cd /path/to/mimate
 ./scripts/start_loogle_local_server.sh
 ```
 
 En otra terminal, verificar:
 
 ```bash
-cd /home/mario/code/mimate
+cd /path/to/mimate
 ./scripts/check_loogle_local.sh
 ```
 
 Si se quiere dejar en segundo plano:
 
 ```bash
-cd /home/mario/code/mimate
+cd /path/to/mimate
 nohup ./scripts/start_loogle_local_server.sh >/tmp/mimate-loogle-local.log 2>&1 &
 ./scripts/check_loogle_local.sh
 ```
@@ -371,14 +371,14 @@ pkill -f 'tools/loogle_local_server.py'
 Para reiniciarlo de forma limpia:
 
 ```bash
-cd /home/mario/code/mimate
+cd /path/to/mimate
 ./scripts/restart_loogle_local.sh
 ```
 
 Si se quiere reiniciar en segundo plano y dejarlo verificado:
 
 ```bash
-cd /home/mario/code/mimate
+cd /path/to/mimate
 ./scripts/restart_loogle_local.sh --background
 ```
 
@@ -400,7 +400,7 @@ Notas practicas:
 - para evitar esa espera en sesiones repetidas, conviene correr antes
   `scripts/build_loogle_index.sh`;
 - para `Mathlib`, el repo trata
-  `/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra`
+  `.local-tools/loogle-indexes/Mathlib.extra`
   como la ruta canonica del indice persistido;
 - el servidor deja ese indice caliente y por eso conviene mas que invocar el
   binario desde cero en cada consulta repetida;

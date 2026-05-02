@@ -144,7 +144,7 @@ scripts/build_blueprint_pdf.sh
 scripts/build_loogle_index.sh
 
 # Query Mathlib through the canonical persisted local index
-scripts/loogle_local.sh --read-index /home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra --module Mathlib 'Fintype.card_subtype'
+scripts/loogle_local.sh --read-index .local-tools/loogle-indexes/Mathlib.extra --module Mathlib 'Fintype.card_subtype'
 
 # Check that the local loogle service answers JSON
 scripts/check_loogle_local.sh
@@ -265,7 +265,7 @@ recommended order is:
 For this workspace, the canonical persisted Mathlib index is:
 
 ```text
-/home/mario/code/mimate/.local-tools/loogle-indexes/Mathlib.extra
+.local-tools/loogle-indexes/Mathlib.extra
 ```
 
 Search over `Biblioteca` is intentionally module-scoped today; the aggregate
