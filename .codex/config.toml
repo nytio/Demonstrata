@@ -17,7 +17,7 @@ LEANSEARCHCLIENT_LOOGLE_API_URL = "http://127.0.0.1:8088/json"
 
 [permissions.local_loopback.filesystem]
 glob_scan_max_depth = 3
-":project_roots" = { "." = "write", "**/*.lean" = "write", "**/*.tex" = "write", "**/.env" = "none", "**/*.env" = "none", "**/.env.*" = "none", "**/secrets.*" = "none" }
+":project_roots" = { "." = "write", "**/.env" = "none", "**/*.env" = "none", "**/.env.*" = "none", "**/secrets.*" = "none" }
 
 [permissions.local_loopback.network]
 enabled = true
