@@ -1,0 +1,73 @@
+% title: Prime-free Recurrence Parameters
+% short-title: Prime-free Recurrences
+% abstract: We construct infinitely many recurrence parameters for which every term is non-prime, using a factorization of even Vieta--Fibonacci polynomial values.
+% subjclass: 11B37, 11A41, 03B35
+% keywords: recurrence sequence, non-prime term, Chebyshev polynomial, Lean 4
+% author: Mario Hernández M.
+
+\section{Proof of the theorem}
+
+\begin{theorem}
+There exist infinitely many positive integers \(x\) such that the sequence
+\((a_n)_{n\ge 0}\) defined by
+\[
+a_0=1,\qquad a_1=x+1,\qquad a_{n+2}=xa_{n+1}-a_n
+\]
+has no prime term.
+\end{theorem}
+
+\begin{proof}
+In fact, we prove the stronger statement that such parameters \(x\) are
+arbitrarily large.
+
+Let \(S_0(t)=1\), \(S_1(t)=t\), and
+\[
+S_{n+2}(t)=tS_{n+1}(t)-S_n(t).
+\]
+Choose any integer \(y\ge 3\) and put \(x=y^2-2\).  Define
+\[
+a_n=S_{2n}(y).
+\]
+The recurrence for the even-indexed subsequence gives
+\[
+S_{2n+4}(y)=(y^2-2)S_{2n+2}(y)-S_{2n}(y),
+\]
+so this is exactly a sequence with parameter \(x\).  Its first two values are
+\[
+a_0=1,\qquad a_1=S_2(y)=y^2-1=x+1.
+\]
+
+It remains to show that no \(a_n\) is prime.  The case \(n=0\) is \(a_0=1\).
+For \(n\ge 1\), use the addition identity
+\[
+S_{m+n}(t)=S_m(t)S_n(t)-S_{m-1}(t)S_{n-1}(t)
+\]
+with \(m=n\).  This gives
+\[
+a_n=S_{2n}(y)=S_n(y)^2-S_{n-1}(y)^2
+      =\bigl(S_n(y)+S_{n-1}(y)\bigr)
+       \bigl(S_n(y)-S_{n-1}(y)\bigr).
+\]
+We prove by induction that \(S_n(y)>0\) and
+\(S_{n+1}(y)-S_n(y)>1\).  The case \(n=0\) follows from
+\(S_0(y)=1\), \(S_1(y)=y\), and \(y\ge3\).  If the assertion holds at \(n\),
+then
+\[
+\begin{aligned}
+S_{n+2}(y)-S_{n+1}(y)
+&=(y-1)S_{n+1}(y)-S_n(y)\\
+&=(y-2)S_{n+1}(y)+\bigl(S_{n+1}(y)-S_n(y)\bigr)>1,
+\end{aligned}
+\]
+and \(S_{n+2}(y)>S_{n+1}(y)>0\).  Hence both displayed factors are strictly
+greater than \(1\), so \(a_n\) is composite for \(n\ge1\), while \(a_0=1\) is
+non-prime.
+
+Taking \(y\) arbitrarily large gives arbitrarily large parameters
+\(x=y^2-2\).  Thus there are infinitely many positive integers \(x\) with the
+desired property.  The formal Lean statement
+\lean{Biblioteca.Demonstrations.CompositeTermsInRecurrence.infinitely_many_positive_parameters_without_prime_terms}
+records this as a theorem with arbitrarily large parameters; the constructed
+sequence is represented over \(\mathbb Z\), and \texttt{natAbs} is used for the usual
+natural-number primality test.
+\end{proof}
