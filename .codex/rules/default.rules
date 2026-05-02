@@ -10,16 +10,6 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["/home/mario/.elan/bin/lake", ["build", "lean", "exe"]],
-    decision = "allow",
-    justification = "Allow direct elan-managed Lake commands for Lean workflows.",
-    match = [
-        "/home/mario/.elan/bin/lake build --wfail",
-        "/home/mario/.elan/bin/lake exe cache get",
-    ],
-)
-
-prefix_rule(
     pattern = ["git", ["commit", "push", "reset", "clean"]],
     decision = "prompt",
     justification = "Git history mutations require an explicit user decision.",
@@ -40,3 +30,19 @@ prefix_rule(
         "rm -rf build",
     ],
 )
+
+prefix_rule(pattern=[".venv/bin/python"], decision="allow")
+
+prefix_rule(pattern=["scripts/build_blueprint_pdf.sh"], decision="allow")
+prefix_rule(pattern=["scripts/build_loogle_index.sh"], decision="allow")
+prefix_rule(pattern=["scripts/build_loogle_local.sh"], decision="allow")
+prefix_rule(pattern=["scripts/build_strict.sh"], decision="allow")
+prefix_rule(pattern=["scripts/check_blueprint_decls.sh"], decision="allow")
+prefix_rule(pattern=["scripts/check_lean_json.sh"], decision="allow")
+prefix_rule(pattern=["scripts/check_loogle_local.sh"], decision="allow")
+prefix_rule(pattern=["scripts/get_mathlib_cache.sh"], decision="allow")
+prefix_rule(pattern=["scripts/init.sh"], decision="allow")
+prefix_rule(pattern=["scripts/loogle_local.sh"], decision="allow")
+prefix_rule(pattern=["scripts/new_demo.sh"], decision="allow")
+prefix_rule(pattern=["scripts/restart_loogle_local.sh"], decision="allow")
+prefix_rule(pattern=["scripts/start_loogle_local_server.sh"], decision="allow")
