@@ -177,7 +177,7 @@ From this input, Demonstrata generates a reproducible proof dossier:
 - and a final PDF note.
 
 Example output:
-[blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf](blueprint/library/pdf/Demo_20260430_221302_diagonal_quartic_modulo_prime.pdf)
+[blueprint/library/pdf/Demo_20260501_213926_composite_terms_in_recurrence.pdf](blueprint/library/pdf/Demo_20260501_213926_composite_terms_in_recurrence.pdf)
 
 ## How `$olympiad-formalize` Works
 
